@@ -40,6 +40,20 @@ export interface Course {
   image?: string;
 }
 
+export interface BookingRequest {
+  id: number;
+  courseId: number;
+  course: string;
+  trainer: string;
+  name: string;
+  email: string;
+  audience: string;
+  participants: number;
+  school: string;
+  date: string;
+  message: string;
+}
+
 export interface CatalogFilters {
   query: string;
   category: Category | "All topics";

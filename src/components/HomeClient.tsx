@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { filterCourses } from "@/lib/filter-courses";
-import { toggleSaved, useSaved } from "@/lib/saved-store";
+import { removeRequest, toggleSaved, useOwnListings, useRequests, useSaved } from "@/lib/saved-store";
 import { CATEGORIES, DEFAULT_FILTERS, FORMATS, GRADES, type CatalogFilters, type Course } from "@/lib/types";
 import BookingForm from "./BookingForm";
 import CourseCard from "./CourseCard";
@@ -32,8 +32,11 @@ export default function HomeClient({ courses }: { courses: Course[] }) {
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const saved = useSaved();
+  const ownListings = useOwnListings();
+  const requests = useRequests();
+  const allCourses = useMemo(() => [...ownListings, ...courses], [ownListings, courses]);
 
-  const list = useMemo(() => filterCourses(courses, filters, saved), [courses, filters, saved]);
+  const list = useMemo(() => filterCourses(allCourses, filters, saved), [allCourses, filters, saved]);
   const update = (patch: Partial<CatalogFilters>) => setFilters((f) => ({ ...f, ...patch }));
   const scrollToCatalog = () => titleRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
 
@@ -317,23 +320,49 @@ export default function HomeClient({ courses }: { courses: Course[] }) {
               course={dialog.course}
               onSubmitted={() => {
                 setDialog(null);
-                showToast("Thanks! Sending requests to trainers is coming soon.");
+                showToast("Request saved. View it in My requests.");
               }}
+              onError={showToast}
             />
           )}
           {dialog.kind === "listing" && (
             <ListingForm
               onSubmitted={() => {
+                setFilters(DEFAULT_FILTERS);
                 setDialog(null);
-                showToast("Thanks! Publishing listings is coming soon.");
+                showToast("Your training was added to this browser’s catalog.");
               }}
               onError={showToast}
             />
           )}
           {dialog.kind === "requests" && (
             <>
-              <div className="notice">Booking requests will appear here once accounts are available.</div>
-              <p>No requests yet. Explore a course and request a session to start planning your PD.</p>
+              <div className="notice">Saved in this browser only. Trainers have not been contacted.</div>
+              {requests.length ? (
+                requests.map((r) => (
+                  <div key={r.id} className="request">
+                    <span className="status">Draft request</span>
+                    <strong>{r.course}</strong>
+                    <p>
+                      {r.trainer} · {r.date} · {r.participants} participant(s)
+                    </p>
+                    <p>
+                      {r.name} · {r.email}
+                    </p>
+                    {r.school && <p>{r.school}</p>}
+                    {r.message && <p>{r.message}</p>}
+                    <button
+                      className="plain"
+                      style={{ fontSize: 11, color: "#a05c69" }}
+                      onClick={() => removeRequest(r.id)}
+                    >
+                      Remove request
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p>No requests yet. Explore a course and request a session to start planning your PD.</p>
+              )}
             </>
           )}
         </Modal>

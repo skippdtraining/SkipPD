@@ -1,43 +1,39 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import type { BookingRequest, Course } from "./types";
+import { createLocalStore, isArray } from "./local-store";
 
-/**
- * Saved (bookmarked) course ids, kept in localStorage.
- * Temporary: Step 5 stores saved listings per user in the database.
- */
-const KEY = "skippd-saved";
-const EMPTY: number[] = [];
-const listeners = new Set<() => void>();
-let cache: number[] | null = null;
+/** Saved (bookmarked) course ids. Step 5 moves this to the database. */
+const savedStore = createLocalStore<number>(
+  "skippd-saved",
+  (v): v is number[] => Array.isArray(v) && v.every((x) => typeof x === "number"),
+);
 
-function read(): number[] {
-  if (cache) return cache;
-  try {
-    const v = JSON.parse(localStorage.getItem(KEY) ?? "[]");
-    cache = Array.isArray(v) ? v.filter((x): x is number => typeof x === "number") : [];
-  } catch {
-    cache = [];
-  }
-  return cache;
+export const useSaved = savedStore.use;
+
+export function toggleSaved(id: number): boolean {
+  const cur = savedStore.get();
+  return savedStore.set(cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]);
 }
 
-function subscribe(cb: () => void) {
-  listeners.add(cb);
-  return () => listeners.delete(cb);
+/** Listings created in this browser. Step 4 moves this to the database. */
+const listingStore = createLocalStore<Course>("skippd-courses", isArray);
+
+export const useOwnListings = listingStore.use;
+
+export function addListing(c: Course): boolean {
+  return listingStore.set([c, ...listingStore.get()]);
 }
 
-export function toggleSaved(id: number) {
-  const cur = read();
-  cache = cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id];
-  try {
-    localStorage.setItem(KEY, JSON.stringify(cache));
-  } catch {
-    // Storage full or blocked: keep the in-memory value for this session.
-  }
-  listeners.forEach((l) => l());
+/** Booking requests made in this browser. Step 6 moves this to the database. */
+const requestStore = createLocalStore<BookingRequest>("skippd-requests", isArray);
+
+export const useRequests = requestStore.use;
+
+export function addRequest(r: BookingRequest): boolean {
+  return requestStore.set([...requestStore.get(), r]);
 }
 
-export function useSaved(): number[] {
-  return useSyncExternalStore(subscribe, read, () => EMPTY);
+export function removeRequest(id: number): boolean {
+  return requestStore.set(requestStore.get().filter((r) => r.id !== id));
 }

@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { addRequest } from "@/lib/saved-store";
 import type { Course } from "@/lib/types";
 
 interface Props {
   course: Course;
   onSubmitted: () => void;
+  onError: (message: string) => void;
 }
 
-/** Booking request form. UI only until Step 6 (booking requests stored in the database). */
-export default function BookingForm({ course: c, onSubmitted }: Props) {
+/** Booking request form. Saves to this browser until Step 6 (booking requests stored in the database). */
+export default function BookingForm({ course: c, onSubmitted, onError }: Props) {
   // Computed once on mount so the min date does not change between renders.
   const [today] = useState(() => new Date().toLocaleDateString("en-CA"));
 
@@ -20,12 +22,28 @@ export default function BookingForm({ course: c, onSubmitted }: Props) {
         With {c.trainer} · ${c.price} / person
       </p>
       <div className="notice">
-        Preview: requests are not sent yet. Booking requests arrive in a later release.
+        Preview: this saves the request on this device only. The trainer is not contacted, no date is reserved and no payment is taken.
       </div>
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          onSubmitted();
+          const d = new FormData(e.currentTarget);
+          const str = (k: string) => String(d.get(k) ?? "").trim();
+          const ok = addRequest({
+            id: Date.now(),
+            courseId: c.id,
+            course: c.title,
+            trainer: c.trainer,
+            name: str("name"),
+            email: str("email"),
+            audience: str("audience"),
+            participants: Number(d.get("participants")) || 1,
+            school: str("school"),
+            date: str("date"),
+            message: str("message"),
+          });
+          if (ok) onSubmitted();
+          else onError("Browser storage is full. Remove some requests and try again.");
         }}
       >
         <div className="two">
@@ -70,7 +88,7 @@ export default function BookingForm({ course: c, onSubmitted }: Props) {
             placeholder="Share your goals, grade levels, or team requirements."
           />
         </label>
-        <button className="btn wide">Send booking request</button>
+        <button className="btn wide">Save booking request</button>
       </form>
     </>
   );

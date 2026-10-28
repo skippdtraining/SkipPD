@@ -1,6 +1,7 @@
 "use client";
 
-import { CATEGORIES, FORMATS, GRADES } from "@/lib/types";
+import { addListing } from "@/lib/saved-store";
+import { CATEGORIES, FORMATS, GRADES, type Category, type Course, type Format, type Grade } from "@/lib/types";
 
 interface Props {
   onSubmitted: () => void;
@@ -10,22 +11,54 @@ interface Props {
 const MAX_IMAGE_BYTES = 1024 * 1024;
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
-/** Training listing form. UI only until Step 4 (teacher listings stored in the database). */
+function readImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("Could not read image"));
+    reader.readAsDataURL(file);
+  });
+}
+
+/** Training listing form. Saves to this browser until Step 4 (teacher listings stored in the database). */
 export default function ListingForm({ onSubmitted, onError }: Props) {
   return (
     <>
       <div className="notice">
-        Preview: listings are not published yet. Teacher accounts and listings arrive in a later release.
+        Preview: this listing is saved in this browser only and is not visible to other visitors.
       </div>
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
-          const file = (e.currentTarget.elements.namedItem("image") as HTMLInputElement).files?.[0];
+          const form = e.currentTarget;
+          const file = (form.elements.namedItem("image") as HTMLInputElement).files?.[0];
           if (file && (file.size > MAX_IMAGE_BYTES || !IMAGE_TYPES.includes(file.type))) {
             onError("Choose a JPG, PNG, or WebP image under 1 MB.");
             return;
           }
-          onSubmitted();
+          const d = new FormData(form);
+          const str = (k: string) => String(d.get(k) ?? "").trim();
+          const grades = str("grades");
+          const course: Course = {
+            id: Date.now(),
+            title: str("title"),
+            trainer: str("trainer"),
+            role: str("role"),
+            category: str("category") as Category,
+            format: str("format") as Format,
+            hours: Number(d.get("hours")),
+            price: Number(d.get("price")),
+            grades: grades === "all" ? [...GRADES] : [grades as Grade],
+            tags: str("tags").split(",").map((x) => x.trim()).filter(Boolean).slice(0, 5),
+            description: str("description"),
+            outcomes: str("outcomes").split("\n").map((x) => x.trim()).filter(Boolean),
+            color: "#e7dff6",
+            accent: "#8264ad",
+            type: "books",
+            image: file ? await readImage(file) : undefined,
+          };
+          if (addListing(course)) onSubmitted();
+          else onError("Browser storage is full. Try a smaller image.");
         }}
       >
         <label className="field">

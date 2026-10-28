@@ -8,6 +8,7 @@
 
 'use client';
 
+import {IMAGE_TYPES, MAX_IMAGE_BYTES, MAX_LISTING_TAGS} from '@/config/catalog';
 import {addListing} from '@/lib/browser-storage';
 import {readFileAsDataUrl, readNumber, readText, splitList} from '@/lib/form-helpers';
 import {
@@ -19,15 +20,6 @@ import {
   type Format,
   type Grade,
 } from '@/lib/types';
-
-/** Largest accepted cover image: 1 MB (localStorage holds only ~5 MB total). */
-const MAX_IMAGE_BYTES = 1024 * 1024;
-
-/** Accepted cover image types. */
-const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-
-/** Listings keep at most this many search keywords, like the POC. */
-const MAX_TAGS = 5;
 
 /** Default look for listings without an image (purple "books" artwork). */
 const DEFAULT_COVER = {color: '#e7dff6', accent: '#8264ad', type: 'books'} as const;
@@ -70,7 +62,7 @@ export function ListingForm({onSubmitted, onError}: ListingFormProps) {
       hours: readNumber(data, 'hours', 1),
       price: readNumber(data, 'price', 0),
       grades: gradeChoice === 'all' ? [...GRADES] : [gradeChoice as Grade],
-      tags: splitList(readText(data, 'tags'), ',').slice(0, MAX_TAGS),
+      tags: splitList(readText(data, 'tags'), ',').slice(0, MAX_LISTING_TAGS),
       description: readText(data, 'description'),
       outcomes: splitList(readText(data, 'outcomes'), '\n'),
       ...DEFAULT_COVER,

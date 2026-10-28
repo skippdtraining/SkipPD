@@ -6,10 +6,8 @@
  * {@link CatalogFilters} shape stays the same so the UI does not change.
  */
 
+import {SHORT_COURSE_MAX_HOURS} from '@/config/catalog';
 import type {CatalogFilters, Course} from './types';
-
-/** Courses up to this many hours count as "short" in the duration filter. */
-const SHORT_COURSE_MAX_HOURS = 2;
 
 /**
  * Returns the courses that match every active filter, in the chosen order.
@@ -77,13 +75,4 @@ function sortCourses(courses: Course[], sort: CatalogFilters['sort']): Course[] 
   if (sort === 'high') sorted.sort((a, b) => b.price - a.price);
   if (sort === 'duration') sorted.sort((a, b) => a.hours - b.hours);
   return sorted;
-}
-
-/** First letters of the first two words, e.g. "Sarah Mitchell" -> "SM". */
-export function initials(name: string): string {
-  return name
-    .split(' ')
-    .map((word) => word[0])
-    .slice(0, 2)
-    .join('');
 }

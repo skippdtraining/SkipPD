@@ -4,6 +4,8 @@
  * filtering happens in `lib/filter-courses.ts`.
  */
 
+import {PRICE_FILTER_OPTIONS, SHORT_COURSE_MAX_HOURS} from '@/config/catalog';
+import {formatPrice} from '@/lib/format';
 import {CATEGORIES, FORMATS, GRADES, type CatalogFilters} from '@/lib/types';
 
 interface FilterProps {
@@ -94,8 +96,8 @@ export function FilterSidebar({filters, onChange, onClearAll}: FilterSidebarProp
           }}
         >
           <option value="">Any duration</option>
-          <option value="short">Up to 2 hours</option>
-          <option value="long">More than 2 hours</option>
+          <option value="short">Up to {SHORT_COURSE_MAX_HOURS} hours</option>
+          <option value="long">More than {SHORT_COURSE_MAX_HOURS} hours</option>
         </select>
       </div>
 
@@ -110,9 +112,11 @@ export function FilterSidebar({filters, onChange, onClearAll}: FilterSidebarProp
           }}
         >
           <option value="">Any price</option>
-          <option value="75">Under $75</option>
-          <option value="150">Under $150</option>
-          <option value="300">Under $300</option>
+          {PRICE_FILTER_OPTIONS.map((limit) => (
+            <option key={limit} value={limit}>
+              Under {formatPrice(limit)}
+            </option>
+          ))}
         </select>
       </div>
 

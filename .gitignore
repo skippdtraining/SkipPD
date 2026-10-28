@@ -1,15 +1,15 @@
 # dependencies
-/node_modules
+node_modules
 /.pnp
 .pnp.*
 
 # testing
-/coverage
+coverage
 
 # next.js
-/.next/
-/out/
-/build
+.next/
+out/
+build
 *.tsbuildinfo
 next-env.d.ts
 

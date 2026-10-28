@@ -1,7 +1,12 @@
 # SkipPD
 
 Marketplace where teachers list professional-development (PD) training and schools or other teachers book it.
-Project plan and roadmap: [SkipPD_v2.md](SkipPD_v2.md).
+Project plan and roadmap: [docs/SkipPD_v2.md](docs/SkipPD_v2.md).
+
+```
+docs/   documentation (plan, codebase map, conventions)
+web/    the Next.js application
+```
 
 ## Stack
 Next.js (App Router, TypeScript) · Supabase (from Step 2) · Vercel hosting.
@@ -10,6 +15,7 @@ Next.js (App Router, TypeScript) · Supabase (from Step 2) · Vercel hosting.
 Requires Node.js 20.9+ (22 LTS recommended).
 
 ```bash
+cd web
 npm install
 npm run dev      # http://localhost:3000
 npm run lint

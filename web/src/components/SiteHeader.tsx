@@ -4,6 +4,8 @@
  * role-specific links (e.g. "Jobs" for teachers).
  */
 
+import {SITE, SITE_NAME} from '@/config/site';
+
 interface SiteHeaderProps {
   /** True when the "Saved" tab is active; controls which link is highlighted. */
   savedOnly: boolean;
@@ -25,9 +27,11 @@ export function SiteHeader({
 }: SiteHeaderProps) {
   return (
     <header>
-      <a className="brand" href="./" aria-label="SkipPD home">
-        <span className="logo">✧</span>Skip<b>PD</b>
-        <span className="demo">Preview</span>
+      <a className="brand" href="./" aria-label={`${SITE_NAME} home`}>
+        <span className="logo">✧</span>
+        {SITE.nameStart}
+        <b>{SITE.nameEnd}</b>
+        <span className="demo">{SITE.stageLabel}</span>
       </a>
       <nav>
         <button className={savedOnly ? '' : 'nav-active'} onClick={onExplore}>

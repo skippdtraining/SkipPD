@@ -11,6 +11,7 @@
 
 import {useState} from 'react';
 import {addRequest} from '@/lib/browser-storage';
+import {formatPrice} from '@/lib/format';
 import {readNumber, readText} from '@/lib/form-helpers';
 import type {BookingRequest, Course} from '@/lib/types';
 
@@ -55,7 +56,7 @@ export function BookingForm({course, onSubmitted, onError}: BookingFormProps) {
     <>
       <strong>{course.title}</strong>
       <p className="small-text">
-        With {course.trainer} · ${course.price} / person
+        With {course.trainer} · {formatPrice(course.price)} / person
       </p>
       <div className="notice">
         Preview: this saves the request on this device only. The trainer is not contacted,

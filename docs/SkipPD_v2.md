@@ -1,6 +1,6 @@
 # SkipPD (PD Hub) - Project Blueprint v2
 
-> Replaces `SkipPD.md`. Sections 1-2 describe the product; sections 3-8 hold the Part 1 plan.
+> Replaces `SkipPD.md`. Code lives in `web/`; see `docs/CODEBASE.md`. Sections 1-2 describe the product; sections 3-8 hold the Part 1 plan.
 
 ---
 
@@ -16,7 +16,7 @@ There are 2 account types, chosen at signup: **Teacher** or **Hiring party** (a 
 A teacher can list their own training services and can also hire other teachers' services (book as an individual).
 - **Listing a training** - fill out the training details (title, credentials, topic, format, duration, price, grade level, keywords, description, outcomes, optional image). When another teacher/school requests the training, the request appears on the teacher's **Jobs** page (visible after login), where they can respond to it.
 
-  ![Jobs page reference](<WhatsApp Image 2026-10-19 at 10.14.37 PM.jpeg>)
+  ![Jobs page reference](assets/jobs-page-reference.jpeg)
 
   Layout reference only (screenshot from a different platform): a list of incoming requests with filters, search, sort and a table. The status tabs shown do **not** apply; SkipPD's Jobs page groups bookings by the states in section 5.3.
 

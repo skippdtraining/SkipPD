@@ -1,4 +1,4 @@
-import type {Course} from './types';
+import type {Course} from '../types';
 
 /**
  * @fileoverview The six sample listings copied from the HTML POC.

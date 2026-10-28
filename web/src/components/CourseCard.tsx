@@ -3,7 +3,7 @@
  * duration, grades, tags, price and a save (heart) button.
  */
 
-import {initials} from '@/lib/filter-courses';
+import {formatPrice, gradeLabel, initials} from '@/lib/format';
 import type {Course} from '@/lib/types';
 import {CourseIllustration} from './CourseIllustration';
 
@@ -18,8 +18,6 @@ interface CourseCardProps {
 
 /** Catalog tile for a single course. */
 export function CourseCard({course, saved, onOpen, onToggleSave}: CourseCardProps) {
-  const gradeLabel = course.grades.length === 3 ? 'All grades' : course.grades.join(', ');
-
   return (
     <article className="course">
       {/* The cover is clickable; role + tabIndex + Enter make it keyboard-accessible. */}
@@ -71,7 +69,7 @@ export function CourseCard({course, saved, onOpen, onToggleSave}: CourseCardProp
         </div>
         <div className="meta">
           <span>◷ {course.hours} hours</span>
-          <span>▤ {gradeLabel}</span>
+          <span>▤ {gradeLabel(course.grades)}</span>
         </div>
         <div className="tags">
           {course.tags.map((tag) => (
@@ -82,7 +80,7 @@ export function CourseCard({course, saved, onOpen, onToggleSave}: CourseCardProp
         </div>
         <div className="card-footer">
           <div className="price">
-            <strong>${course.price}</strong> <small>/ person</small>
+            <strong>{formatPrice(course.price)}</strong> <small>/ person</small>
           </div>
           <button className="details" onClick={onOpen}>
             View course ↗

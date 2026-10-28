@@ -77,13 +77,36 @@ Each `.ts` / `.tsx` file opens with a `@fileoverview` comment that answers:
 - Add `'use client'` only to files that need browser features (state, events, localStorage). Everything else stays a server component.
 - Put styles in `globals.css` using class names. Avoid inline `style={{...}}`.
 
-## 8. Docs to keep updated
+## 8. Modularity and architecture
+
+The goal: replacing a vendor (database, email, payments, hosting) touches **one folder**, never the UI.
+
+**Layers.** A layer may import only from layers below it:
+
+```
+app/          routes: fetch data via repositories, render components
+components/   UI only: data in through props, events out through callbacks
+lib/data/     repositories: the ONLY code that talks to a database/API
+lib/          pure logic and helpers (filtering, formatting, form parsing)
+config/       settings and constants, no logic
+```
+
+**Rules**
+- **Vendor isolation.** Only `lib/data/*` may import a database SDK (e.g. `@supabase/supabase-js`). The same pattern applies later to other services: `lib/email/`, `lib/payments/`, `lib/auth/`. Each has an interface and one implementation per vendor.
+- **Interface first.** Each service has a TypeScript interface (e.g. `CourseRepository`) and a factory (`getCourseRepository()`). Code depends on the interface. Swapping vendors means adding an implementation file and changing the factory.
+- **App types, not vendor types.** Repositories convert database rows into the types in `lib/types.ts` before returning them. Vendor-generated types never leak into components.
+- **No hard-coded business values in components.** Prices, limits, thresholds and brand text go in `config/`.
+- **Secrets only via environment variables**, read in one place per service.
+- **Components stay generic.** Pass data as props instead of reading storage inside a component, unless the component's whole job is that data (e.g. `RequestList`).
+- **Don't over-abstract.** Add an interface when there is a real external dependency, not for every function.
+
+## 9. Docs to keep updated
 
 - **`docs/CODEBASE.md`**: update it in the same PR whenever you add, move or delete a file or folder.
-- **`SkipPD_v2.md`**: update it when a plan or decision changes.
+- **`docs/SkipPD_v2.md`**: update it when a plan or decision changes.
 - **`README.md`**: update it when setup or run commands change.
 
-## 9. Git
+## 10. Git
 
 - Branch names: `feature/<step-or-topic>`, `fix/<topic>`, `docs/<topic>`.
 - Commit messages: [Conventional Commits](https://www.conventionalcommits.org/), for example `feat: add booking form`, `fix: ...`, `docs: ...`, `refactor: ...`, `chore: ...`.

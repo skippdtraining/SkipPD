@@ -8,6 +8,7 @@
 
 import type {Metadata} from 'next';
 import {DM_Sans, Manrope} from 'next/font/google';
+import {SITE} from '@/config/site';
 import './globals.css';
 
 // next/font downloads the fonts at build time and serves them from our own
@@ -25,9 +26,8 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: 'SkipPD | Great teachers never stop learning',
-  description:
-    "Discover professional development led by educators. Find workshops, connect with trainers, and plan your school's next PD day.",
+  title: SITE.title,
+  description: SITE.description,
 };
 
 export default function RootLayout({children}: LayoutProps<'/'>) {

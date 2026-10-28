@@ -4,15 +4,9 @@
  * the {@link TrustBar} strip shown right below it.
  */
 
+import {POPULAR_SEARCHES} from '@/config/catalog';
 import type {Course} from '@/lib/types';
 import {CourseIllustration} from './CourseIllustration';
-
-/** Shortcuts under the search box: [button label, search text]. */
-const POPULAR_SEARCHES: Array<[string, string]> = [
-  ['Literacy', 'Literacy'],
-  ['AI in education', 'AI'],
-  ['ESL & ELL', 'ESL'],
-];
 
 interface HeroProps {
   query: string;
@@ -69,7 +63,7 @@ export function Hero({
         </form>
         <div className="popular">
           Popular:{' '}
-          {POPULAR_SEARCHES.map(([label, search]) => (
+          {POPULAR_SEARCHES.map(({label, query: search}) => (
             <button
               key={label}
               onClick={() => {

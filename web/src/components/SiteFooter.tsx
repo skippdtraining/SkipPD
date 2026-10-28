@@ -3,6 +3,8 @@
  * and the site footer.
  */
 
+import {SITE} from '@/config/site';
+
 interface TrainerBannerProps {
   onListTraining: () => void;
 }
@@ -28,9 +30,10 @@ export function SiteFooter() {
   return (
     <footer>
       <span className="brand footer-brand">
-        Skip<b>PD</b>
+        {SITE.nameStart}
+        <b>{SITE.nameEnd}</b>
       </span>
-      <span>A place for educators to grow, together.</span>
+      <span>{SITE.footerTagline}</span>
       <span>Preview · Sample listings</span>
     </footer>
   );

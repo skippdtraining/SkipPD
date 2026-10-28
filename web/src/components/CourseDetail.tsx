@@ -3,7 +3,7 @@
  * card is opened. Leads to the booking form.
  */
 
-import {initials} from '@/lib/filter-courses';
+import {formatPrice, initials} from '@/lib/format';
 import type {Course} from '@/lib/types';
 
 interface CourseDetailProps {
@@ -33,7 +33,8 @@ export function CourseDetail({course, onRequest}: CourseDetailProps) {
         ))}
       </ul>
       <div className="notice">
-        {course.hours} hours · {course.grades.join(', ')} · ${course.price} per person
+        {course.hours} hours · {course.grades.join(', ')} · {formatPrice(course.price)}{' '}
+        per person
         <br />
         Dates and school group pricing agreed with the trainer.
         <br />

@@ -14,14 +14,12 @@ npm install
 npm run dev      # http://localhost:3000
 npm run lint
 npm run build
+npm run format   # auto-format code (Prettier)
 ```
 
-## Project layout
-```
-src/app/            routes, root layout, global styles
-src/components/     UI components (catalog, cards, modals, forms)
-src/lib/            types, sample data, filtering, client storage helpers
-```
+## Docs
+- [docs/CODEBASE.md](docs/CODEBASE.md): what every file and folder is, and why.
+- [docs/CONVENTIONS.md](docs/CONVENTIONS.md): coding style and documentation rules.
 
 ## Workflow
 - `main` holds released versions only (tagged `vX.Y.Z`); Vercel production deploys from it.

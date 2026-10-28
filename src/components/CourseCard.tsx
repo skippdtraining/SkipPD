@@ -1,67 +1,88 @@
-import type { Course } from "@/lib/types";
-import { initials } from "@/lib/filter-courses";
-import CourseIllustration from "./CourseIllustration";
+/**
+ * @fileoverview One course tile in the catalog grid: cover, title, trainer,
+ * duration, grades, tags, price and a save (heart) button.
+ */
 
-interface Props {
+import {initials} from '@/lib/filter-courses';
+import type {Course} from '@/lib/types';
+import {CourseIllustration} from './CourseIllustration';
+
+interface CourseCardProps {
   course: Course;
+  /** Whether the heart is filled. */
   saved: boolean;
+  /** Opens the course detail dialog. */
   onOpen: () => void;
   onToggleSave: () => void;
 }
 
-export default function CourseCard({ course: c, saved, onOpen, onToggleSave }: Props) {
+/** Catalog tile for a single course. */
+export function CourseCard({course, saved, onOpen, onToggleSave}: CourseCardProps) {
+  const gradeLabel = course.grades.length === 3 ? 'All grades' : course.grades.join(', ');
+
   return (
     <article className="course">
+      {/* The cover is clickable; role + tabIndex + Enter make it keyboard-accessible. */}
       <div
         className="cover"
         onClick={onOpen}
         role="button"
         tabIndex={0}
-        aria-label={`View ${c.title}`}
-        onKeyDown={(e) => e.key === "Enter" && onOpen()}
+        aria-label={`View ${course.title}`}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') onOpen();
+        }}
       >
-        {c.image ? (
-          // eslint-disable-next-line @next/next/no-img-element -- user uploads; switch to next/image with Supabase Storage in Step 4
-          <img src={c.image} alt={c.title} />
+        {course.image ? (
+          // Plain <img>: the image is a data URL from the browser, which
+          // next/image cannot optimise. Switch to next/image in Step 4.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={course.image} alt={course.title} />
         ) : (
-          <CourseIllustration type={c.type} color={c.color} accent={c.accent} />
+          <CourseIllustration
+            type={course.type}
+            color={course.color}
+            accent={course.accent}
+          />
         )}
-        <span className="badge">◷ {c.format}</span>
+        <span className="badge">◷ {course.format}</span>
         <button
-          className={`bookmark ${saved ? "on" : ""}`}
-          onClick={(e) => {
-            e.stopPropagation();
+          className={`bookmark ${saved ? 'on' : ''}`}
+          onClick={(event) => {
+            // Stop the click from also opening the course via the cover.
+            event.stopPropagation();
             onToggleSave();
           }}
-          aria-label={`${saved ? "Unsave" : "Save"} ${c.title}`}
+          aria-label={`${saved ? 'Unsave' : 'Save'} ${course.title}`}
           aria-pressed={saved}
         >
-          {saved ? "♥" : "♡"}
+          {saved ? '♥' : '♡'}
         </button>
       </div>
+
       <div className="body">
-        <div className="category">{c.category}</div>
+        <div className="category">{course.category}</div>
         <h3>
-          <button onClick={onOpen}>{c.title}</button>
+          <button onClick={onOpen}>{course.title}</button>
         </h3>
         <div className="trainer">
-          <span className="avatar">{initials(c.trainer)}</span>
-          {c.trainer}
+          <span className="avatar">{initials(course.trainer)}</span>
+          {course.trainer}
         </div>
         <div className="meta">
-          <span>◷ {c.hours} hours</span>
-          <span>▤ {c.grades.length === 3 ? "All grades" : c.grades.join(", ")}</span>
+          <span>◷ {course.hours} hours</span>
+          <span>▤ {gradeLabel}</span>
         </div>
         <div className="tags">
-          {c.tags.map((t) => (
-            <span key={t} className="tag">
-              {t}
+          {course.tags.map((tag) => (
+            <span key={tag} className="tag">
+              {tag}
             </span>
           ))}
         </div>
         <div className="card-footer">
           <div className="price">
-            <strong>${c.price}</strong> <small>/ person</small>
+            <strong>${course.price}</strong> <small>/ person</small>
           </div>
           <button className="details" onClick={onOpen}>
             View course ↗

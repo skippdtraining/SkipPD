@@ -1,51 +1,69 @@
-"use client";
+/**
+ * @fileoverview "Request training" form shown in a dialog after clicking
+ * "Request a session" on a course.
+ *
+ * Currently saves the request in the browser (same as the POC). In Step 6 it
+ * creates a booking in the database and emails the trainer; in Step 3 the
+ * name / email fields are pre-filled from the logged-in account.
+ */
 
-import { useState } from "react";
-import { addRequest } from "@/lib/saved-store";
-import type { Course } from "@/lib/types";
+'use client';
 
-interface Props {
+import {useState} from 'react';
+import {addRequest} from '@/lib/browser-storage';
+import {readNumber, readText} from '@/lib/form-helpers';
+import type {BookingRequest, Course} from '@/lib/types';
+
+interface BookingFormProps {
   course: Course;
+  /** Called after the request was saved. */
   onSubmitted: () => void;
+  /** Called with a user-facing message when saving failed. */
   onError: (message: string) => void;
 }
 
-/** Booking request form. Saves to this browser until Step 6 (booking requests stored in the database). */
-export default function BookingForm({ course: c, onSubmitted, onError }: Props) {
-  // Computed once on mount so the min date does not change between renders.
-  const [today] = useState(() => new Date().toLocaleDateString("en-CA"));
+/** Booking request form for one course. */
+export function BookingForm({course, onSubmitted, onError}: BookingFormProps) {
+  // Today's date as YYYY-MM-DD ("en-CA" locale uses that format), so the date
+  // picker cannot select past days. Computed once so it is stable on re-render.
+  const [today] = useState(() => new Date().toLocaleDateString('en-CA'));
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const request: BookingRequest = {
+      id: Date.now(),
+      courseId: course.id,
+      course: course.title,
+      trainer: course.trainer,
+      name: readText(data, 'name'),
+      email: readText(data, 'email'),
+      audience: readText(data, 'audience'),
+      participants: readNumber(data, 'participants', 1),
+      school: readText(data, 'school'),
+      date: readText(data, 'date'),
+      message: readText(data, 'message'),
+    };
+    if (addRequest(request)) {
+      onSubmitted();
+    } else {
+      onError('Browser storage is full. Remove some requests and try again.');
+    }
+  }
 
   return (
     <>
-      <strong>{c.title}</strong>
-      <p style={{ fontSize: 12 }}>
-        With {c.trainer} · ${c.price} / person
+      <strong>{course.title}</strong>
+      <p className="small-text">
+        With {course.trainer} · ${course.price} / person
       </p>
       <div className="notice">
-        Preview: this saves the request on this device only. The trainer is not contacted, no date is reserved and no payment is taken.
+        Preview: this saves the request on this device only. The trainer is not contacted,
+        no date is reserved and no payment is taken.
       </div>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          const d = new FormData(e.currentTarget);
-          const str = (k: string) => String(d.get(k) ?? "").trim();
-          const ok = addRequest({
-            id: Date.now(),
-            courseId: c.id,
-            course: c.title,
-            trainer: c.trainer,
-            name: str("name"),
-            email: str("email"),
-            audience: str("audience"),
-            participants: Number(d.get("participants")) || 1,
-            school: str("school"),
-            date: str("date"),
-            message: str("message"),
-          });
-          if (ok) onSubmitted();
-          else onError("Browser storage is full. Remove some requests and try again.");
-        }}
-      >
+
+      {/* Field limits (maxLength, min, max) match the POC. */}
+      <form onSubmit={handleSubmit}>
         <div className="two">
           <label className="field">
             Your name
@@ -67,7 +85,14 @@ export default function BookingForm({ course: c, onSubmitted, onError }: Props) 
           </label>
           <label className="field">
             Participants
-            <input name="participants" type="number" min={1} max={10000} defaultValue={1} required />
+            <input
+              name="participants"
+              type="number"
+              min={1}
+              max={10000}
+              defaultValue={1}
+              required
+            />
           </label>
         </div>
         <div className="two">

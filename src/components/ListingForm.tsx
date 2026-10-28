@@ -1,69 +1,106 @@
-"use client";
+/**
+ * @fileoverview "Share your expertise" form for creating a training listing.
+ *
+ * Currently saves the listing in the browser (same as the POC). In Step 4 it
+ * is only available to teacher accounts, writes to the database, and uploads
+ * the image to Supabase Storage instead of storing it as text.
+ */
 
-import { addListing } from "@/lib/saved-store";
-import { CATEGORIES, FORMATS, GRADES, type Category, type Course, type Format, type Grade } from "@/lib/types";
+'use client';
 
-interface Props {
+import {addListing} from '@/lib/browser-storage';
+import {readFileAsDataUrl, readNumber, readText, splitList} from '@/lib/form-helpers';
+import {
+  CATEGORIES,
+  FORMATS,
+  GRADES,
+  type Category,
+  type Course,
+  type Format,
+  type Grade,
+} from '@/lib/types';
+
+/** Largest accepted cover image: 1 MB (localStorage holds only ~5 MB total). */
+const MAX_IMAGE_BYTES = 1024 * 1024;
+
+/** Accepted cover image types. */
+const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+/** Listings keep at most this many search keywords, like the POC. */
+const MAX_TAGS = 5;
+
+/** Default look for listings without an image (purple "books" artwork). */
+const DEFAULT_COVER = {color: '#e7dff6', accent: '#8264ad', type: 'books'} as const;
+
+interface ListingFormProps {
+  /** Called after the listing was saved. */
   onSubmitted: () => void;
+  /** Called with a user-facing message when validation or saving failed. */
   onError: (message: string) => void;
 }
 
-const MAX_IMAGE_BYTES = 1024 * 1024;
-const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+/** Form for a new training listing. */
+export function ListingForm({onSubmitted, onError}: ListingFormProps) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = new FormData(form);
 
-function readImage(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("Could not read image"));
-    reader.readAsDataURL(file);
-  });
-}
+    // The file input is read directly: FormData always contains an (empty)
+    // File object for it, even when nothing was chosen.
+    const imageInput = form.elements.namedItem('image') as HTMLInputElement;
+    const imageFile = imageInput.files?.[0];
+    if (
+      imageFile &&
+      (imageFile.size > MAX_IMAGE_BYTES || !IMAGE_TYPES.includes(imageFile.type))
+    ) {
+      onError('Choose a JPG, PNG, or WebP image under 1 MB.');
+      return;
+    }
 
-/** Training listing form. Saves to this browser until Step 4 (teacher listings stored in the database). */
-export default function ListingForm({ onSubmitted, onError }: Props) {
+    const gradeChoice = readText(data, 'grades');
+    // Casts are safe: the <select> options come from the same constant lists.
+    const course: Course = {
+      id: Date.now(),
+      title: readText(data, 'title'),
+      trainer: readText(data, 'trainer'),
+      role: readText(data, 'role'),
+      category: readText(data, 'category') as Category,
+      format: readText(data, 'format') as Format,
+      hours: readNumber(data, 'hours', 1),
+      price: readNumber(data, 'price', 0),
+      grades: gradeChoice === 'all' ? [...GRADES] : [gradeChoice as Grade],
+      tags: splitList(readText(data, 'tags'), ',').slice(0, MAX_TAGS),
+      description: readText(data, 'description'),
+      outcomes: splitList(readText(data, 'outcomes'), '\n'),
+      ...DEFAULT_COVER,
+      image: imageFile ? await readFileAsDataUrl(imageFile) : undefined,
+    };
+
+    if (addListing(course)) {
+      onSubmitted();
+    } else {
+      onError('Browser storage is full. Try a smaller image.');
+    }
+  }
+
   return (
     <>
       <div className="notice">
-        Preview: this listing is saved in this browser only and is not visible to other visitors.
+        Preview: this listing is saved in this browser only and is not visible to other
+        visitors.
       </div>
-      <form
-        onSubmit={async (e) => {
-          e.preventDefault();
-          const form = e.currentTarget;
-          const file = (form.elements.namedItem("image") as HTMLInputElement).files?.[0];
-          if (file && (file.size > MAX_IMAGE_BYTES || !IMAGE_TYPES.includes(file.type))) {
-            onError("Choose a JPG, PNG, or WebP image under 1 MB.");
-            return;
-          }
-          const d = new FormData(form);
-          const str = (k: string) => String(d.get(k) ?? "").trim();
-          const grades = str("grades");
-          const course: Course = {
-            id: Date.now(),
-            title: str("title"),
-            trainer: str("trainer"),
-            role: str("role"),
-            category: str("category") as Category,
-            format: str("format") as Format,
-            hours: Number(d.get("hours")),
-            price: Number(d.get("price")),
-            grades: grades === "all" ? [...GRADES] : [grades as Grade],
-            tags: str("tags").split(",").map((x) => x.trim()).filter(Boolean).slice(0, 5),
-            description: str("description"),
-            outcomes: str("outcomes").split("\n").map((x) => x.trim()).filter(Boolean),
-            color: "#e7dff6",
-            accent: "#8264ad",
-            type: "books",
-            image: file ? await readImage(file) : undefined,
-          };
-          if (addListing(course)) onSubmitted();
-          else onError("Browser storage is full. Try a smaller image.");
-        }}
-      >
+
+      {/* Field limits (maxLength, min, max) match the POC. */}
+      <form onSubmit={handleSubmit}>
         <label className="field">
           Course title
-          <input name="title" maxLength={100} placeholder="Give your training a clear, specific name" required />
+          <input
+            name="title"
+            maxLength={100}
+            placeholder="Give your training a clear, specific name"
+            required
+          />
         </label>
         <div className="two">
           <label className="field">
@@ -72,23 +109,28 @@ export default function ListingForm({ onSubmitted, onError }: Props) {
           </label>
           <label className="field">
             Experience / credentials
-            <input name="role" maxLength={180} placeholder="e.g., Literacy coach · 12 years teaching" required />
+            <input
+              name="role"
+              maxLength={180}
+              placeholder="e.g., Literacy coach · 12 years teaching"
+              required
+            />
           </label>
         </div>
         <div className="two">
           <label className="field">
             Topic
             <select name="category">
-              {CATEGORIES.map((x) => (
-                <option key={x}>{x}</option>
+              {CATEGORIES.map((category) => (
+                <option key={category}>{category}</option>
               ))}
             </select>
           </label>
           <label className="field">
             Format
             <select name="format">
-              {FORMATS.map((x) => (
-                <option key={x}>{x}</option>
+              {FORMATS.map((format) => (
+                <option key={format}>{format}</option>
               ))}
             </select>
           </label>
@@ -107,14 +149,19 @@ export default function ListingForm({ onSubmitted, onError }: Props) {
           Grade level
           <select name="grades">
             <option value="all">All grades</option>
-            {GRADES.map((x) => (
-              <option key={x}>{x}</option>
+            {GRADES.map((grade) => (
+              <option key={grade}>{grade}</option>
             ))}
           </select>
         </label>
         <label className="field">
           Keywords (comma separated)
-          <input name="tags" placeholder="Phonics, reading, literacy" maxLength={150} required />
+          <input
+            name="tags"
+            placeholder="Phonics, reading, literacy"
+            maxLength={150}
+            required
+          />
         </label>
         <label className="field">
           Course description
@@ -126,7 +173,7 @@ export default function ListingForm({ onSubmitted, onError }: Props) {
         </label>
         <label className="field">
           Course image (optional, JPG / PNG / WebP, max 1 MB)
-          <input type="file" name="image" accept={IMAGE_TYPES.join(",")} />
+          <input type="file" name="image" accept={IMAGE_TYPES.join(',')} />
         </label>
         <button className="btn wide">Add training to catalog</button>
       </form>

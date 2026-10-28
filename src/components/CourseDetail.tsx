@@ -1,31 +1,39 @@
-import type { Course } from "@/lib/types";
+/**
+ * @fileoverview Full description of one course, shown in a dialog when a
+ * card is opened. Leads to the booking form.
+ */
 
-interface Props {
+import {initials} from '@/lib/filter-courses';
+import type {Course} from '@/lib/types';
+
+interface CourseDetailProps {
   course: Course;
+  /** Called by the "Request a session" button. */
   onRequest: () => void;
 }
 
-export default function CourseDetail({ course: c, onRequest }: Props) {
+/** Course details: trainer, description, outcomes, price and a CTA. */
+export function CourseDetail({course, onRequest}: CourseDetailProps) {
   return (
     <>
       <div className="category">
-        {c.category} · {c.format}
+        {course.category} · {course.format}
       </div>
-      <h3 style={{ marginTop: 10 }}>{c.title}</h3>
+      <h3 className="detail-title">{course.title}</h3>
       <div className="trainer">
-        <span className="avatar">{c.trainer[0]}</span>
-        <strong>{c.trainer}</strong>
+        <span className="avatar">{initials(course.trainer)}</span>
+        <strong>{course.trainer}</strong>
       </div>
-      <p style={{ fontSize: 12 }}>{c.role}</p>
-      <p>{c.description}</p>
+      <p className="small-text">{course.role}</p>
+      <p>{course.description}</p>
       <h4>What you’ll take away</h4>
       <ul>
-        {c.outcomes.map((o) => (
-          <li key={o}>{o}</li>
+        {course.outcomes.map((outcome) => (
+          <li key={outcome}>{outcome}</li>
         ))}
       </ul>
       <div className="notice">
-        {c.hours} hours · {c.grades.join(", ")} · ${c.price} per person
+        {course.hours} hours · {course.grades.join(', ')} · ${course.price} per person
         <br />
         Dates and school group pricing agreed with the trainer.
         <br />

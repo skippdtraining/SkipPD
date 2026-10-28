@@ -3,7 +3,7 @@
  *
  * Every component and helper imports its types from here, so there is one
  * source of truth for what a "course" or a "booking request" looks like.
- * In Step 2 these shapes will mirror the Supabase database tables.
+ * In Step 3 these shapes will mirror the Supabase database tables.
  */
 
 /**
@@ -47,7 +47,7 @@ export interface Course {
   id: number;
   title: string;
   category: Category;
-  /** Trainer display name. Becomes a link to the trainer's profile in Step 3. */
+  /** Trainer display name. Becomes a link to the trainer's profile in Step 4. */
   trainer: string;
   /** Trainer experience / credentials line, e.g. "Literacy coach · 12 years". */
   role: string;
@@ -67,7 +67,7 @@ export interface Course {
   /** Cover accent colour (hex), used by the illustration. */
   accent: string;
   type: CoverType;
-  /** Optional uploaded cover image as a data URL. Moves to file storage in Step 4. */
+  /** Optional uploaded cover image as a data URL. Moves to file storage in Step 5. */
   image?: string;
 }
 

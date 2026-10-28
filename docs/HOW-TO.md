@@ -30,7 +30,7 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Price / grade display format | `web/src/lib/format.ts` | |
 | Search / filter / sort logic | `web/src/lib/filter-courses.ts` | |
 | Where course data comes from (database) | `web/src/lib/data/course-repository.ts` → `getCourseRepository()` | See recipe below. |
-| Sample courses (temporary) | `web/src/lib/data/sample-courses.ts` | Removed in Step 2. |
+| Sample courses (temporary) | `web/src/lib/data/sample-courses.ts` | Removed in Step 3. |
 | Required PR reviewer | `.github/CODEOWNERS` | |
 | Files git ignores | `.gitignore` | |
 
@@ -40,7 +40,7 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 
 ### Add a new topic
 1. Add the name to `CATEGORIES` in `web/src/lib/types.ts`.
-2. That's it for the UI. From Step 2, also add it to the database (see the migration notes in `CODEBASE.md` once they exist).
+2. That's it for the UI. From Step 3, also add it to the database (see the migration notes in `CODEBASE.md` once they exist).
 
 ### Add a new setting
 1. Add a documented constant to the right file in `web/src/config/` (`site.ts` for branding, `catalog.ts` for catalog business rules, or a new file for a new area).

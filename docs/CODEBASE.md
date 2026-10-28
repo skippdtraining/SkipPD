@@ -23,8 +23,8 @@ Browser request "/"
   -> lib/*                    types, filtering, formatting, browser storage
 ```
 
-- **Server vs. browser:** files in `app/` run on the server by default. That is where database reads will happen from Step 2. Files marked `'use client'` also run in the browser, because they react to clicks and typing.
-- **Temporary parts:** sample data and browser storage reproduce the POC behaviour. The database replaces them step by step: courses in Step 2, listings in Step 4, saved courses in Step 5, and requests in Step 6.
+- **Server vs. browser:** files in `app/` run on the server by default. That is where database reads will happen from Step 3. Files marked `'use client'` also run in the browser, because they react to clicks and typing.
+- **Temporary parts:** sample data and browser storage reproduce the POC behaviour. The database replaces them step by step: courses in Step 3, listings in Step 5, saved courses in Step 6, and requests in Step 7.
 
 ---
 
@@ -77,7 +77,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | File | What / why |
 |---|---|
 | `HomePage.tsx` | **The conductor.** Owns page state (filters, which dialog is open, toast message), combines sample and browser listings, and wires all the sections together. Start reading here. |
-| `SiteHeader.tsx` | Sticky top bar: logo, Explore / Saved / My requests, and "List your training". Step 3 adds login and role-based links. |
+| `SiteHeader.tsx` | Sticky top bar: logo, Explore / Saved / My requests, and "List your training". Step 4 adds login and role-based links. |
 | `Hero.tsx` | `Hero`: headline, search box, popular searches, artwork. `TrustBar`: the strip of selling points under it. |
 | `FilterSidebar.tsx` | `CategoryChips` (topic buttons) and `FilterSidebar` (format, grade, duration, price). They only report changes; the filtering itself is in `lib/filter-courses.ts`. |
 | `CatalogGrid.tsx` | Result count, sort menu, the grid of `CourseCard`s, and the "no results" message. |
@@ -85,8 +85,8 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `CourseIllustration.tsx` | Built-in SVG cover art for courses without an image, with one drawing per topic type. Copied from the POC. |
 | `Modal.tsx` | Reusable pop-up built on the native `<dialog>` element. Closes on Esc, the × button, or a click outside. |
 | `CourseDetail.tsx` | Dialog content: the full course description and the "Request a session" button. |
-| `BookingForm.tsx` | Dialog content: the booking request form. Saves to the browser for now; Step 6 saves to the DB. |
-| `ListingForm.tsx` | Dialog content: the new-listing form, with image validation (max 1 MB). Saves to the browser for now; Step 4 saves to the DB. |
+| `BookingForm.tsx` | Dialog content: the booking request form. Saves to the browser for now; Step 7 saves to the DB. |
+| `ListingForm.tsx` | Dialog content: the new-listing form, with image validation (max 1 MB). Saves to the browser for now; Step 5 saves to the DB. |
 | `RequestList.tsx` | Dialog content: "My booking requests", each with a Remove button. |
 | `SiteFooter.tsx` | `TrainerBanner` ("Become a PD trainer") and the page `SiteFooter`. |
 
@@ -102,15 +102,15 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | File | What / why |
 |---|---|
 | `course-repository.ts` | The `CourseRepository` **interface** (what the app can ask about courses) and `getCourseRepository()`, the one line that picks the backend. |
-| `sample-course-repository.ts` | **Temporary.** Implementation backed by the sample data. Step 2 adds `supabase-course-repository.ts` next to it. |
-| `sample-courses.ts` | **Temporary.** The six POC courses; becomes DB seed data in Step 2. |
+| `sample-course-repository.ts` | **Temporary.** Implementation backed by the sample data. Step 3 adds `supabase-course-repository.ts` next to it. |
+| `sample-courses.ts` | **Temporary.** The six POC courses; becomes DB seed data in Step 3. |
 
 ## `src/lib/`: logic and helpers (no layout)
 
 | File | What / why |
 |---|---|
-| `types.ts` | **Single source of truth for data shapes:** `Course`, `BookingRequest`, `CatalogFilters`, the category, grade and format lists, and the default filters. In Step 2 these match the database tables. |
-| `filter-courses.ts` | Pure search, filter and sort function. Moves to DB queries in Step 2 without changing the filter shape. |
+| `types.ts` | **Single source of truth for data shapes:** `Course`, `BookingRequest`, `CatalogFilters`, the category, grade and format lists, and the default filters. In Step 3 these match the database tables. |
+| `filter-courses.ts` | Pure search, filter and sort function. Moves to DB queries in Step 3 without changing the filter shape. |
 | `local-store.ts` | Generic helper that keeps a list in `localStorage` and re-renders React when it changes, using `useSyncExternalStore`. |
 | `browser-storage.ts` | **Temporary.** The three browser lists: saved ids, own listings, and requests. Components only call these functions, so switching to the DB later touches one place. |
 | `format.ts` | Display helpers: `initials`, `gradeLabel`, `formatPrice`. |
@@ -121,4 +121,5 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 
 ## Changelog of this map
 - **Step 1:** initial structure; `HomeClient` split into section components; docs added.
+- **Roadmap change:** new Step 2 (UI changes) inserted; all later step numbers in docs and code comments shifted by one.
 - **Step 1 (modularity):** code moved to `web/`, docs to `docs/`; added `config/`, `lib/data/` repository layer, `lib/format.ts`.

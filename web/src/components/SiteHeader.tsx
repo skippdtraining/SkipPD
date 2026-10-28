@@ -1,6 +1,6 @@
 /**
  * @fileoverview Top navigation bar. Sticky (see `header` in globals.css) so
- * it stays visible while scrolling. Step 3 adds login / logout and
+ * it stays visible while scrolling. Step 4 adds login / logout and
  * role-specific links (e.g. "Jobs" for teachers).
  */
 

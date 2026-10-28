@@ -1,6 +1,6 @@
 /**
  * @fileoverview {@link CourseRepository} backed by the hard-coded POC sample
- * courses. TEMPORARY: replaced by a Supabase implementation in Step 2.
+ * courses. TEMPORARY: replaced by a Supabase implementation in Step 3.
  */
 
 import type {CourseRepository} from './course-repository';

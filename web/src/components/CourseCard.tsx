@@ -33,7 +33,7 @@ export function CourseCard({course, saved, onOpen, onToggleSave}: CourseCardProp
       >
         {course.image ? (
           // Plain <img>: the image is a data URL from the browser, which
-          // next/image cannot optimise. Switch to next/image in Step 4.
+          // next/image cannot optimise. Switch to next/image in Step 5.
           // eslint-disable-next-line @next/next/no-img-element
           <img src={course.image} alt={course.title} />
         ) : (

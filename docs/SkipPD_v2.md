@@ -62,6 +62,8 @@ Optional later improvements: attendance check-in via QR code / link at the sessi
 | Market | USA (USD, US grade bands, US schools) |
 | Accounts | Separate account types (Teacher / School). Teachers can also book. |
 | Formats | Live online + In person. **Self-paced deferred.** |
+| Product name | SkipPD |
+| Roadmap change | Step 2 added for UI changes after the Step 1 review; later steps shifted by one |
 | Proof of training | Hiring party confirms + evidence fallback (section 2.1) |
 
 ---
@@ -141,7 +143,7 @@ requested -> negotiating <-> negotiating -> accepted -> paid -> delivered -> com
  rejected      rejected                    cancelled  cancelled  disputed -> completed | refunded
 ```
 - Only the party who did *not* make the latest proposal can accept it.
-- Until payments exist (step 10), `accepted` goes straight to `scheduled`/`delivered`.
+- Until payments exist (step 11), `accepted` goes straight to `scheduled`/`delivered`.
 
 ### 5.4 Difficulty ranking
 | Easy | Medium | Hard (later) |
@@ -157,51 +159,53 @@ requested -> negotiating <-> negotiating -> accepted -> paid -> delivered -> com
 
 | # | Step | Done when |
 |---|---|---|
-| 1 | Repo + Next.js skeleton, port POC UI as static pages, deploy to Vercel | POC look-alike live on a Vercel URL |
-| 2 | Supabase project, initial schema, seed the 6 sample courses; catalog/search/filters/sort read from DB | Live site shows DB data; adding a row in Supabase shows on site |
-| 3 | Auth: signup with role, login/logout, profile page | Can create Teacher and School accounts; header changes per role |
-| 4 | Listing CRUD for teachers + image upload; RLS policies | Teacher creates/edits/deletes own listing; school cannot list |
-| 5 | Saved listings per user | Saved items persist across devices |
-| 6 | Booking requests; "My requests" (requester) and "Jobs" (trainer) pages | Request appears on trainer's Jobs page |
-| 7 | Negotiation (accept / counter / reject) + email notifications | Full negotiation round-trip works with emails |
-| 8 | Chat per booking (realtime) | Both parties chat live on a booking |
-| 9 | Completion flow: delivered, confirm, auto-confirm, dispute, evidence upload, minimal admin page | A booking can reach `completed` or `disputed` |
-| 10 | Stripe Connect: trainer onboarding, payment on accept, payout on completion | Test-mode payment end to end |
-| 11 | Later: reviews, trainer profiles, self-paced, PD certificates, Google login, analytics | - |
+| 1 ✅ | Repo + Next.js skeleton, port POC UI as static pages, deploy to Vercel | POC look-alike live on a Vercel URL |
+| 2 | UI changes: frontend design revisions agreed after the Step 1 review (header, layout, styling); no backend work | Revised design live on a Vercel preview and approved by the owner |
+| 3 | Supabase project, initial schema, seed the 6 sample courses; catalog/search/filters/sort read from DB | Live site shows DB data; adding a row in Supabase shows on site |
+| 4 | Auth: signup with role, login/logout, profile page | Can create Teacher and School accounts; header changes per role |
+| 5 | Listing CRUD for teachers + image upload; RLS policies | Teacher creates/edits/deletes own listing; school cannot list |
+| 6 | Saved listings per user | Saved items persist across devices |
+| 7 | Booking requests; "My requests" (requester) and "Jobs" (trainer) pages | Request appears on trainer's Jobs page |
+| 8 | Negotiation (accept / counter / reject) + email notifications | Full negotiation round-trip works with emails |
+| 9 | Chat per booking (realtime) | Both parties chat live on a booking |
+| 10 | Completion flow: delivered, confirm, auto-confirm, dispute, evidence upload, minimal admin page | A booking can reach `completed` or `disputed` |
+| 11 | Stripe Connect: trainer onboarding, payment on accept, payout on completion | Test-mode payment end to end |
+| 12 | Later: reviews, trainer profiles, self-paced, PD certificates, Google login, analytics | - |
 
 Rule: do not start step N+1 until step N is deployed and manually tested.
 
 ---
 
 ## 7. Open Questions (to decide before the relevant step)
-1. **Platform fee** - what % does SkipPD keep? (step 10)
-2. **Group pricing** - always price x participants, or can trainers quote a flat group price during negotiation? (step 7)
-3. **Cancellation / refund policy** - who can cancel after payment, and how much is refunded? (step 10)
-4. **Auto-confirm window** - 7 days OK? (step 9)
-5. **Trainer vetting** - anyone can list, or manual approval / credential check first? (step 4)
-6. **In-person travel costs** - part of the price, or negotiated separately? (step 7)
-7. **Who is admin** - you only, or a team? (step 9)
-8. **Product name** - "SkipPD" or "PD Hub"? (step 1, branding)
+1. **Platform fee** - what % does SkipPD keep? (step 11)
+2. **Group pricing** - always price x participants, or can trainers quote a flat group price during negotiation? (step 8)
+3. **Cancellation / refund policy** - who can cancel after payment, and how much is refunded? (step 11)
+4. **Auto-confirm window** - 7 days OK? (step 10)
+5. **Trainer vetting** - anyone can list, or manual approval / credential check first? (step 5)
+6. **In-person travel costs** - part of the price, or negotiated separately? (step 8)
+7. **Who is admin** - you only, or a team? (step 10)
+8. ~~**Product name**~~ - decided: **SkipPD**.
 9. **Privacy** - will any student data ever be stored (e.g. in evidence photos)? If yes, FERPA/COPPA considerations apply. Recommendation: forbid student-identifiable data in uploads.
 
 ---
 
-## 8. Part 2 (next step) - Steps 1 and 2 of the roadmap
+## 8. Current step - Step 2: UI changes
 
-### Prerequisites (you)
-- Install Node.js LTS (20+) and Git
-- Create free accounts: GitHub, Vercel, Supabase
+**Status:** Step 1 merged into `dev`. Step 2 in progress on branch `feature/step-2-ui-changes`.
 
-### Step 1 - Skeleton + deploy
-1. Create Next.js app (TypeScript) and GitHub repo.
-2. Port the POC layout into components: header, hero, filters, course card, course detail, forms.
-3. Keep sample data in a local file for now.
-4. Connect repo to Vercel and deploy.
-**Checkpoint:** live URL matches the POC visually.
+### Step 1 - Skeleton + deploy (done)
+Next.js app in `web/`, POC UI ported into documented components, sample data in a local file, Vercel connected (Root Directory `web`).
 
-### Step 2 - Database-backed catalog
-1. Create Supabase project; add categories and listings tables.
+### Step 2 - UI changes (current)
+1. Collect the owner's frontend change list (layout, header, styling, content).
+2. Apply the changes on `feature/step-2-ui-changes`; keep using `config/` and CSS variables so changes stay modular.
+3. Review on the Vercel preview URL of the PR.
+**Checkpoint:** owner approves the revised design; PR merged into `dev`.
+
+### Step 3 - Database-backed catalog (next)
+Prerequisite (owner): create the Supabase project and share the Project URL + publishable key.
+1. Add categories and listings tables in Supabase.
 2. Seed the 6 POC courses.
-3. Replace local sample data with DB queries (search, filters, sort on the server).
+3. Add a Supabase `CourseRepository`; search, filters and sort run on the server.
 4. Store Supabase keys as Vercel environment variables (never commit them).
 **Checkpoint:** editing a course in the Supabase dashboard changes the live site.

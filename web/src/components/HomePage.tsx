@@ -4,7 +4,7 @@
  * It contains no layout details of its own; those live in each component.
  *
  * Why a separate client component: `app/page.tsx` is a server component
- * (it will load courses from the database in Step 2). Anything that reacts
+ * (it will load courses from the database in Step 3). Anything that reacts
  * to clicks must run in the browser, which requires 'use client'.
  */
 
@@ -42,7 +42,7 @@ const DIALOG_TITLES = {
 } as const;
 
 interface HomePageProps {
-  /** Catalog courses supplied by the server (sample data until Step 2). */
+  /** Catalog courses supplied by the server (sample data until Step 3). */
   courses: Course[];
 }
 

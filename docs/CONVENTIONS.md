@@ -102,6 +102,7 @@ config/       settings and constants, no logic
 
 ## 9. Docs to keep updated
 
+- **`docs/HOW-TO.md`**: update it in the same PR whenever you add a setting or change where something lives.
 - **`docs/CODEBASE.md`**: update it in the same PR whenever you add, move or delete a file or folder.
 - **`docs/SkipPD_v2.md`**: update it when a plan or decision changes.
 - **`README.md`**: update it when setup or run commands change.

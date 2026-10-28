@@ -33,11 +33,13 @@ Browser request "/"
 | Path | What / why |
 |---|---|
 | `README.md` | Short intro, how to run, branch workflow. |
+| `AGENTS.md` | Start-here guide for AI agents and new contributors: which docs to read, working rules. |
 | `.github/CODEOWNERS` | Makes `@skippdtraining` the required reviewer for every PR. |
 | `.gitignore` | Files git must never commit (`node_modules`, build output, `.env*` secrets, the old `SkipPD.md`). |
 | `docs/` | **All documentation**, kept separate from code. |
 | `docs/SkipPD_v2.md` | Project blueprint: features, decisions, plan, roadmap, open questions. |
 | `docs/CODEBASE.md` | This file. |
+| `docs/HOW-TO.md` | Task-based lookup: which file to edit for common changes, plus recipes. |
 | `docs/CONVENTIONS.md` | Code style, documentation and modularity rules. |
 | `docs/assets/` | Images used by the docs (e.g. `jobs-page-reference.jpeg`). |
 | `web/` | **The Next.js application.** Run all npm commands inside this folder. |

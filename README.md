@@ -26,6 +26,8 @@ npm run format   # auto-format code (Prettier)
 ## Docs
 - [docs/CODEBASE.md](docs/CODEBASE.md): what every file and folder is, and why.
 - [docs/CONVENTIONS.md](docs/CONVENTIONS.md): coding style and documentation rules.
+- [docs/HOW-TO.md](docs/HOW-TO.md): which file to edit for common changes.
+- [AGENTS.md](AGENTS.md): start-here guide for AI agents and new contributors.
 
 ## Workflow
 - `main` holds released versions only (tagged `vX.Y.Z`); Vercel production deploys from it.

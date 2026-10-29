@@ -13,13 +13,6 @@ export const SHORT_COURSE_MAX_HOURS = 2;
 /** "Under $X" options in the price filter, in USD. */
 export const PRICE_FILTER_OPTIONS = [75, 150, 300];
 
-/** Shortcuts under the search box. */
-export const POPULAR_SEARCHES = [
-  {label: 'Literacy', query: 'Literacy'},
-  {label: 'AI in education', query: 'AI'},
-  {label: 'ESL & ELL', query: 'ESL'},
-];
-
 /** Listings keep at most this many search keywords. */
 export const MAX_LISTING_TAGS = 5;
 
@@ -28,3 +21,6 @@ export const MAX_IMAGE_BYTES = 1024 * 1024;
 
 /** Accepted cover image types. */
 export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+/** Longest custom topic a trainer can type when choosing "Other". */
+export const MAX_CUSTOM_TOPIC_LENGTH = 40;

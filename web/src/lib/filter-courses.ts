@@ -33,10 +33,6 @@ function matchesFilters(
 ): boolean {
   if (filters.savedOnly && !savedIds.includes(course.id)) return false;
 
-  if (filters.category !== 'All topics' && course.category !== filters.category) {
-    return false;
-  }
-
   const query = filters.query.toLowerCase().trim();
   if (query !== '') {
     const searchableText = [course.title, course.category, course.trainer, ...course.tags]

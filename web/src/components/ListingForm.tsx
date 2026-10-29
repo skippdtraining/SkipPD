@@ -8,14 +8,20 @@
 
 'use client';
 
-import {IMAGE_TYPES, MAX_IMAGE_BYTES, MAX_LISTING_TAGS} from '@/config/catalog';
+import {useState} from 'react';
+import {
+  IMAGE_TYPES,
+  MAX_CUSTOM_TOPIC_LENGTH,
+  MAX_IMAGE_BYTES,
+  MAX_LISTING_TAGS,
+} from '@/config/catalog';
 import {addListing} from '@/lib/browser-storage';
 import {readFileAsDataUrl, readNumber, readText, splitList} from '@/lib/form-helpers';
 import {
   CATEGORIES,
   FORMATS,
   GRADES,
-  type Category,
+  OTHER_CATEGORY,
   type Course,
   type Format,
   type Grade,
@@ -33,6 +39,9 @@ interface ListingFormProps {
 
 /** Form for a new training listing. */
 export function ListingForm({onSubmitted, onError}: ListingFormProps) {
+  // Shows the custom topic field only when "Other" is selected.
+  const [isOtherTopic, setIsOtherTopic] = useState(false);
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -57,7 +66,9 @@ export function ListingForm({onSubmitted, onError}: ListingFormProps) {
       title: readText(data, 'title'),
       trainer: readText(data, 'trainer'),
       role: readText(data, 'role'),
-      category: readText(data, 'category') as Category,
+      category: isOtherTopic
+        ? readText(data, 'customCategory')
+        : readText(data, 'category'),
       format: readText(data, 'format') as Format,
       hours: readNumber(data, 'hours', 1),
       price: readNumber(data, 'price', 0),
@@ -112,10 +123,16 @@ export function ListingForm({onSubmitted, onError}: ListingFormProps) {
         <div className="two">
           <label className="field">
             Topic
-            <select name="category">
+            <select
+              name="category"
+              onChange={(event) => {
+                setIsOtherTopic(event.target.value === OTHER_CATEGORY);
+              }}
+            >
               {CATEGORIES.map((category) => (
                 <option key={category}>{category}</option>
               ))}
+              <option>{OTHER_CATEGORY}</option>
             </select>
           </label>
           <label className="field">
@@ -127,6 +144,17 @@ export function ListingForm({onSubmitted, onError}: ListingFormProps) {
             </select>
           </label>
         </div>
+        {isOtherTopic && (
+          <label className="field">
+            Your topic
+            <input
+              name="customCategory"
+              maxLength={MAX_CUSTOM_TOPIC_LENGTH}
+              placeholder="e.g., Music education"
+              required
+            />
+          </label>
+        )}
         <div className="two">
           <label className="field">
             Duration (hours)

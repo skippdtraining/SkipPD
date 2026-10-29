@@ -16,10 +16,9 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Brand name, "Preview" label, tab title, SEO description, footer tagline | `web/src/config/site.ts` | Used by header, footer and page metadata. |
 | Price filter brackets ("Under $75"...) | `web/src/config/catalog.ts` → `PRICE_FILTER_OPTIONS` | Values in USD. |
 | What counts as a "short" course | `web/src/config/catalog.ts` → `SHORT_COURSE_MAX_HOURS` | Filter labels update automatically. |
-| "Popular" searches under the search box | `web/src/config/catalog.ts` → `POPULAR_SEARCHES` | `label` is shown, `query` is searched. |
 | Max keywords per listing | `web/src/config/catalog.ts` → `MAX_LISTING_TAGS` | |
 | Image upload size / allowed types | `web/src/config/catalog.ts` → `MAX_IMAGE_BYTES`, `IMAGE_TYPES` | |
-| Topics (categories) | `web/src/lib/types.ts` → `CATEGORIES` | Chips and listing form update automatically. |
+| Suggested topics in the listing form | `web/src/lib/types.ts` → `CATEGORIES` | Trainers can also choose "Other" and type a topic (max length: `MAX_CUSTOM_TOPIC_LENGTH` in `config/catalog.ts`). |
 | Grade bands | `web/src/lib/types.ts` → `Grade`, `GRADES` | Update both. |
 | Delivery formats | `web/src/lib/types.ts` → `Format`, `FORMATS` | Update both. |
 | Default filter state | `web/src/lib/types.ts` → `DEFAULT_FILTERS` | |
@@ -30,7 +29,9 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Mobile filter toggle | `web/src/components/FilterSidebar.tsx` | Collapsed on phones only. |
 | Header search (look, animation) | `web/src/app/globals.css` → `.header-search`, `.search-compact` | When it appears: `HomePage.tsx` (`useIsOffscreen`). |
 | Search box text / placeholder | `web/src/components/SearchBox.tsx` | |
-| Hero headline and text | `web/src/components/Hero.tsx` | Trust-bar points: `TRUST_POINTS` in the same file. |
+| Hero headline and text | `web/src/components/Hero.tsx` | |
+| Footer links (add / rename / remove) | `web/src/config/site.ts` → `FOOTER_COLUMNS` | A "Coming soon" page is created automatically for each link. |
+| Footer copyright year | `web/src/config/site.ts` → `copyrightYear` | |
 | Price / grade display format | `web/src/lib/format.ts` | |
 | Search / filter / sort logic | `web/src/lib/filter-courses.ts` | |
 | Where course data comes from (database) | `web/src/lib/data/course-repository.ts` → `getCourseRepository()` | See recipe below. |
@@ -42,9 +43,13 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 
 ## Recipes
 
-### Add a new topic
+### Add a suggested topic
 1. Add the name to `CATEGORIES` in `web/src/lib/types.ts`.
-2. That's it for the UI. From Step 3, also add it to the database (see the migration notes in `CODEBASE.md` once they exist).
+2. Topics are free text, so no database change is needed for new topics.
+
+### Add a footer page
+1. Add `{label, href}` to a column in `FOOTER_COLUMNS` (`web/src/config/site.ts`). The footer link and a "Coming soon" page appear automatically.
+2. When the real content is ready, create `web/src/app/<path>/page.tsx` (e.g. `app/about/page.tsx`). It replaces the placeholder for that path.
 
 ### Add a new setting
 1. Add a documented constant to the right file in `web/src/config/` (`site.ts` for branding, `catalog.ts` for catalog business rules, or a new file for a new area).

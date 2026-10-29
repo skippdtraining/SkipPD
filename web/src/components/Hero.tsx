@@ -1,10 +1,8 @@
 /**
  * @fileoverview Landing section at the top of the home page: headline,
- * search box, "Popular" quick searches and decorative artwork. Also exports
- * the {@link TrustBar} strip shown right below it.
+ * search box and decorative artwork.
  */
 
-import {POPULAR_SEARCHES} from '@/config/catalog';
 import type {Course} from '@/lib/types';
 import type {Ref} from 'react';
 import {CourseIllustration} from './CourseIllustration';
@@ -15,8 +13,6 @@ interface HeroProps {
   onQueryChange: (query: string) => void;
   /** Called on Enter / Search button; scrolls to the results. */
   onSearch: () => void;
-  /** Called by the "Popular" shortcuts; resets filters and searches. */
-  onQuickSearch: (query: string) => void;
   /** Attached to the search box so the page can tell when it is off-screen. */
   searchRef?: Ref<HTMLDivElement>;
   /** Course whose illustration decorates the artwork card. */
@@ -24,14 +20,7 @@ interface HeroProps {
 }
 
 /** Headline, search box and artwork. */
-export function Hero({
-  query,
-  onQueryChange,
-  onSearch,
-  onQuickSearch,
-  searchRef,
-  artCourse,
-}: HeroProps) {
+export function Hero({query, onQueryChange, onSearch, searchRef, artCourse}: HeroProps) {
   return (
     <section className="hero">
       <div>
@@ -53,19 +42,6 @@ export function Hero({
             onQueryChange={onQueryChange}
             onSearch={onSearch}
           />
-        </div>
-        <div className="popular">
-          Popular:{' '}
-          {POPULAR_SEARCHES.map(({label, query: search}) => (
-            <button
-              key={label}
-              onClick={() => {
-                onQuickSearch(search);
-              }}
-            >
-              {label}
-            </button>
-          ))}
         </div>
       </div>
 
@@ -89,26 +65,5 @@ export function Hero({
         </div>
       </div>
     </section>
-  );
-}
-
-/** Selling points shown in the strip under the hero: [icon, text]. */
-const TRUST_POINTS: Array<[string, string]> = [
-  ['◇', 'Teacher-led expertise'],
-  ['◷', 'Live online or in person'],
-  ['◎', 'Individual & school bookings'],
-  ['↗', 'Practical classroom strategies'],
-];
-
-/** Thin strip of selling points under the hero. */
-export function TrustBar() {
-  return (
-    <div className="trust">
-      {TRUST_POINTS.map(([icon, text]) => (
-        <span key={text}>
-          <i>{icon}</i> {text}
-        </span>
-      ))}
-    </div>
   );
 }

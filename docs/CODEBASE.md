@@ -70,6 +70,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `layout.tsx` | Root layout shared by all pages. Loads the DM Sans and Manrope fonts via `next/font`, imports global CSS, and sets the browser tab title and description. |
 | `page.tsx` | The `/` route. Server component: gets courses via `getCourseRepository()` and passes them to `HomePage`. Never imports a database client directly. |
 | `globals.css` | All styles, ported from the POC and grouped by page area. Colours are CSS variables in `:root`. The header is sticky and 64px tall. The "Responsive" section at the end adapts the layout for tablets and phones. |
+| `[slug]/page.tsx` | **Temporary.** "Coming soon" page for each footer link (`/about`, `/terms`...), generated from `FOOTER_COLUMNS`. Real pages get their own folder later. |
 | `favicon.ico` | Browser tab icon. It is still the Next.js default; replace it with the SkipPD logo later. |
 
 ## `src/components/`: UI building blocks
@@ -79,24 +80,24 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `HomePage.tsx` | **The conductor.** Owns page state (filters, which dialog is open, toast message), combines sample and browser listings, and wires all the sections together. Start reading here. |
 | `SiteHeader.tsx` | Sticky top bar: logo, compact search (fades in once the hero search scrolls away), Explore / Saved / My requests, and "List your training". Step 4 adds login and role-based links. |
 | `SearchBox.tsx` | Search form used twice: large in the hero, compact in the header. Both share one query. |
-| `Hero.tsx` | `Hero`: headline, search box, popular searches, artwork. `TrustBar`: the strip of selling points under it. |
-| `FilterSidebar.tsx` | `CategoryChips` (topic buttons) and `FilterSidebar` (format, grade, duration, price; collapsed behind a "Filters" button on phones). They only report changes; the filtering itself is in `lib/filter-courses.ts`. |
+| `Hero.tsx` | Headline, search box and artwork. |
+| `FilterSidebar.tsx` | Format, grade, duration and price filters; collapsed behind a "Filters" button on phones. Only reports changes; filtering is in `lib/filter-courses.ts`. |
 | `CatalogGrid.tsx` | Result count, sort menu, the grid of `CourseCard`s, and the "no results" message. |
 | `CourseCard.tsx` | One course tile: cover, title, trainer, hours, grades, tags, price, heart button. |
 | `CourseIllustration.tsx` | Built-in SVG cover art for courses without an image, with one drawing per topic type. Copied from the POC. |
 | `Modal.tsx` | Reusable pop-up built on the native `<dialog>` element. Closes on Esc, the × button, or a click outside. |
 | `CourseDetail.tsx` | Dialog content: the full course description and the "Request a session" button. |
 | `BookingForm.tsx` | Dialog content: the booking request form. Saves to the browser for now; Step 7 saves to the DB. |
-| `ListingForm.tsx` | Dialog content: the new-listing form, with image validation (max 1 MB). Saves to the browser for now; Step 5 saves to the DB. |
+| `ListingForm.tsx` | Dialog content: the new-listing form, with image validation (max 1 MB) and an "Other" topic option that reveals a free-text field. Saves to the browser for now; Step 5 saves to the DB. |
 | `RequestList.tsx` | Dialog content: "My booking requests", each with a Remove button. |
-| `SiteFooter.tsx` | `TrainerBanner` ("Become a PD trainer") and the page `SiteFooter`. |
+| `SiteFooter.tsx` | `TrainerBanner` ("Become a PD trainer") and `SiteFooter`: brand, link columns from `config/site.ts`, copyright. |
 
 ## `src/config/`: settings, no logic
 
 | File | What / why |
 |---|---|
-| `site.ts` | Brand name, stage label, tab title, SEO text, footer tagline. A rename is one edit here. |
-| `catalog.ts` | Business settings: price filter brackets, "short course" hours, popular searches, tag and image upload limits. |
+| `site.ts` | Brand name, stage label, tab title, SEO text, footer tagline, copyright year and footer links. A rename is one edit here. |
+| `catalog.ts` | Business settings: price filter brackets, "short course" hours, tag, custom-topic and image upload limits. |
 
 ## `src/lib/data/`: data access (the database boundary)
 
@@ -110,7 +111,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 
 | File | What / why |
 |---|---|
-| `types.ts` | **Single source of truth for data shapes:** `Course`, `BookingRequest`, `CatalogFilters`, the category, grade and format lists, and the default filters. In Step 3 these match the database tables. |
+| `types.ts` | **Single source of truth for data shapes:** `Course`, `BookingRequest`, `CatalogFilters`, the suggested topics, grade and format lists, and the default filters. In Step 3 these match the database tables. |
 | `filter-courses.ts` | Pure search, filter and sort function. Moves to DB queries in Step 3 without changing the filter shape. |
 | `local-store.ts` | Generic helper that keeps a list in `localStorage` and re-renders React when it changes, using `useSyncExternalStore`. |
 | `browser-storage.ts` | **Temporary.** The three browser lists: saved ids, own listings, and requests. Components only call these functions, so switching to the DB later touches one place. |
@@ -123,5 +124,6 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 
 ## Changelog of this map
 - **Step 1:** initial structure; `HomeClient` split into section components; docs added.
+- **Step 2:** removed popular searches, trust bar and topic chips (topic is now free text with "Other"); new footer with link columns and `[slug]` placeholder pages; responsive layout; header search.
 - **Roadmap change:** new Step 2 (UI changes) inserted; all later step numbers in docs and code comments shifted by one.
 - **Step 1 (modularity):** code moved to `web/`, docs to `docs/`; added `config/`, `lib/data/` repository layer, `lib/format.ts`.

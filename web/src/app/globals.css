@@ -232,20 +232,6 @@ header.with-search .header-search {
   outline: 0;
   background: none;
 }
-.popular {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 13px;
-}
-.popular button {
-  background: none;
-  border: 0;
-  font-size: 11px;
-  color: #585267;
-  padding: 3px 7px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
 .hero-art {
   position: relative;
   height: 285px;
@@ -315,28 +301,6 @@ header.with-search .header-search {
 .green {
   color: #3a8567;
 }
-.trust {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 48px;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  padding: 17px 5%;
-  background: white;
-  font-size: 12px;
-  color: #666276;
-}
-.trust span {
-  display: flex;
-  gap: 9px;
-  align-items: center;
-}
-.trust i {
-  font-style: normal;
-  color: var(--purple);
-  font-size: 16px;
-}
 
 /* Catalog */
 .main {
@@ -359,24 +323,6 @@ header.with-search .header-search {
   color: var(--muted);
   margin: 0;
   font-size: 12px;
-}
-.chips {
-  display: flex;
-  gap: 8px;
-  margin: 25px 0;
-  flex-wrap: wrap;
-}
-.chip {
-  padding: 10px 16px;
-  background: white;
-  border: 1px solid var(--line);
-  border-radius: 25px;
-  font-size: 12px;
-}
-.chip.active {
-  background: var(--purple);
-  color: white;
-  border-color: var(--purple);
 }
 .catalog {
   display: grid;
@@ -631,14 +577,75 @@ header.with-search .header-search {
   color: #7b718f;
   font-size: 12px;
 }
-footer {
+
+/* Site footer */
+.site-footer {
   border-top: 1px solid var(--line);
-  padding: 25px 5%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 11px;
+  background: white;
+  padding: 40px 5% 24px;
+  font-size: 13px;
   color: var(--muted);
+}
+.footer-top {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+}
+.footer-about p {
+  margin: 10px 0 0;
+  max-width: 280px;
+  line-height: 1.6;
+}
+.footer-brand {
+  font-size: 19px;
+  color: var(--ink);
+}
+.footer-links {
+  display: flex;
+  gap: 64px;
+}
+.footer-links h4 {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.footer-links ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.footer-links li {
+  margin: 8px 0;
+}
+.footer-links a:hover {
+  color: var(--purple);
+}
+.footer-bottom {
+  max-width: 1400px;
+  margin: 32px auto 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+
+/* Placeholder ("coming soon") pages */
+.placeholder-page {
+  max-width: 720px;
+  margin: 80px auto;
+  padding: 0 5%;
+  text-align: center;
+}
+.placeholder-page h1 {
+  font: 800 32px var(--head-font);
+  margin: 12px 0;
+}
+.placeholder-page p {
+  color: var(--muted);
+  line-height: 1.7;
 }
 
 /* Modal */
@@ -781,7 +788,7 @@ dialog::backdrop {
  * Phone rules follow common mobile guidance:
  * - tap targets at least 40px tall,
  * - text at least 12px, form inputs 16px (stops iOS from zooming in),
- * - rows that would wrap badly (nav, chips) scroll sideways instead,
+ * - rows that would wrap badly (nav) scroll sideways instead,
  * - filters collapse behind a toggle so results are visible first.
  */
 .filters-toggle {
@@ -803,9 +810,6 @@ dialog::backdrop {
   }
   nav {
     gap: 18px;
-  }
-  .trust {
-    gap: 25px;
   }
 }
 @media (max-width: 730px) {
@@ -875,19 +879,6 @@ dialog::backdrop {
   .search .btn {
     padding: 11px 14px;
   }
-  .popular,
-  .popular button {
-    font-size: 13px;
-  }
-  .popular button {
-    min-height: 36px;
-  }
-  .trust {
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 10px 20px;
-    font-size: 12px;
-  }
   .main {
     padding: 0 4%;
     margin-top: 24px;
@@ -897,23 +888,6 @@ dialog::backdrop {
   }
   .title-row p {
     font-size: 13px;
-  }
-  /* Chips: one sideways-scrolling row instead of several wrapped rows. */
-  .chips {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    margin: 18px -4%;
-    padding: 0 4%;
-  }
-  .chips::-webkit-scrollbar {
-    display: none;
-  }
-  .chip {
-    flex: 0 0 auto;
-    min-height: 40px;
-    font-size: 13px;
-    white-space: nowrap;
   }
   .catalog {
     grid-template-columns: 1fr;
@@ -1003,11 +977,24 @@ dialog::backdrop {
   .bottom-banner p {
     font-size: 14px;
   }
-  footer {
+  .site-footer {
+    padding: 32px 4% 20px;
+  }
+  .footer-top {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    font-size: 13px;
+    gap: 28px;
+  }
+  .footer-links {
+    flex-wrap: wrap;
+    gap: 28px 40px;
+  }
+  .footer-links li {
+    margin: 0;
+  }
+  .footer-links a {
+    display: inline-block;
+    padding: 8px 0;
+    font-size: 14px;
   }
   /* Dialogs: nearly full screen, scroll inside, comfortable form fields. */
   dialog {

@@ -1,6 +1,6 @@
 /**
- * @fileoverview Catalog controls: the topic chips above the grid and the
- * filter panel on its left. Both only report changes upward; the actual
+ * @fileoverview Catalog filter panel shown left of the grid. It only reports
+ * changes upward; the actual
  * filtering happens in `lib/filter-courses.ts`.
  *
  * On phones the filter panel is collapsed behind a "Filters" button so the
@@ -12,32 +12,12 @@
 import {useState} from 'react';
 import {PRICE_FILTER_OPTIONS, SHORT_COURSE_MAX_HOURS} from '@/config/catalog';
 import {formatPrice} from '@/lib/format';
-import {CATEGORIES, FORMATS, GRADES, type CatalogFilters} from '@/lib/types';
+import {FORMATS, GRADES, type CatalogFilters} from '@/lib/types';
 
 interface FilterProps {
   filters: CatalogFilters;
   /** Merges the given fields into the current filters. */
   onChange: (patch: Partial<CatalogFilters>) => void;
-}
-
-/** Row of topic buttons ("All topics", "Literacy", ...). */
-export function CategoryChips({filters, onChange}: FilterProps) {
-  const options = ['All topics', ...CATEGORIES] as const;
-  return (
-    <div className="chips">
-      {options.map((category) => (
-        <button
-          key={category}
-          className={`chip ${category === filters.category ? 'active' : ''}`}
-          onClick={() => {
-            onChange({category});
-          }}
-        >
-          {category}
-        </button>
-      ))}
-    </div>
-  );
 }
 
 interface FilterSidebarProps extends FilterProps {

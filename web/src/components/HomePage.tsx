@@ -19,8 +19,8 @@ import {useToast} from '@/lib/use-toast';
 import {BookingForm} from './BookingForm';
 import {CatalogGrid} from './CatalogGrid';
 import {CourseDetail} from './CourseDetail';
-import {CategoryChips, FilterSidebar} from './FilterSidebar';
-import {Hero, TrustBar} from './Hero';
+import {FilterSidebar} from './FilterSidebar';
+import {Hero} from './Hero';
 import {ListingForm} from './ListingForm';
 import {Modal} from './Modal';
 import {RequestList} from './RequestList';
@@ -113,14 +113,9 @@ export function HomePage({courses}: HomePageProps) {
           updateFilters({query});
         }}
         onSearch={scrollToCatalog}
-        onQuickSearch={(query) => {
-          setFilters({...DEFAULT_FILTERS, query});
-          scrollToCatalog();
-        }}
         searchRef={heroSearchRef}
         artCourse={courses.find((c) => c.type === 'classroom') ?? courses[0]}
       />
-      <TrustBar />
 
       <main className="main">
         <div className="title-row">
@@ -136,8 +131,6 @@ export function HomePage({courses}: HomePageProps) {
             </p>
           </div>
         </div>
-
-        <CategoryChips filters={filters} onChange={updateFilters} />
 
         <div className="catalog">
           <FilterSidebar

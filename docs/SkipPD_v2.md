@@ -35,6 +35,14 @@ After the training takes place and the hiring party confirms, the trainer is pai
 ### 1.3 Chat Service
 A chat lets the trainer and the hiring party settle training details. One chat thread per booking.
 
+### 1.4 Accounts, profiles and ratings (planned)
+Applies once users and the database exist (roadmap Steps 4 and 7, ratings in the "Later" step):
+- After login, teachers and schools get **different pages**, each tailored to their role.
+- The current header items **Saved** and **My requests** are removed. Each user has a **profile page** instead:
+  - teachers see the trainings they listed (and their incoming jobs);
+  - schools see the trainings they have hired before.
+- Each trainer has a **rating** given by schools after a completed training. It appears next to the trainer's listings so schools can compare.
+
 ---
 
 ## 2. Problems
@@ -63,6 +71,10 @@ Optional later improvements: attendance check-in via QR code / link at the sessi
 | Accounts | Separate account types (Teacher / School). Teachers can also book. |
 | Formats | Live online + In person. **Self-paced deferred.** |
 | Product name | SkipPD |
+| Topics | Suggested list plus "Other" with free text; no topic filter (search covers topics) |
+| Footer | About Us, How it works, Contact Us (page), FAQ, Terms of Service, Privacy Policy; "Coming soon" pages until content exists |
+| Logged-in experience | Separate teacher and school experiences; header Saved / My requests replaced by profile pages (see 1.4) |
+| Ratings | Trainer ratings shown next to listings; planned for the "Later" step |
 | Roadmap change | Step 2 added for UI changes after the Step 1 review; later steps shifted by one |
 | Proof of training | Hiring party confirms + evidence fallback (section 2.1) |
 
@@ -162,7 +174,7 @@ requested -> negotiating <-> negotiating -> accepted -> paid -> delivered -> com
 | 1 ✅ | Repo + Next.js skeleton, port POC UI as static pages, deploy to Vercel | POC look-alike live on a Vercel URL |
 | 2 | UI changes: frontend design revisions agreed after the Step 1 review (header, layout, styling); no backend work | Revised design live on a Vercel preview and approved by the owner |
 | 3 | Supabase project, initial schema, seed the 6 sample courses; catalog/search/filters/sort read from DB | Live site shows DB data; adding a row in Supabase shows on site |
-| 4 | Auth: signup with role, login/logout, profile page | Can create Teacher and School accounts; header changes per role |
+| 4 | Auth: signup with role, login/logout, role-specific pages and profile page (replaces header Saved / My requests, see 1.4) | Can create Teacher and School accounts; header and pages change per role |
 | 5 | Listing CRUD for teachers + image upload; RLS policies | Teacher creates/edits/deletes own listing; school cannot list |
 | 6 | Saved listings per user | Saved items persist across devices |
 | 7 | Booking requests; "My requests" (requester) and "Jobs" (trainer) pages | Request appears on trainer's Jobs page |
@@ -170,7 +182,7 @@ requested -> negotiating <-> negotiating -> accepted -> paid -> delivered -> com
 | 9 | Chat per booking (realtime) | Both parties chat live on a booking |
 | 10 | Completion flow: delivered, confirm, auto-confirm, dispute, evidence upload, minimal admin page | A booking can reach `completed` or `disputed` |
 | 11 | Stripe Connect: trainer onboarding, payment on accept, payout on completion | Test-mode payment end to end |
-| 12 | Later: reviews, trainer profiles, self-paced, PD certificates, Google login, analytics | - |
+| 12 | Later: trainer ratings next to listings (see 1.4), reviews, self-paced, PD certificates, Google login, analytics | - |
 
 Rule: do not start step N+1 until step N is deployed and manually tested.
 

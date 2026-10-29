@@ -26,6 +26,8 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Colours (palette) | `web/src/app/globals.css` → `:root` variables | e.g. `--purple`. |
 | Fonts | `web/src/app/layout.tsx` (loading) + `globals.css` `--body-font` / `--head-font` | |
 | Header height / sticky behaviour | `web/src/app/globals.css` → `header { ... }` | Mobile override in the `@media (max-width: 730px)` block. |
+| Phone / tablet layout | `web/src/app/globals.css` → "Responsive" section at the end | Breakpoints: 1050px tablet, 730px phone, 480px small phone. |
+| Mobile filter toggle | `web/src/components/FilterSidebar.tsx` | Collapsed on phones only. |
 | Hero headline and text | `web/src/components/Hero.tsx` | Trust-bar points: `TRUST_POINTS` in the same file. |
 | Price / grade display format | `web/src/lib/format.ts` | |
 | Search / filter / sort logic | `web/src/lib/filter-courses.ts` | |
@@ -57,6 +59,12 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 2. Change the one line in `getCourseRepository()` in `course-repository.ts`.
 3. Put credentials in environment variables (`web/.env.local` locally, Vercel project settings in production).
 4. No component or page should need changes. If one does, the boundary was broken; fix that first.
+
+### Test on phones and tablets
+1. Run `npm run dev`, open http://localhost:3000 in Chrome or Edge.
+2. Press F12, then Ctrl+Shift+M (device toolbar). Pick e.g. iPhone SE, iPhone 14, iPad.
+3. Check: no sideways page scroll, everything tappable, forms do not zoom in.
+4. Real devices: open the PR's Vercel preview URL on your phone.
 
 ### Run checks before a PR
 ```bash

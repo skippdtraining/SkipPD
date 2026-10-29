@@ -739,7 +739,17 @@ dialog::backdrop {
   font-size: 12px;
 }
 
-/* Responsive */
+/* Responsive
+ * Breakpoints (max-width): 1050px tablet, 730px phone, 480px small phone.
+ * Phone rules follow common mobile guidance:
+ * - tap targets at least 40px tall,
+ * - text at least 12px, form inputs 16px (stops iOS from zooming in),
+ * - rows that would wrap badly (nav, chips) scroll sideways instead,
+ * - filters collapse behind a toggle so results are visible first.
+ */
+.filters-toggle {
+  display: none;
+}
 @media (min-width: 1500px) {
   .hero,
   .main {
@@ -762,119 +772,252 @@ dialog::backdrop {
   }
 }
 @media (max-width: 730px) {
+  /* Header: brand on top, nav underneath as a sideways-scrolling row. */
   header {
     height: auto;
-    min-height: 60px;
-    flex-wrap: wrap;
-    padding: 10px 5%;
-    gap: 10px;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px 4%;
+    gap: 4px;
+  }
+  .brand {
+    font-size: 20px;
   }
   nav {
-    width: 100%;
-    justify-content: space-between;
-    gap: 10px;
-    font-size: 11px;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    font-size: 13px;
+  }
+  nav::-webkit-scrollbar {
+    display: none;
+  }
+  nav button {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 8px 10px;
+    white-space: nowrap;
   }
   nav .btn {
-    padding: 9px 11px;
+    margin-left: auto;
   }
   .hero {
     grid-template-columns: 1fr;
-    padding-top: 35px;
+    padding: 28px 4% 28px;
   }
   .hero-art {
     display: none;
   }
   .hero h1 {
-    font-size: 37px;
+    font-size: 34px;
+    letter-spacing: -1px;
+  }
+  .hero p {
+    font-size: 15px;
+  }
+  .search input {
+    font-size: 16px;
+  }
+  .search .btn {
+    padding: 11px 14px;
+  }
+  .popular,
+  .popular button {
+    font-size: 13px;
+  }
+  .popular button {
+    min-height: 36px;
   }
   .trust {
     flex-wrap: wrap;
-    gap: 12px 22px;
-    font-size: 10px;
+    justify-content: flex-start;
+    gap: 10px 20px;
+    font-size: 12px;
   }
-  .title-row {
-    align-items: flex-start;
+  .main {
+    padding: 0 4%;
+    margin-top: 24px;
   }
   .title-row h2 {
     font-size: 22px;
   }
+  .title-row p {
+    font-size: 13px;
+  }
+  /* Chips: one sideways-scrolling row instead of several wrapped rows. */
+  .chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 18px -4%;
+    padding: 0 4%;
+  }
+  .chips::-webkit-scrollbar {
+    display: none;
+  }
+  .chip {
+    flex: 0 0 auto;
+    min-height: 40px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
   .catalog {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  /* Filters: collapsed behind a toggle button. */
+  .filters-toggle {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    min-height: 44px;
+  }
+  .filters:not(.open) .filter-panel {
+    display: none;
   }
   .filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 12px;
-  }
-  .filters h3 {
-    width: 100%;
-    margin: 0;
-  }
-  .filter-group {
-    border: 0;
     padding: 0;
-    margin: 0;
-    flex: 1;
+    border: 0;
+    background: none;
   }
-  .filter-group h4 {
-    margin: 0 0 6px;
+  .filter-panel {
+    margin-top: 10px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: white;
+    padding: 14px;
+  }
+  .filter-group h4,
+  .check,
+  .filter-group select,
+  .filters h3 button {
+    font-size: 14px;
   }
   .check {
-    margin: 6px 0;
+    min-height: 36px;
+    margin: 2px 0;
+  }
+  .check input {
+    width: 20px;
+    height: 20px;
+  }
+  .filter-group select {
+    font-size: 16px;
+    min-height: 44px;
   }
   .filter-note {
     display: none;
   }
-  .chips {
-    gap: 6px;
-    margin: 20px 0;
-  }
-  .chip {
-    padding: 8px 11px;
-    font-size: 10px;
-  }
-  .grid {
-    gap: 12px;
-  }
-  .body {
-    padding: 12px;
-  }
-  .cover {
-    height: 130px;
-  }
-  .course h3 {
+  .catalog-top,
+  .catalog-top select {
     font-size: 13px;
   }
-  .meta {
-    font-size: 9px;
-    gap: 7px;
+  .catalog-top select {
+    min-height: 40px;
+  }
+  .grid {
+    gap: 14px;
+  }
+  .category,
+  .tag,
+  .badge,
+  .meta,
+  .trainer,
+  .details,
+  .price small {
+    font-size: 12px;
+  }
+  .course h3 {
+    font-size: 16px;
+    min-height: 0;
+  }
+  .details {
+    min-height: 40px;
+  }
+  .bookmark {
+    width: 40px;
+    height: 40px;
   }
   .bottom-banner {
-    padding: 23px;
+    padding: 22px;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
   }
   .bottom-banner h2 {
     font-size: 20px;
   }
+  .bottom-banner p {
+    font-size: 14px;
+  }
   footer {
-    gap: 15px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+  }
+  /* Dialogs: nearly full screen, scroll inside, comfortable form fields. */
+  dialog {
+    width: calc(100% - 16px);
+    max-height: calc(100dvh - 16px);
+    border-radius: 14px;
+  }
+  .modal-head {
+    padding: 14px 16px;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 1;
+  }
+  .modal-head h2 {
+    font-size: 18px;
+  }
+  .close {
+    width: 40px;
+    height: 40px;
+  }
+  .modal-body {
+    padding: 16px;
   }
   .two {
     grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .field {
+    font-size: 14px;
+  }
+  .field input,
+  .field select,
+  .field textarea {
+    font-size: 16px;
+    min-height: 44px;
+  }
+  .notice {
+    font-size: 13px;
+  }
+  .toast {
+    width: calc(100% - 32px);
+    text-align: center;
+    font-size: 14px;
   }
   .demo {
-    margin-left: 0;
+    margin-left: 6px;
   }
 }
-@media (max-width: 400px) {
+@media (max-width: 480px) {
   .grid {
     grid-template-columns: 1fr;
   }
   .cover {
-    height: 180px;
+    height: 170px;
+  }
+  .hero h1 {
+    font-size: 30px;
+  }
+}
+/* Respect users who turn off animations in their device settings. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -69,7 +69,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 |---|---|
 | `layout.tsx` | Root layout shared by all pages. Loads the DM Sans and Manrope fonts via `next/font`, imports global CSS, and sets the browser tab title and description. |
 | `page.tsx` | The `/` route. Server component: gets courses via `getCourseRepository()` and passes them to `HomePage`. Never imports a database client directly. |
-| `globals.css` | All styles, ported from the POC and grouped by page area. Colours are CSS variables in `:root`. The header is sticky and 64px tall. |
+| `globals.css` | All styles, ported from the POC and grouped by page area. Colours are CSS variables in `:root`. The header is sticky and 64px tall. The "Responsive" section at the end adapts the layout for tablets and phones. |
 | `favicon.ico` | Browser tab icon. It is still the Next.js default; replace it with the SkipPD logo later. |
 
 ## `src/components/`: UI building blocks
@@ -79,7 +79,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `HomePage.tsx` | **The conductor.** Owns page state (filters, which dialog is open, toast message), combines sample and browser listings, and wires all the sections together. Start reading here. |
 | `SiteHeader.tsx` | Sticky top bar: logo, Explore / Saved / My requests, and "List your training". Step 4 adds login and role-based links. |
 | `Hero.tsx` | `Hero`: headline, search box, popular searches, artwork. `TrustBar`: the strip of selling points under it. |
-| `FilterSidebar.tsx` | `CategoryChips` (topic buttons) and `FilterSidebar` (format, grade, duration, price). They only report changes; the filtering itself is in `lib/filter-courses.ts`. |
+| `FilterSidebar.tsx` | `CategoryChips` (topic buttons) and `FilterSidebar` (format, grade, duration, price; collapsed behind a "Filters" button on phones). They only report changes; the filtering itself is in `lib/filter-courses.ts`. |
 | `CatalogGrid.tsx` | Result count, sort menu, the grid of `CourseCard`s, and the "no results" message. |
 | `CourseCard.tsx` | One course tile: cover, title, trainer, hours, grades, tags, price, heart button. |
 | `CourseIllustration.tsx` | Built-in SVG cover art for courses without an image, with one drawing per topic type. Copied from the POC. |

@@ -14,6 +14,7 @@ import {useMemo, useRef, useState} from 'react';
 import {toggleSaved, useOwnListings, useSavedIds} from '@/lib/browser-storage';
 import {filterCourses} from '@/lib/filter-courses';
 import {DEFAULT_FILTERS, type CatalogFilters, type Course} from '@/lib/types';
+import {useIsOffscreen} from '@/lib/use-is-offscreen';
 import {useToast} from '@/lib/use-toast';
 import {BookingForm} from './BookingForm';
 import {CatalogGrid} from './CatalogGrid';
@@ -34,6 +35,9 @@ type OpenDialog =
   | {kind: 'requests'}
   | null;
 
+/** Sticky header height in px (desktop); matches `header` in globals.css. */
+const HEADER_HEIGHT_PX = 64;
+
 const DIALOG_TITLES = {
   detail: 'Explore this training',
   booking: 'Request training',
@@ -52,6 +56,8 @@ export function HomePage({courses}: HomePageProps) {
   const [dialog, setDialog] = useState<OpenDialog>(null);
   const [toast, showToast] = useToast();
   const catalogTitleRef = useRef<HTMLHeadingElement>(null);
+  const heroSearchRef = useRef<HTMLDivElement>(null);
+  const heroSearchHidden = useIsOffscreen(heroSearchRef, HEADER_HEIGHT_PX);
   const savedIds = useSavedIds();
   const ownListings = useOwnListings();
 
@@ -93,6 +99,12 @@ export function HomePage({courses}: HomePageProps) {
         onListTraining={() => {
           setDialog({kind: 'listing'});
         }}
+        showSearch={heroSearchHidden}
+        query={filters.query}
+        onQueryChange={(query) => {
+          updateFilters({query});
+        }}
+        onSearch={scrollToCatalog}
       />
 
       <Hero
@@ -105,6 +117,7 @@ export function HomePage({courses}: HomePageProps) {
           setFilters({...DEFAULT_FILTERS, query});
           scrollToCatalog();
         }}
+        searchRef={heroSearchRef}
         artCourse={courses.find((c) => c.type === 'classroom') ?? courses[0]}
       />
       <TrustBar />

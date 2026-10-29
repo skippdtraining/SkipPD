@@ -77,7 +77,8 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | File | What / why |
 |---|---|
 | `HomePage.tsx` | **The conductor.** Owns page state (filters, which dialog is open, toast message), combines sample and browser listings, and wires all the sections together. Start reading here. |
-| `SiteHeader.tsx` | Sticky top bar: logo, Explore / Saved / My requests, and "List your training". Step 4 adds login and role-based links. |
+| `SiteHeader.tsx` | Sticky top bar: logo, compact search (fades in once the hero search scrolls away), Explore / Saved / My requests, and "List your training". Step 4 adds login and role-based links. |
+| `SearchBox.tsx` | Search form used twice: large in the hero, compact in the header. Both share one query. |
 | `Hero.tsx` | `Hero`: headline, search box, popular searches, artwork. `TrustBar`: the strip of selling points under it. |
 | `FilterSidebar.tsx` | `CategoryChips` (topic buttons) and `FilterSidebar` (format, grade, duration, price; collapsed behind a "Filters" button on phones). They only report changes; the filtering itself is in `lib/filter-courses.ts`. |
 | `CatalogGrid.tsx` | Result count, sort menu, the grid of `CourseCard`s, and the "no results" message. |
@@ -115,6 +116,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `browser-storage.ts` | **Temporary.** The three browser lists: saved ids, own listings, and requests. Components only call these functions, so switching to the DB later touches one place. |
 | `format.ts` | Display helpers: `initials`, `gradeLabel`, `formatPrice`. |
 | `form-helpers.ts` | Reads text and numbers out of submitted forms, splits lists, and reads image files. |
+| `use-is-offscreen.ts` | Hook: tells whether an element scrolled out of view (IntersectionObserver). Drives the header search. |
 | `use-toast.ts` | Hook for the short bottom-of-screen message that disappears after 4 s. |
 
 ---

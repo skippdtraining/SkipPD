@@ -6,7 +6,9 @@
 
 import {POPULAR_SEARCHES} from '@/config/catalog';
 import type {Course} from '@/lib/types';
+import type {Ref} from 'react';
 import {CourseIllustration} from './CourseIllustration';
+import {SearchBox} from './SearchBox';
 
 interface HeroProps {
   query: string;
@@ -15,6 +17,8 @@ interface HeroProps {
   onSearch: () => void;
   /** Called by the "Popular" shortcuts; resets filters and searches. */
   onQuickSearch: (query: string) => void;
+  /** Attached to the search box so the page can tell when it is off-screen. */
+  searchRef?: Ref<HTMLDivElement>;
   /** Course whose illustration decorates the artwork card. */
   artCourse?: Course;
 }
@@ -25,6 +29,7 @@ export function Hero({
   onQueryChange,
   onSearch,
   onQuickSearch,
+  searchRef,
   artCourse,
 }: HeroProps) {
   return (
@@ -40,27 +45,15 @@ export function Hero({
           Find professional development from people who know the classroom. Your next
           great idea starts here.
         </p>
-        <form
-          className="search"
-          onSubmit={(event) => {
-            // Stop the browser from reloading the page on submit.
-            event.preventDefault();
-            onSearch();
-          }}
-        >
-          <span aria-hidden="true">⌕</span>
-          <input
-            value={query}
-            onChange={(event) => {
-              onQueryChange(event.target.value);
-            }}
-            placeholder="What would you like to learn?"
-            aria-label="Search training, trainer, or keyword"
+        {/* Wrapper is watched by HomePage to know when to show the header search. */}
+        <div ref={searchRef}>
+          <SearchBox
+            variant="hero"
+            query={query}
+            onQueryChange={onQueryChange}
+            onSearch={onSearch}
           />
-          <button className="btn" type="submit">
-            Search
-          </button>
-        </form>
+        </div>
         <div className="popular">
           Popular:{' '}
           {POPULAR_SEARCHES.map(({label, query: search}) => (

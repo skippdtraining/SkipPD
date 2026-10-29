@@ -28,6 +28,8 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Header height / sticky behaviour | `web/src/app/globals.css` → `header { ... }` | Mobile override in the `@media (max-width: 730px)` block. |
 | Phone / tablet layout | `web/src/app/globals.css` → "Responsive" section at the end | Breakpoints: 1050px tablet, 730px phone, 480px small phone. |
 | Mobile filter toggle | `web/src/components/FilterSidebar.tsx` | Collapsed on phones only. |
+| Header search (look, animation) | `web/src/app/globals.css` → `.header-search`, `.search-compact` | When it appears: `HomePage.tsx` (`useIsOffscreen`). |
+| Search box text / placeholder | `web/src/components/SearchBox.tsx` | |
 | Hero headline and text | `web/src/components/Hero.tsx` | Trust-bar points: `TRUST_POINTS` in the same file. |
 | Price / grade display format | `web/src/lib/format.ts` | |
 | Search / filter / sort logic | `web/src/lib/filter-courses.ts` | |

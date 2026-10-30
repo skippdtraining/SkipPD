@@ -626,6 +626,36 @@ header.with-search .header-search {
   font-size: 12px;
 }
 
+/* Learning outcomes list in the listing form */
+.outcome-list {
+  border: 0;
+  padding: 0;
+  margin: 0 0 15px;
+}
+.outcome-list legend {
+  padding: 0;
+  margin-bottom: 7px;
+}
+.outcome-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.outcome-remove {
+  flex: 0 0 40px;
+  border: 1px solid #ded9e7;
+  border-radius: 7px;
+  background: white;
+  font-size: 18px;
+}
+.outcome-remove:hover {
+  border-color: #a05c69;
+  color: #a05c69;
+}
+.outcome-add {
+  align-self: flex-start;
+}
+
 /* Catalog pagination */
 .pagination {
   display: flex;

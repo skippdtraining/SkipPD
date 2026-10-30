@@ -11,7 +11,7 @@
 import {useState} from 'react';
 import {IMAGE_TYPES, MAX_CUSTOM_TOPIC_LENGTH, MAX_IMAGE_BYTES} from '@/config/catalog';
 import {addListing} from '@/lib/browser-storage';
-import {readFileAsDataUrl, readNumber, readText, splitList} from '@/lib/form-helpers';
+import {readFileAsDataUrl, readNumber, readText} from '@/lib/form-helpers';
 import {
   CATEGORIES,
   FORMATS,
@@ -21,6 +21,7 @@ import {
   type Format,
   type Grade,
 } from '@/lib/types';
+import {OutcomeListField} from './OutcomeListField';
 
 /** Shown as trainer on browser-created listings until accounts exist (Step 4). */
 const PREVIEW_TRAINER_NAME = 'You (preview)';
@@ -75,7 +76,10 @@ export function ListingForm({onSubmitted, onError}: ListingFormProps) {
       grades: gradeChoice === 'all' ? [...GRADES] : [gradeChoice as Grade],
       tags: [],
       description: readText(data, 'description'),
-      outcomes: splitList(readText(data, 'outcomes'), '\n'),
+      outcomes: data
+        .getAll('outcomes')
+        .map((value) => String(value).trim())
+        .filter((value) => value !== ''),
       ...DEFAULT_COVER,
       image: imageFile ? await readFileAsDataUrl(imageFile) : undefined,
     };
@@ -163,10 +167,7 @@ export function ListingForm({onSubmitted, onError}: ListingFormProps) {
           Course description
           <textarea name="description" required maxLength={1500} />
         </label>
-        <label className="field">
-          Learning outcomes (one per line)
-          <textarea name="outcomes" required maxLength={1200} />
-        </label>
+        <OutcomeListField name="outcomes" />
         <label className="field">
           Course image (optional, JPG / PNG / WebP, max 1 MB)
           <input type="file" name="image" accept={IMAGE_TYPES.join(',')} />

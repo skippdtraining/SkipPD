@@ -89,6 +89,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `CourseDetail.tsx` | Dialog content: the full course description and the "Request a session" button. |
 | `BookingForm.tsx` | Dialog content: the booking request form. Saves to the browser for now; Step 7 saves to the DB. |
 | `ListingForm.tsx` | Dialog content: the new-listing form, with image validation (max 1 MB) an "Other" topic option that reveals a free-text field. No trainer name, credentials or keywords: those come from the account (Step 4). Saves to the browser for now; Step 5 saves to the DB. |
+| `OutcomeListField.tsx` | Listing-form field: one input per learning outcome, "+ Add outcome" and × remove buttons. |
 | `RequestList.tsx` | Dialog content: "My booking requests", each with a Remove button. |
 | `SocialIcon.tsx` | Inline SVG logos (LinkedIn, Instagram, Facebook, X) for the footer. |
 | `SiteFooter.tsx` | `TrainerBanner` ("Become a PD trainer") and `SiteFooter`: brand, social icons, link columns from `config/site.ts`, copyright. |

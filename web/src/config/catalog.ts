@@ -32,3 +32,9 @@ export const COURSES_PER_PAGE = 6;
  * - 'none': stay where you are.
  */
 export const PAGE_CHANGE_SCROLL: 'catalog-top' | 'none' = 'catalog-top';
+
+/** Most learning outcomes a listing can have. */
+export const MAX_OUTCOMES = 8;
+
+/** Longest single learning outcome, in characters. */
+export const MAX_OUTCOME_LENGTH = 150;

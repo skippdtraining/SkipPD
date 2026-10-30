@@ -22,7 +22,7 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Grade bands | `web/src/lib/types.ts` → `Grade`, `GRADES` | Update both. |
 | Delivery formats | `web/src/lib/types.ts` → `Format`, `FORMATS` | Update both. |
 | Default filter state | `web/src/lib/types.ts` → `DEFAULT_FILTERS` | |
-| Colours (palette) | `web/src/app/globals.css` → `:root` variables | e.g. `--purple`. |
+| Colours (palette) | `web/src/app/globals.css` → `:root` variables | e.g. `--purple`; hero band colour: `--hero-bg`. |
 | Fonts | `web/src/app/layout.tsx` (loading) + `globals.css` `--body-font` / `--head-font` | |
 | Header height / sticky behaviour | `web/src/app/globals.css` → `header { ... }` | Mobile override in the `@media (max-width: 730px)` block. |
 | Phone / tablet layout | `web/src/app/globals.css` → "Responsive" section at the end | Breakpoints: 1050px tablet, 730px phone, 480px small phone. |

@@ -10,6 +10,8 @@
   --purple: #6854d8;
   --line: #e9e7ee;
   --paper: #faf9f6;
+  /* Soft tint behind the hero, so it reads as its own band above the catalog. */
+  --hero-bg: #f3f0fc;
   --body-font: var(--font-dm-sans), sans-serif;
   --head-font: var(--font-manrope), sans-serif;
 }
@@ -83,12 +85,12 @@ header {
   font-size: 18px;
   transform: rotate(-6deg);
 }
-nav {
+header nav {
   display: flex;
   align-items: center;
   gap: 30px;
 }
-nav button,
+header nav button,
 .plain {
   border: 0;
   background: none;
@@ -178,7 +180,15 @@ header.with-search .header-search {
   font-size: 13px;
 }
 
-/* Hero */
+/* Hero: full-width tinted band with a dividing line, separating search from the catalog. */
+.hero-band {
+  background: var(--hero-bg);
+  border-bottom: 1px solid var(--line);
+}
+/* Brand text in one element, so the flex gap does not split "Skip" and "PD". */
+.brand-name {
+  display: inline;
+}
 .hero {
   max-width: 1400px;
   margin: auto;
@@ -321,7 +331,7 @@ header.with-search .header-search {
 }
 .title-row p {
   color: var(--muted);
-  margin: 0;
+  margin: 0 0 24px;
   font-size: 12px;
 }
 .catalog {
@@ -604,6 +614,8 @@ header.with-search .header-search {
 }
 .footer-links {
   display: flex;
+  /* Top-align columns so all titles sit on the same line. */
+  align-items: flex-start;
   gap: 64px;
 }
 .footer-links h4 {
@@ -808,7 +820,7 @@ dialog::backdrop {
   .hero-art {
     transform: scale(0.9);
   }
-  nav {
+  header nav {
     gap: 18px;
   }
 }
@@ -824,13 +836,13 @@ dialog::backdrop {
   .brand {
     font-size: 20px;
   }
-  nav {
+  header nav {
     gap: 6px;
     overflow-x: auto;
     scrollbar-width: none;
     font-size: 13px;
   }
-  nav::-webkit-scrollbar {
+  header nav::-webkit-scrollbar {
     display: none;
   }
   /* Phone: header search becomes its own full-width row (animated height). */
@@ -850,13 +862,13 @@ dialog::backdrop {
   .search.search-compact input {
     font-size: 16px;
   }
-  nav button {
+  header nav button {
     flex: 0 0 auto;
     min-height: 40px;
     padding: 8px 10px;
     white-space: nowrap;
   }
-  nav .btn {
+  header nav .btn {
     margin-left: auto;
   }
   .hero {

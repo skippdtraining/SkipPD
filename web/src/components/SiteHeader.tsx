@@ -42,8 +42,10 @@ export function SiteHeader({
     <header className={showSearch ? 'with-search' : ''}>
       <a className="brand" href="./" aria-label={`${SITE_NAME} home`}>
         <span className="logo">✧</span>
-        {SITE.nameStart}
-        <b>{SITE.nameEnd}</b>
+        <span className="brand-name">
+          {SITE.nameStart}
+          <b>{SITE.nameEnd}</b>
+        </span>
         <span className="demo">{SITE.stageLabel}</span>
       </a>
       {/* Always rendered so it can animate; hidden from keyboard and screen

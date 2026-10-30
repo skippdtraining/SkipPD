@@ -33,8 +33,10 @@ export function SiteFooter() {
       <div className="footer-top">
         <div className="footer-about">
           <span className="brand footer-brand">
-            {SITE.nameStart}
-            <b>{SITE.nameEnd}</b>
+            <span className="brand-name">
+              {SITE.nameStart}
+              <b>{SITE.nameEnd}</b>
+            </span>
           </span>
           <p>{SITE.footerTagline}</p>
         </div>

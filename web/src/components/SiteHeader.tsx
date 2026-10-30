@@ -18,10 +18,9 @@ import {SITE, SITE_NAME} from '@/config/site';
 import {SearchBox} from './SearchBox';
 
 interface SiteHeaderProps {
-  /** True when the "Saved" tab is active; controls which link is highlighted. */
+  /** True when the "Saved" view is active; clicking Saved again returns to all trainings. */
   savedOnly: boolean;
   savedCount: number;
-  onExplore: () => void;
   onShowSaved: () => void;
   onShowRequests: () => void;
   onListTraining: () => void;
@@ -36,7 +35,6 @@ interface SiteHeaderProps {
 export function SiteHeader({
   savedOnly,
   savedCount,
-  onExplore,
   onShowSaved,
   onShowRequests,
   onListTraining,
@@ -91,10 +89,11 @@ export function SiteHeader({
         {menuOpen ? '✕' : '☰'}
       </button>
       <nav id="main-nav">
-        <button className={savedOnly ? '' : 'nav-active'} onClick={choose(onExplore)}>
-          Explore training
-        </button>
-        <button className={savedOnly ? 'nav-active' : ''} onClick={choose(onShowSaved)}>
+        <button
+          className={savedOnly ? 'nav-active' : ''}
+          aria-pressed={savedOnly}
+          onClick={choose(onShowSaved)}
+        >
           Saved <span className="saved-count">{savedCount}</span>
         </button>
         <button onClick={choose(onShowRequests)}>My requests</button>

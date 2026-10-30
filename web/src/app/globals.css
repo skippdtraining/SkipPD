@@ -626,6 +626,46 @@ header.with-search .header-search {
   font-size: 12px;
 }
 
+/* Catalog pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 28px;
+}
+.page-arrow,
+.page-number {
+  min-width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: white;
+  font-weight: 600;
+}
+.page-arrow:hover:not(:disabled),
+.page-number:hover {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+.page-number.active {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: white;
+}
+.page-arrow:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.link-button {
+  border: 0;
+  background: none;
+  color: var(--purple);
+  font-weight: 700;
+  margin-left: 10px;
+  padding: 0;
+}
+
 /* Site footer */
 .site-footer {
   border-top: 1px solid var(--line);

@@ -55,6 +55,7 @@ export function HomePage({courses}: HomePageProps) {
   const [filters, setFilters] = useState<CatalogFilters>(DEFAULT_FILTERS);
   const [dialog, setDialog] = useState<OpenDialog>(null);
   const [toast, showToast] = useToast();
+  const [page, setPage] = useState(1);
   const catalogTitleRef = useRef<HTMLHeadingElement>(null);
   const heroSearchRef = useRef<HTMLDivElement>(null);
   const heroSearchHidden = useIsOffscreen(heroSearchRef, HEADER_HEIGHT_PX);
@@ -69,8 +70,16 @@ export function HomePage({courses}: HomePageProps) {
     [allCourses, filters, savedIds],
   );
 
+  // Any filter change goes back to page 1, so results never start on an
+  // empty page. All filter updates go through these two functions.
   function updateFilters(patch: Partial<CatalogFilters>) {
     setFilters((current) => ({...current, ...patch}));
+    setPage(1);
+  }
+
+  function resetFilters(next: CatalogFilters) {
+    setFilters(next);
+    setPage(1);
   }
 
   function scrollToCatalog() {
@@ -87,11 +96,9 @@ export function HomePage({courses}: HomePageProps) {
       <SiteHeader
         savedOnly={filters.savedOnly}
         savedCount={savedIds.length}
-        onExplore={() => {
-          showCatalog(false);
-        }}
         onShowSaved={() => {
-          showCatalog(true);
+          // Toggle: a second click returns to all trainings.
+          showCatalog(!filters.savedOnly);
         }}
         onShowRequests={() => {
           setDialog({kind: 'requests'});
@@ -138,7 +145,7 @@ export function HomePage({courses}: HomePageProps) {
             onChange={updateFilters}
             onClearAll={() => {
               // Keep the Saved tab active; only reset the filters.
-              setFilters({...DEFAULT_FILTERS, savedOnly: filters.savedOnly});
+              resetFilters({...DEFAULT_FILTERS, savedOnly: filters.savedOnly});
             }}
           />
           <CatalogGrid
@@ -149,6 +156,14 @@ export function HomePage({courses}: HomePageProps) {
             onSortChange={(sort) => {
               updateFilters({sort});
             }}
+            page={page}
+            onPageChange={(next) => {
+              setPage(next);
+              scrollToCatalog();
+            }}
+            onShowAll={() => {
+              updateFilters({savedOnly: false});
+            }}
             onOpenCourse={(course) => {
               setDialog({kind: 'detail', course});
             }}
@@ -156,7 +171,7 @@ export function HomePage({courses}: HomePageProps) {
               toggleSaved(courseId);
             }}
             onClearFilters={() => {
-              setFilters(DEFAULT_FILTERS);
+              resetFilters(DEFAULT_FILTERS);
             }}
           />
         </div>
@@ -202,7 +217,7 @@ export function HomePage({courses}: HomePageProps) {
             <ListingForm
               onSubmitted={() => {
                 // Clear filters so the new listing is visible at the top.
-                setFilters(DEFAULT_FILTERS);
+                resetFilters(DEFAULT_FILTERS);
                 setDialog(null);
                 showToast('Your training was added to this browser’s catalog.');
               }}

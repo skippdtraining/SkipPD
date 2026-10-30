@@ -24,3 +24,6 @@ export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 /** Longest custom topic a trainer can type when choosing "Other". */
 export const MAX_CUSTOM_TOPIC_LENGTH = 40;
+
+/** Course cards shown per catalog page; arrows move between pages. */
+export const COURSES_PER_PAGE = 6;

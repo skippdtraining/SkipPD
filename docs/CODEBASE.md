@@ -82,7 +82,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `SearchBox.tsx` | Search form used twice: large in the hero, compact in the header. Both share one query. |
 | `Hero.tsx` | Headline, search box and artwork. |
 | `FilterSidebar.tsx` | Format, grade, duration and price filters; collapsed behind a "Filters" button on phones. Only reports changes; filtering is in `lib/filter-courses.ts`. |
-| `CatalogGrid.tsx` | Result count, sort menu, the grid of `CourseCard`s, and the "no results" message. |
+| `CatalogGrid.tsx` | Result count, sort menu, one page of `CourseCard`s (max `COURSES_PER_PAGE`), page arrows/numbers, and the "no results" message. |
 | `CourseCard.tsx` | One course tile: cover, title, trainer, hours, grades, tags, price, heart button. |
 | `CourseIllustration.tsx` | Built-in SVG cover art for courses without an image, with one drawing per topic type. Copied from the POC. |
 | `Modal.tsx` | Reusable pop-up built on the native `<dialog>` element. Closes on Esc, the × button, or a click outside. |
@@ -125,6 +125,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 
 ## Changelog of this map
 - **Step 1:** initial structure; `HomeClient` split into section components; docs added.
-- **Step 2:** removed popular searches, trust bar and topic chips (topic is now free text with "Other"); new footer with link columns and `[slug]` placeholder pages; responsive layout; header search.
+- **Step 2:** removed Explore button (Saved toggles); catalog pagination;
+  removed popular searches, trust bar and topic chips (topic is now free text with "Other"); new footer with link columns and `[slug]` placeholder pages; responsive layout; header search.
 - **Roadmap change:** new Step 2 (UI changes) inserted; all later step numbers in docs and code comments shifted by one.
 - **Step 1 (modularity):** code moved to `web/`, docs to `docs/`; added `config/`, `lib/data/` repository layer, `lib/format.ts`.

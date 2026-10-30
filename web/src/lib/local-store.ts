@@ -18,7 +18,7 @@
 import {useSyncExternalStore} from 'react';
 
 /** Read / write / subscribe access to one persisted list. */
-export interface LocalStore<T> {
+interface LocalStore<T> {
   /** Current list. Always returns the same array until the list changes. */
   get(): T[];
   /** Replaces the list. Returns false if the browser refused (storage full). */

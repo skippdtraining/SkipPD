@@ -17,6 +17,7 @@ Requires Node.js 20.9+ (22 LTS recommended).
 ```bash
 cd web
 npm install
+cp .env.example .env.local   # then fill in the Supabase URL + publishable key
 npm run dev      # http://localhost:3000
 npm run lint
 npm run build

@@ -13,7 +13,6 @@ import {IMAGE_TYPES, MAX_CUSTOM_TOPIC_LENGTH, MAX_IMAGE_BYTES} from '@/config/ca
 import {addListing} from '@/lib/browser-storage';
 import {readFileAsDataUrl, readNumber, readText} from '@/lib/form-helpers';
 import {
-  CATEGORIES,
   FORMATS,
   GRADES,
   OTHER_CATEGORY,
@@ -30,6 +29,8 @@ const PREVIEW_TRAINER_NAME = 'You (preview)';
 const DEFAULT_COVER = {color: '#e7dff6', accent: '#8264ad', type: 'books'} as const;
 
 interface ListingFormProps {
+  /** Suggested topics for the topic dropdown, in display order. */
+  categories: string[];
   /** Called after the listing was saved. */
   onSubmitted: () => void;
   /** Called with a user-facing message when validation or saving failed. */
@@ -37,7 +38,7 @@ interface ListingFormProps {
 }
 
 /** Form for a new training listing. */
-export function ListingForm({onSubmitted, onError}: ListingFormProps) {
+export function ListingForm({categories, onSubmitted, onError}: ListingFormProps) {
   // Shows the custom topic field only when "Other" is selected.
   const [isOtherTopic, setIsOtherTopic] = useState(false);
 
@@ -118,7 +119,7 @@ export function ListingForm({onSubmitted, onError}: ListingFormProps) {
                 setIsOtherTopic(event.target.value === OTHER_CATEGORY);
               }}
             >
-              {CATEGORIES.map((category) => (
+              {categories.map((category) => (
                 <option key={category}>{category}</option>
               ))}
               <option>{OTHER_CATEGORY}</option>

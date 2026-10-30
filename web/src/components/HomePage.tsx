@@ -4,17 +4,22 @@
  * It contains no layout details of its own; those live in each component.
  *
  * Why a separate client component: `app/page.tsx` is a server component
- * (it will load courses from the database in Step 3). Anything that reacts
- * to clicks must run in the browser, which requires 'use client'.
+ * that loads the first page of courses from the database. Anything that
+ * reacts to clicks must run in the browser, which requires 'use client'.
+ *
+ * Search, filters and sort run on the server: when a control changes, this
+ * component asks `/api/courses` for new results (see lib/catalog-api.ts).
  */
 
 'use client';
 
-import {useMemo, useRef, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {toggleSaved, useOwnListings, useSavedIds} from '@/lib/browser-storage';
-import {filterCourses} from '@/lib/filter-courses';
+import {fetchCourses, toCourseQuery} from '@/lib/catalog-api';
+import {courseQueryToParams} from '@/lib/course-query-params';
+import {filterCourses, sortCourses} from '@/lib/filter-courses';
 import {DEFAULT_FILTERS, type CatalogFilters, type Course} from '@/lib/types';
-import {PAGE_CHANGE_SCROLL} from '@/config/catalog';
+import {PAGE_CHANGE_SCROLL, SEARCH_DEBOUNCE_MS} from '@/config/catalog';
 import {scrollBelowHeader} from '@/lib/scroll';
 import {useIsOffscreen} from '@/lib/use-is-offscreen';
 import {useToast} from '@/lib/use-toast';
@@ -48,12 +53,19 @@ const DIALOG_TITLES = {
 } as const;
 
 interface HomePageProps {
-  /** Catalog courses supplied by the server (sample data until Step 3). */
-  courses: Course[];
+  /** Courses matching {@link DEFAULT_FILTERS}, loaded by the server. */
+  initialCourses: Course[];
+  /** Suggested topics for the listing form, loaded by the server. */
+  categories: string[];
+}
+
+/** Identifies a server query, so the same search is never sent twice in a row. */
+function queryKey(filters: CatalogFilters, savedIds: number[]): string {
+  return courseQueryToParams(toCourseQuery(filters, savedIds)).toString();
 }
 
 /** Home page: header, hero, catalog, banner, footer and dialogs. */
-export function HomePage({courses}: HomePageProps) {
+export function HomePage({initialCourses, categories}: HomePageProps) {
   const [filters, setFilters] = useState<CatalogFilters>(DEFAULT_FILTERS);
   const [dialog, setDialog] = useState<OpenDialog>(null);
   const [toast, showToast] = useToast();
@@ -66,12 +78,50 @@ export function HomePage({courses}: HomePageProps) {
   const savedIds = useSavedIds();
   const ownListings = useOwnListings();
 
+  const [serverCourses, setServerCourses] = useState(initialCourses);
+  // The server already answered the default query; start from that.
+  const lastQueryKey = useRef(queryKey(DEFAULT_FILTERS, []));
+
+  // Ask the server again when the query changes. Saved ids only matter on
+  // the Saved tab, so saving a course elsewhere does not trigger a search.
+  const savedIdsForQuery = filters.savedOnly ? savedIds : [];
+  const currentQueryKey = queryKey(filters, savedIdsForQuery);
+  useEffect(() => {
+    if (currentQueryKey === lastQueryKey.current) return;
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      fetchCourses(toCourseQuery(filters, savedIdsForQuery), controller.signal)
+        .then((courses) => {
+          lastQueryKey.current = currentQueryKey;
+          setServerCourses(courses);
+        })
+        .catch((error: unknown) => {
+          // A newer query replaced this one; not a real failure.
+          if (controller.signal.aborted) return;
+          console.error(error);
+          showToast('Could not load trainings. Please try again.');
+        });
+    }, SEARCH_DEBOUNCE_MS);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+    // Only the key decides whether to search; `filters` and the ids are
+    // fully described by it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentQueryKey]);
+
   // useMemo: only recompute when an input changes, not on every render
-  // (e.g. opening a dialog should not re-filter the catalog).
-  const allCourses = useMemo(() => [...ownListings, ...courses], [ownListings, courses]);
+  // (e.g. opening a dialog should not re-sort the catalog).
+  // Browser-only listings are filtered here, then merged with the server's
+  // results; "recommended" keeps the browser listings first.
   const visibleCourses = useMemo(
-    () => filterCourses(allCourses, filters, savedIds),
-    [allCourses, filters, savedIds],
+    () =>
+      sortCourses(
+        [...filterCourses(ownListings, filters, savedIds), ...serverCourses],
+        filters.sort,
+      ),
+    [ownListings, filters, savedIds, serverCourses],
   );
 
   // Any filter change goes back to page 1, so results never start on an
@@ -125,7 +175,9 @@ export function HomePage({courses}: HomePageProps) {
         }}
         onSearch={scrollToCatalog}
         searchRef={heroSearchRef}
-        artCourse={courses.find((c) => c.type === 'classroom') ?? courses[0]}
+        artCourse={
+          initialCourses.find((c) => c.type === 'classroom') ?? initialCourses[0]
+        }
       />
 
       <div ref={catalogStartRef} aria-hidden="true" />
@@ -222,6 +274,7 @@ export function HomePage({courses}: HomePageProps) {
           )}
           {dialog.kind === 'listing' && (
             <ListingForm
+              categories={categories}
               onSubmitted={() => {
                 // Clear filters so the new listing is visible at the top.
                 resetFilters(DEFAULT_FILTERS);

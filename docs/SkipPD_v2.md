@@ -201,23 +201,29 @@ Rule: do not start step N+1 until step N is deployed and manually tested.
 
 ---
 
-## 8. Current step - Step 2: UI changes
+## 8. Current step - Step 3: Database-backed catalog
 
-**Status:** Step 1 merged into `dev`. Step 2 in progress on branch `feature/step-2-ui-changes`.
+**Status:** Step 2 merged into `dev`. Step 3 in progress on branch `feature/step-3-supabase-catalog`.
 
 ### Step 1 - Skeleton + deploy (done)
 Next.js app in `web/`, POC UI ported into documented components, sample data in a local file, Vercel connected (Root Directory `web`).
 
-### Step 2 - UI changes (current)
+### Step 2 - UI changes (done)
 1. Collect the owner's frontend change list (layout, header, styling, content).
 2. Apply the changes on `feature/step-2-ui-changes`; keep using `config/` and CSS variables so changes stay modular.
 3. Review on the Vercel preview URL of the PR.
 **Checkpoint:** owner approves the revised design; PR merged into `dev`.
 
-### Step 3 - Database-backed catalog (next)
+### Step 3 - Database-backed catalog (current)
 Prerequisite (owner): create the Supabase project and share the Project URL + publishable key.
 1. Add categories and listings tables in Supabase.
 2. Seed the 6 POC courses.
 3. Add a Supabase `CourseRepository`; search, filters and sort run on the server.
 4. Store Supabase keys as Vercel environment variables (never commit them).
 **Checkpoint:** editing a course in the Supabase dashboard changes the live site.
+
+Decisions taken in Step 3:
+- Listings store the topic as text; the `categories` table only feeds the suggested topics in the listing form (trainers can still type "Other").
+- Only the publishable key is used. Row Level Security allows public read of published listings and categories, and no writes.
+- The home page reads the database on every request (no cache), so dashboard edits show on the next page load.
+- Pagination stays in the browser while trainer-created listings still live in localStorage; it can move to the server once listings are in the database.

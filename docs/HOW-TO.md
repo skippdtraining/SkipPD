@@ -20,7 +20,7 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Scroll behaviour when changing catalog page | `web/src/config/catalog.ts` → `PAGE_CHANGE_SCROLL` | `'catalog-top'` or `'none'`. Header height is measured live (`lib/scroll.ts`). |
 | Max learning outcomes / outcome length | `web/src/config/catalog.ts` → `MAX_OUTCOMES`, `MAX_OUTCOME_LENGTH` | |
 | Image upload size / allowed types | `web/src/config/catalog.ts` → `MAX_IMAGE_BYTES`, `IMAGE_TYPES` | |
-| Suggested topics in the listing form | `web/src/lib/types.ts` → `CATEGORIES` | Trainers can also choose "Other" and type a topic (max length: `MAX_CUSTOM_TOPIC_LENGTH` in `config/catalog.ts`). |
+| Suggested topics in the listing form | Supabase table `categories` (`name`, `sort_order`) | Trainers can also choose "Other" and type a topic (max length: `MAX_CUSTOM_TOPIC_LENGTH` in `config/catalog.ts`). |
 | Grade bands | `web/src/lib/types.ts` → `Grade`, `GRADES` | Update both. |
 | Delivery formats | `web/src/lib/types.ts` → `Format`, `FORMATS` | Update both. |
 | Default filter state | `web/src/lib/types.ts` → `DEFAULT_FILTERS` | |
@@ -37,9 +37,12 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Phone menu (☰) | `web/src/components/SiteHeader.tsx`, CSS `.menu-toggle` + 730px block | |
 | Footer copyright year | `web/src/config/site.ts` → `copyrightYear` | |
 | Price / grade display format | `web/src/lib/format.ts` | |
-| Search / filter / sort logic | `web/src/lib/filter-courses.ts` | |
+| Search / filter / sort logic | `web/src/lib/data/supabase-course-repository.ts` → `searchCourses` | Runs in the database. Browser-only listings use the same rules in `lib/filter-courses.ts`; keep both in sync. |
+| Search delay while typing | `web/src/config/catalog.ts` → `SEARCH_DEBOUNCE_MS` | |
+| Course content (title, price, outcomes...) | Supabase dashboard → Table Editor → `listings` | Live on next page load. Set `is_published` to false to hide a course; `recommended_rank` orders "Recommended". |
+| Database tables / seed data | `supabase/migrations/*.sql`, `supabase/seed.sql` | See "Supabase setup" recipe. |
+| Supabase URL / key | `web/.env.local` (local), Vercel → Settings → Environment Variables | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`. Template: `web/.env.example`. |
 | Where course data comes from (database) | `web/src/lib/data/course-repository.ts` → `getCourseRepository()` | See recipe below. |
-| Sample courses (temporary) | `web/src/lib/data/sample-courses.ts` | Removed in Step 3. |
 | Required PR reviewer | `.github/CODEOWNERS` | |
 | Files git ignores | `.gitignore` | |
 
@@ -48,8 +51,20 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 ## Recipes
 
 ### Add a suggested topic
-1. Add the name to `CATEGORIES` in `web/src/lib/types.ts`.
-2. Topics are free text, so no database change is needed for new topics.
+1. Supabase dashboard → Table Editor → `categories` → Insert row (`name`, `sort_order`).
+2. Topics are free text on listings, so existing listings need no change.
+
+### Supabase setup (new project or new environment)
+1. Supabase dashboard → SQL Editor → New query: paste and run each file in `supabase/migrations/` in order.
+2. Run `supabase/seed.sql` the same way to load the starter topics and courses. It empties both tables first.
+3. Copy `web/.env.example` to `web/.env.local` and fill in the Project URL and publishable key (Project Settings → API Keys).
+4. Vercel → Project → Settings → Environment Variables: add `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` for Production and Preview, then redeploy.
+5. Never use the secret (service role) key in this app. It bypasses Row Level Security.
+
+### Change the database schema
+1. Add a new numbered file, e.g. `supabase/migrations/0002_<topic>.sql`. Never edit a migration that was already run.
+2. Run it in the SQL Editor.
+3. Update `ListingRow` / `toCourse` in `web/src/lib/data/supabase-course-repository.ts`, and `lib/types.ts` if the app type changes.
 
 ### Add a footer page
 1. Add `{label, href}` to a column in `FOOTER_COLUMNS` (`web/src/config/site.ts`). The footer link and a "Coming soon" page appear automatically.

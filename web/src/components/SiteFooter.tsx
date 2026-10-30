@@ -4,7 +4,8 @@
  */
 
 import Link from 'next/link';
-import {FOOTER_COLUMNS, SITE, SITE_NAME} from '@/config/site';
+import {FOOTER_COLUMNS, SITE, SITE_NAME, SOCIAL_LINKS} from '@/config/site';
+import {SocialIcon} from './SocialIcon';
 
 interface TrainerBannerProps {
   onListTraining: () => void;
@@ -39,6 +40,20 @@ export function SiteFooter() {
             </span>
           </span>
           <p>{SITE.footerTagline}</p>
+          <div className="footer-social">
+            {SOCIAL_LINKS.map((social) => (
+              // External site: new tab, and noopener so it cannot control this page.
+              <a
+                key={social.label}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${SITE_NAME} on ${social.label}`}
+              >
+                <SocialIcon icon={social.icon} />
+              </a>
+            ))}
+          </div>
         </div>
         <nav className="footer-links" aria-label="Footer">
           {FOOTER_COLUMNS.map((column) => (

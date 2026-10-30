@@ -180,6 +180,44 @@ header.with-search .header-search {
   font-size: 13px;
 }
 
+/* ☰ menu button: phones only (shown in the 730px media query). */
+.menu-toggle {
+  display: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: white;
+  font-size: 20px;
+}
+
+/* Footer social icons */
+.footer-social {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.footer-social a {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.footer-social a:hover {
+  color: var(--purple);
+  border-color: var(--purple);
+}
+.footer-social svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
 /* Hero: full-width tinted band with a dividing line, separating search from the catalog. */
 .hero-band {
   background: var(--hero-bg);
@@ -825,51 +863,64 @@ dialog::backdrop {
   }
 }
 @media (max-width: 730px) {
-  /* Header: brand on top, nav underneath as a sideways-scrolling row. */
+  /* Header: brand + menu button on one row; search and menu drop below. */
   header {
     height: auto;
-    flex-direction: column;
-    align-items: stretch;
-    padding: 8px 4%;
-    gap: 4px;
+    flex-wrap: wrap;
+    padding: 10px 4%;
+    gap: 0;
   }
   .brand {
     font-size: 20px;
+    flex: 1;
   }
-  header nav {
-    gap: 6px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    font-size: 13px;
+  .menu-toggle {
+    display: grid;
   }
-  header nav::-webkit-scrollbar {
-    display: none;
-  }
-  /* Phone: header search becomes its own full-width row (animated height). */
+  /* Search: full-width row under the brand (animated height). */
   .header-search {
-    flex: none;
+    order: 3;
+    flex: 0 0 100%;
     max-width: none;
     max-height: 0;
     transition:
       max-height 0.3s ease,
+      margin 0.3s ease,
       opacity 0.2s ease,
       transform 0.3s ease;
   }
   header.with-search .header-search {
     max-width: none;
     max-height: 60px;
+    margin-top: 10px;
   }
   .search.search-compact input {
     font-size: 16px;
   }
+  /* Menu: hidden until the ☰ button is tapped, then a vertical list. */
+  header nav {
+    order: 4;
+    flex: 0 0 100%;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+    font-size: 15px;
+  }
+  header.menu-open nav {
+    display: flex;
+  }
   header nav button {
-    flex: 0 0 auto;
-    min-height: 40px;
-    padding: 8px 10px;
-    white-space: nowrap;
+    min-height: 44px;
+    padding: 10px 4px;
+    text-align: left;
   }
   header nav .btn {
-    margin-left: auto;
+    justify-content: center;
+    margin-top: 6px;
   }
   .hero {
     grid-template-columns: 1fr;

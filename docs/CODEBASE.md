@@ -78,7 +78,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | File | What / why |
 |---|---|
 | `HomePage.tsx` | **The conductor.** Owns page state (filters, which dialog is open, toast message), combines sample and browser listings, and wires all the sections together. Start reading here. |
-| `SiteHeader.tsx` | Sticky top bar: logo, compact search (fades in once the hero search scrolls away), Explore / Saved / My requests, and "List your training". Step 4 adds login and role-based links. |
+| `SiteHeader.tsx` | Sticky top bar: logo, compact search (fades in once the hero search scrolls away), Explore / Saved / My requests, and "List your training" (behind a ☰ menu on phones). Step 4 adds login and role-based links. |
 | `SearchBox.tsx` | Search form used twice: large in the hero, compact in the header. Both share one query. |
 | `Hero.tsx` | Headline, search box and artwork. |
 | `FilterSidebar.tsx` | Format, grade, duration and price filters; collapsed behind a "Filters" button on phones. Only reports changes; filtering is in `lib/filter-courses.ts`. |
@@ -90,7 +90,8 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `BookingForm.tsx` | Dialog content: the booking request form. Saves to the browser for now; Step 7 saves to the DB. |
 | `ListingForm.tsx` | Dialog content: the new-listing form, with image validation (max 1 MB) and an "Other" topic option that reveals a free-text field. Saves to the browser for now; Step 5 saves to the DB. |
 | `RequestList.tsx` | Dialog content: "My booking requests", each with a Remove button. |
-| `SiteFooter.tsx` | `TrainerBanner` ("Become a PD trainer") and `SiteFooter`: brand, link columns from `config/site.ts`, copyright. |
+| `SocialIcon.tsx` | Inline SVG logos (LinkedIn, Instagram, Facebook, X) for the footer. |
+| `SiteFooter.tsx` | `TrainerBanner` ("Become a PD trainer") and `SiteFooter`: brand, social icons, link columns from `config/site.ts`, copyright. |
 
 ## `src/config/`: settings, no logic
 

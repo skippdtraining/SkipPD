@@ -5,7 +5,14 @@
  *
  * When the hero search box scrolls away, a compact copy of it fades in here
  * so search is always one tap away.
+ *
+ * On phones the nav buttons hide behind a ☰ menu button (CSS shows the
+ * button only below 730px; the open state is ignored on larger screens).
  */
+
+'use client';
+
+import {useState} from 'react';
 
 import {SITE, SITE_NAME} from '@/config/site';
 import {SearchBox} from './SearchBox';
@@ -38,8 +45,22 @@ export function SiteHeader({
   onQueryChange,
   onSearch,
 }: SiteHeaderProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  /** Runs a nav action and closes the phone menu. */
+  function choose(action: () => void) {
+    return () => {
+      setMenuOpen(false);
+      action();
+    };
+  }
+
+  const headerClass = [showSearch ? 'with-search' : '', menuOpen ? 'menu-open' : '']
+    .filter((name) => name !== '')
+    .join(' ');
+
   return (
-    <header className={showSearch ? 'with-search' : ''}>
+    <header className={headerClass}>
       <a className="brand" href="./" aria-label={`${SITE_NAME} home`}>
         <span className="logo">✧</span>
         <span className="brand-name">
@@ -58,15 +79,26 @@ export function SiteHeader({
           onSearch={onSearch}
         />
       </div>
-      <nav>
-        <button className={savedOnly ? '' : 'nav-active'} onClick={onExplore}>
+      <button
+        className="menu-toggle"
+        aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+        aria-expanded={menuOpen}
+        aria-controls="main-nav"
+        onClick={() => {
+          setMenuOpen(!menuOpen);
+        }}
+      >
+        {menuOpen ? '✕' : '☰'}
+      </button>
+      <nav id="main-nav">
+        <button className={savedOnly ? '' : 'nav-active'} onClick={choose(onExplore)}>
           Explore training
         </button>
-        <button className={savedOnly ? 'nav-active' : ''} onClick={onShowSaved}>
+        <button className={savedOnly ? 'nav-active' : ''} onClick={choose(onShowSaved)}>
           Saved <span className="saved-count">{savedCount}</span>
         </button>
-        <button onClick={onShowRequests}>My requests</button>
-        <button className="btn small" onClick={onListTraining}>
+        <button onClick={choose(onShowRequests)}>My requests</button>
+        <button className="btn small" onClick={choose(onListTraining)}>
           + List your training
         </button>
       </nav>

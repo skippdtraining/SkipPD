@@ -41,12 +41,15 @@ export const FOOTER_COLUMNS: Array<{title: string; links: FooterLink[]}> = [
     links: [
       {label: 'About Us', href: '/about'},
       {label: 'How it works', href: '/how-it-works'},
-      {label: 'Contact Us', href: '/contact'},
+      {label: 'Blog', href: '/blog'},
     ],
   },
   {
     title: 'Support',
-    links: [{label: 'FAQ', href: '/faq'}],
+    links: [
+      {label: 'FAQ', href: '/faq'},
+      {label: 'Contact Us', href: '/contact'},
+    ],
   },
   {
     title: 'Legal',
@@ -59,3 +62,24 @@ export const FOOTER_COLUMNS: Array<{title: string; links: FooterLink[]}> = [
 
 /** Full brand name, e.g. "SkipPD". */
 export const SITE_NAME = `${SITE.nameStart}${SITE.nameEnd}`;
+
+/** A social media profile shown as an icon in the footer. */
+export interface SocialLink {
+  /** Accessible name, e.g. "LinkedIn". */
+  label: string;
+  /** Which icon to draw (see components/SocialIcon.tsx). */
+  icon: 'linkedin' | 'instagram' | 'facebook' | 'x';
+  /**
+   * Profile URL. PLACEHOLDER: these point to the platforms' home pages until
+   * the SkipPD accounts exist; replace with the real profile URLs.
+   */
+  href: string;
+}
+
+/** Footer social icons, in display order. Remove an entry to hide its icon. */
+export const SOCIAL_LINKS: SocialLink[] = [
+  {label: 'LinkedIn', icon: 'linkedin', href: 'https://www.linkedin.com/'},
+  {label: 'Instagram', icon: 'instagram', href: 'https://www.instagram.com/'},
+  {label: 'Facebook', icon: 'facebook', href: 'https://www.facebook.com/'},
+  {label: 'X', icon: 'x', href: 'https://x.com/'},
+];

@@ -14,6 +14,8 @@ import {useMemo, useRef, useState} from 'react';
 import {toggleSaved, useOwnListings, useSavedIds} from '@/lib/browser-storage';
 import {filterCourses} from '@/lib/filter-courses';
 import {DEFAULT_FILTERS, type CatalogFilters, type Course} from '@/lib/types';
+import {PAGE_CHANGE_SCROLL} from '@/config/catalog';
+import {scrollBelowHeader} from '@/lib/scroll';
 import {useIsOffscreen} from '@/lib/use-is-offscreen';
 import {useToast} from '@/lib/use-toast';
 import {BookingForm} from './BookingForm';
@@ -57,6 +59,8 @@ export function HomePage({courses}: HomePageProps) {
   const [toast, showToast] = useToast();
   const [page, setPage] = useState(1);
   const catalogTitleRef = useRef<HTMLHeadingElement>(null);
+  // Zero-height marker at the line between the search area and the catalog.
+  const catalogStartRef = useRef<HTMLDivElement>(null);
   const heroSearchRef = useRef<HTMLDivElement>(null);
   const heroSearchHidden = useIsOffscreen(heroSearchRef, HEADER_HEIGHT_PX);
   const savedIds = useSavedIds();
@@ -124,6 +128,7 @@ export function HomePage({courses}: HomePageProps) {
         artCourse={courses.find((c) => c.type === 'classroom') ?? courses[0]}
       />
 
+      <div ref={catalogStartRef} aria-hidden="true" />
       <main className="main">
         <div className="title-row">
           <div>
@@ -159,7 +164,9 @@ export function HomePage({courses}: HomePageProps) {
             page={page}
             onPageChange={(next) => {
               setPage(next);
-              scrollToCatalog();
+              if (PAGE_CHANGE_SCROLL === 'catalog-top' && catalogStartRef.current) {
+                scrollBelowHeader(catalogStartRef.current);
+              }
             }}
             onShowAll={() => {
               updateFilters({savedOnly: false});

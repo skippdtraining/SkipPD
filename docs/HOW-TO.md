@@ -17,6 +17,7 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Price filter brackets ("Under $75"...) | `web/src/config/catalog.ts` → `PRICE_FILTER_OPTIONS` | Values in USD. |
 | What counts as a "short" course | `web/src/config/catalog.ts` → `SHORT_COURSE_MAX_HOURS` | Filter labels update automatically. |
 | Cards per catalog page | `web/src/config/catalog.ts` → `COURSES_PER_PAGE` | Arrows + page numbers appear when there are more. |
+| Scroll behaviour when changing catalog page | `web/src/config/catalog.ts` → `PAGE_CHANGE_SCROLL` | `'catalog-top'` or `'none'`. Header height is measured live (`lib/scroll.ts`). |
 | Max keywords per listing | `web/src/config/catalog.ts` → `MAX_LISTING_TAGS` | |
 | Image upload size / allowed types | `web/src/config/catalog.ts` → `MAX_IMAGE_BYTES`, `IMAGE_TYPES` | |
 | Suggested topics in the listing form | `web/src/lib/types.ts` → `CATEGORIES` | Trainers can also choose "Other" and type a topic (max length: `MAX_CUSTOM_TOPIC_LENGTH` in `config/catalog.ts`). |

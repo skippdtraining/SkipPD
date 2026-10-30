@@ -119,6 +119,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `format.ts` | Display helpers: `initials`, `gradeLabel`, `formatPrice`. |
 | `form-helpers.ts` | Reads text and numbers out of submitted forms, splits lists, and reads image files. |
 | `use-is-offscreen.ts` | Hook: tells whether an element scrolled out of view (IntersectionObserver). Drives the header search. |
+| `scroll.ts` | `scrollBelowHeader()`: smooth scroll that measures the sticky header live, so no hard-coded heights. |
 | `use-toast.ts` | Hook for the short bottom-of-screen message that disappears after 4 s. |
 
 ---

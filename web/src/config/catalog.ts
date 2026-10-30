@@ -27,3 +27,11 @@ export const MAX_CUSTOM_TOPIC_LENGTH = 40;
 
 /** Course cards shown per catalog page; arrows move between pages. */
 export const COURSES_PER_PAGE = 6;
+
+/**
+ * What happens when the user changes catalog page:
+ * - 'catalog-top': scroll so the line between the search area and the
+ *   catalog sits just under the header;
+ * - 'none': stay where you are.
+ */
+export const PAGE_CHANGE_SCROLL: 'catalog-top' | 'none' = 'catalog-top';

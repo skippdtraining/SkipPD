@@ -1,25 +1,30 @@
 /**
  * @fileoverview "Share your expertise" form for creating a training listing.
  *
- * Currently saves the listing in the browser (same as the POC). In Step 4 it
+ * Currently saves the listing in the browser (same as the POC). In Step 5 it
  * is only available to teacher accounts, writes to the database, and uploads
  * the image to Supabase Storage instead of storing it as text.
  */
 
 'use client';
 
-import {IMAGE_TYPES, MAX_IMAGE_BYTES, MAX_LISTING_TAGS} from '@/config/catalog';
+import {useState} from 'react';
+import {IMAGE_TYPES, MAX_CUSTOM_TOPIC_LENGTH, MAX_IMAGE_BYTES} from '@/config/catalog';
 import {addListing} from '@/lib/browser-storage';
-import {readFileAsDataUrl, readNumber, readText, splitList} from '@/lib/form-helpers';
+import {readFileAsDataUrl, readNumber, readText} from '@/lib/form-helpers';
 import {
   CATEGORIES,
   FORMATS,
   GRADES,
-  type Category,
+  OTHER_CATEGORY,
   type Course,
   type Format,
   type Grade,
 } from '@/lib/types';
+import {OutcomeListField} from './OutcomeListField';
+
+/** Shown as trainer on browser-created listings until accounts exist (Step 4). */
+const PREVIEW_TRAINER_NAME = 'You (preview)';
 
 /** Default look for listings without an image (purple "books" artwork). */
 const DEFAULT_COVER = {color: '#e7dff6', accent: '#8264ad', type: 'books'} as const;
@@ -33,6 +38,9 @@ interface ListingFormProps {
 
 /** Form for a new training listing. */
 export function ListingForm({onSubmitted, onError}: ListingFormProps) {
+  // Shows the custom topic field only when "Other" is selected.
+  const [isOtherTopic, setIsOtherTopic] = useState(false);
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -55,16 +63,23 @@ export function ListingForm({onSubmitted, onError}: ListingFormProps) {
     const course: Course = {
       id: Date.now(),
       title: readText(data, 'title'),
-      trainer: readText(data, 'trainer'),
-      role: readText(data, 'role'),
-      category: readText(data, 'category') as Category,
+      // Trainer name and credentials will come from the signed-in account
+      // (Step 4); until then the listing is labelled with a placeholder.
+      trainer: PREVIEW_TRAINER_NAME,
+      role: '',
+      category: isOtherTopic
+        ? readText(data, 'customCategory')
+        : readText(data, 'category'),
       format: readText(data, 'format') as Format,
       hours: readNumber(data, 'hours', 1),
       price: readNumber(data, 'price', 0),
       grades: gradeChoice === 'all' ? [...GRADES] : [gradeChoice as Grade],
-      tags: splitList(readText(data, 'tags'), ',').slice(0, MAX_LISTING_TAGS),
+      tags: [],
       description: readText(data, 'description'),
-      outcomes: splitList(readText(data, 'outcomes'), '\n'),
+      outcomes: data
+        .getAll('outcomes')
+        .map((value) => String(value).trim())
+        .filter((value) => value !== ''),
       ...DEFAULT_COVER,
       image: imageFile ? await readFileAsDataUrl(imageFile) : undefined,
     };
@@ -96,26 +111,17 @@ export function ListingForm({onSubmitted, onError}: ListingFormProps) {
         </label>
         <div className="two">
           <label className="field">
-            Trainer name
-            <input name="trainer" maxLength={90} required />
-          </label>
-          <label className="field">
-            Experience / credentials
-            <input
-              name="role"
-              maxLength={180}
-              placeholder="e.g., Literacy coach · 12 years teaching"
-              required
-            />
-          </label>
-        </div>
-        <div className="two">
-          <label className="field">
             Topic
-            <select name="category">
+            <select
+              name="category"
+              onChange={(event) => {
+                setIsOtherTopic(event.target.value === OTHER_CATEGORY);
+              }}
+            >
               {CATEGORIES.map((category) => (
                 <option key={category}>{category}</option>
               ))}
+              <option>{OTHER_CATEGORY}</option>
             </select>
           </label>
           <label className="field">
@@ -127,6 +133,17 @@ export function ListingForm({onSubmitted, onError}: ListingFormProps) {
             </select>
           </label>
         </div>
+        {isOtherTopic && (
+          <label className="field">
+            Your topic
+            <input
+              name="customCategory"
+              maxLength={MAX_CUSTOM_TOPIC_LENGTH}
+              placeholder="e.g., Music education"
+              required
+            />
+          </label>
+        )}
         <div className="two">
           <label className="field">
             Duration (hours)
@@ -147,22 +164,10 @@ export function ListingForm({onSubmitted, onError}: ListingFormProps) {
           </select>
         </label>
         <label className="field">
-          Keywords (comma separated)
-          <input
-            name="tags"
-            placeholder="Phonics, reading, literacy"
-            maxLength={150}
-            required
-          />
-        </label>
-        <label className="field">
           Course description
           <textarea name="description" required maxLength={1500} />
         </label>
-        <label className="field">
-          Learning outcomes (one per line)
-          <textarea name="outcomes" required maxLength={1200} />
-        </label>
+        <OutcomeListField name="outcomes" />
         <label className="field">
           Course image (optional, JPG / PNG / WebP, max 1 MB)
           <input type="file" name="image" accept={IMAGE_TYPES.join(',')} />

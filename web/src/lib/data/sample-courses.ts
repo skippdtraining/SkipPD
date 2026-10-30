@@ -3,7 +3,7 @@ import type {Course} from '../types';
 /**
  * @fileoverview The six sample listings copied from the HTML POC.
  *
- * TEMPORARY: Step 2 moves these into the Supabase database as seed data and
+ * TEMPORARY: Step 3 moves these into the Supabase database as seed data and
  * this file is deleted. The POC's self-paced course (AI tools) is switched
  * to "Live online" because self-paced is deferred (SkipPD_v2.md, section 3).
  */

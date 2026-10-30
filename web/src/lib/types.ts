@@ -3,7 +3,7 @@
  *
  * Every component and helper imports its types from here, so there is one
  * source of truth for what a "course" or a "booking request" looks like.
- * In Step 2 these shapes will mirror the Supabase database tables.
+ * In Step 3 these shapes will mirror the Supabase database tables.
  */
 
 /**
@@ -22,8 +22,9 @@ export const GRADES: Grade[] = ['K–5', '6–8', '9–12'];
 export const FORMATS: Format[] = ['Live online', 'In person'];
 
 /**
- * Training topics. Declared `as const` so TypeScript can derive the
- * {@link Category} type from this list instead of repeating the values.
+ * Suggested training topics shown in the listing form. A trainer can also
+ * pick "Other" and type their own topic, so a course's topic is free text
+ * (see {@link Course.category}) and there is no topic filter.
  */
 export const CATEGORIES = [
   'Literacy',
@@ -32,10 +33,10 @@ export const CATEGORIES = [
   'Special education',
   'Classroom management',
   'Leadership',
-] as const;
+];
 
-/** One of the values in {@link CATEGORIES}. */
-export type Category = (typeof CATEGORIES)[number];
+/** Value of the listing-form option that reveals the custom topic field. */
+export const OTHER_CATEGORY = 'Other';
 
 /** Which built-in illustration to draw when a listing has no uploaded image. */
 export type CoverType =
@@ -46,10 +47,11 @@ export interface Course {
   /** Unique id. Sample data uses 1-6; browser-created listings use a timestamp. */
   id: number;
   title: string;
-  category: Category;
-  /** Trainer display name. Becomes a link to the trainer's profile in Step 3. */
+  /** Topic: one of {@link CATEGORIES} or a custom one typed by the trainer. */
+  category: string;
+  /** Trainer display name. Becomes a link to the trainer's profile in Step 4. */
   trainer: string;
-  /** Trainer experience / credentials line, e.g. "Literacy coach · 12 years". */
+  /** Trainer credentials line; comes from the trainer's profile from Step 4. Empty if unknown. */
   role: string;
   format: Format;
   /** Session length in hours. */
@@ -57,7 +59,7 @@ export interface Course {
   /** Price per participant, in USD. */
   price: number;
   grades: Grade[];
-  /** Search keywords, max 5. */
+  /** Search keywords. Not entered in the listing form; only sample data has them. */
   tags: string[];
   description: string;
   /** "What you'll take away" bullet points. */
@@ -67,7 +69,7 @@ export interface Course {
   /** Cover accent colour (hex), used by the illustration. */
   accent: string;
   type: CoverType;
-  /** Optional uploaded cover image as a data URL. Moves to file storage in Step 4. */
+  /** Optional uploaded cover image as a data URL. Moves to file storage in Step 5. */
   image?: string;
 }
 
@@ -95,7 +97,6 @@ export interface BookingRequest {
 export interface CatalogFilters {
   /** Free-text search over title, category, trainer and tags. */
   query: string;
-  category: Category | 'All topics';
   /** Selected formats; empty means "any format". */
   formats: Format[];
   /** Selected grade band; empty string means "all grades". */
@@ -112,7 +113,6 @@ export interface CatalogFilters {
 /** Filter state when the page first loads or after "Clear all". */
 export const DEFAULT_FILTERS: CatalogFilters = {
   query: '',
-  category: 'All topics',
   formats: [],
   grade: '',
   duration: '',

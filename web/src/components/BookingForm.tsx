@@ -2,8 +2,8 @@
  * @fileoverview "Request training" form shown in a dialog after clicking
  * "Request a session" on a course.
  *
- * Currently saves the request in the browser (same as the POC). In Step 6 it
- * creates a booking in the database and emails the trainer; in Step 3 the
+ * Currently saves the request in the browser (same as the POC). In Step 7 it
+ * creates a booking in the database and emails the trainer; in Step 4 the
  * name / email fields are pre-filled from the logged-in account.
  */
 

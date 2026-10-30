@@ -2,7 +2,7 @@
  * @fileoverview Catalog search, filter and sort logic.
  *
  * Kept as a pure function (no React, no browser APIs) so it is easy to read
- * and test. In Step 2 the same filtering moves into database queries; the
+ * and test. In Step 3 the same filtering moves into database queries; the
  * {@link CatalogFilters} shape stays the same so the UI does not change.
  */
 
@@ -32,10 +32,6 @@ function matchesFilters(
   savedIds: number[],
 ): boolean {
   if (filters.savedOnly && !savedIds.includes(course.id)) return false;
-
-  if (filters.category !== 'All topics' && course.category !== filters.category) {
-    return false;
-  }
 
   const query = filters.query.toLowerCase().trim();
   if (query !== '') {

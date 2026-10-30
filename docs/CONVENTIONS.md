@@ -23,7 +23,7 @@ Each `.ts` / `.tsx` file opens with a `@fileoverview` comment that answers:
 /**
  * @fileoverview Catalog search, filter and sort logic.
  *
- * Kept as a pure function so it is easy to test. In Step 2 the same
+ * Kept as a pure function so it is easy to test. In Step 3 the same
  * filtering moves into database queries.
  */
 ```
@@ -35,7 +35,7 @@ Each `.ts` / `.tsx` file opens with a `@fileoverview` comment that answers:
 - Inside functions, comment only non-obvious decisions:
   - Good: `// Stop the click from also opening the course via the cover.`
   - Bad: `// Call stopPropagation.`
-- Mark temporary code with the step that removes it: `TEMPORARY: Step 4 ...`.
+- Mark temporary code with the step that removes it: `TEMPORARY: Step 5 ...`.
 
 ## 4. Naming
 

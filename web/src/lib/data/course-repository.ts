@@ -8,7 +8,7 @@
  * databases then means writing one new file and changing one line here,
  * with no changes to the UI.
  *
- * Current backend: in-memory sample data. Step 2 adds a Supabase one.
+ * Current backend: in-memory sample data. Step 3 adds a Supabase one.
  */
 
 import type {Course} from '../types';

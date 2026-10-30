@@ -4,7 +4,7 @@
  * It contains no layout details of its own; those live in each component.
  *
  * Why a separate client component: `app/page.tsx` is a server component
- * (it will load courses from the database in Step 2). Anything that reacts
+ * (it will load courses from the database in Step 3). Anything that reacts
  * to clicks must run in the browser, which requires 'use client'.
  */
 
@@ -14,12 +14,15 @@ import {useMemo, useRef, useState} from 'react';
 import {toggleSaved, useOwnListings, useSavedIds} from '@/lib/browser-storage';
 import {filterCourses} from '@/lib/filter-courses';
 import {DEFAULT_FILTERS, type CatalogFilters, type Course} from '@/lib/types';
+import {PAGE_CHANGE_SCROLL} from '@/config/catalog';
+import {scrollBelowHeader} from '@/lib/scroll';
+import {useIsOffscreen} from '@/lib/use-is-offscreen';
 import {useToast} from '@/lib/use-toast';
 import {BookingForm} from './BookingForm';
 import {CatalogGrid} from './CatalogGrid';
 import {CourseDetail} from './CourseDetail';
-import {CategoryChips, FilterSidebar} from './FilterSidebar';
-import {Hero, TrustBar} from './Hero';
+import {FilterSidebar} from './FilterSidebar';
+import {Hero} from './Hero';
 import {ListingForm} from './ListingForm';
 import {Modal} from './Modal';
 import {RequestList} from './RequestList';
@@ -34,6 +37,9 @@ type OpenDialog =
   | {kind: 'requests'}
   | null;
 
+/** Sticky header height in px (desktop); matches `header` in globals.css. */
+const HEADER_HEIGHT_PX = 64;
+
 const DIALOG_TITLES = {
   detail: 'Explore this training',
   booking: 'Request training',
@@ -42,7 +48,7 @@ const DIALOG_TITLES = {
 } as const;
 
 interface HomePageProps {
-  /** Catalog courses supplied by the server (sample data until Step 2). */
+  /** Catalog courses supplied by the server (sample data until Step 3). */
   courses: Course[];
 }
 
@@ -51,7 +57,12 @@ export function HomePage({courses}: HomePageProps) {
   const [filters, setFilters] = useState<CatalogFilters>(DEFAULT_FILTERS);
   const [dialog, setDialog] = useState<OpenDialog>(null);
   const [toast, showToast] = useToast();
+  const [page, setPage] = useState(1);
   const catalogTitleRef = useRef<HTMLHeadingElement>(null);
+  // Zero-height marker at the line between the search area and the catalog.
+  const catalogStartRef = useRef<HTMLDivElement>(null);
+  const heroSearchRef = useRef<HTMLDivElement>(null);
+  const heroSearchHidden = useIsOffscreen(heroSearchRef, HEADER_HEIGHT_PX);
   const savedIds = useSavedIds();
   const ownListings = useOwnListings();
 
@@ -63,8 +74,16 @@ export function HomePage({courses}: HomePageProps) {
     [allCourses, filters, savedIds],
   );
 
+  // Any filter change goes back to page 1, so results never start on an
+  // empty page. All filter updates go through these two functions.
   function updateFilters(patch: Partial<CatalogFilters>) {
     setFilters((current) => ({...current, ...patch}));
+    setPage(1);
+  }
+
+  function resetFilters(next: CatalogFilters) {
+    setFilters(next);
+    setPage(1);
   }
 
   function scrollToCatalog() {
@@ -81,11 +100,9 @@ export function HomePage({courses}: HomePageProps) {
       <SiteHeader
         savedOnly={filters.savedOnly}
         savedCount={savedIds.length}
-        onExplore={() => {
-          showCatalog(false);
-        }}
         onShowSaved={() => {
-          showCatalog(true);
+          // Toggle: a second click returns to all trainings.
+          showCatalog(!filters.savedOnly);
         }}
         onShowRequests={() => {
           setDialog({kind: 'requests'});
@@ -93,6 +110,12 @@ export function HomePage({courses}: HomePageProps) {
         onListTraining={() => {
           setDialog({kind: 'listing'});
         }}
+        showSearch={heroSearchHidden}
+        query={filters.query}
+        onQueryChange={(query) => {
+          updateFilters({query});
+        }}
+        onSearch={scrollToCatalog}
       />
 
       <Hero
@@ -101,14 +124,11 @@ export function HomePage({courses}: HomePageProps) {
           updateFilters({query});
         }}
         onSearch={scrollToCatalog}
-        onQuickSearch={(query) => {
-          setFilters({...DEFAULT_FILTERS, query});
-          scrollToCatalog();
-        }}
+        searchRef={heroSearchRef}
         artCourse={courses.find((c) => c.type === 'classroom') ?? courses[0]}
       />
-      <TrustBar />
 
+      <div ref={catalogStartRef} aria-hidden="true" />
       <main className="main">
         <div className="title-row">
           <div>
@@ -124,15 +144,13 @@ export function HomePage({courses}: HomePageProps) {
           </div>
         </div>
 
-        <CategoryChips filters={filters} onChange={updateFilters} />
-
         <div className="catalog">
           <FilterSidebar
             filters={filters}
             onChange={updateFilters}
             onClearAll={() => {
               // Keep the Saved tab active; only reset the filters.
-              setFilters({...DEFAULT_FILTERS, savedOnly: filters.savedOnly});
+              resetFilters({...DEFAULT_FILTERS, savedOnly: filters.savedOnly});
             }}
           />
           <CatalogGrid
@@ -143,6 +161,16 @@ export function HomePage({courses}: HomePageProps) {
             onSortChange={(sort) => {
               updateFilters({sort});
             }}
+            page={page}
+            onPageChange={(next) => {
+              setPage(next);
+              if (PAGE_CHANGE_SCROLL === 'catalog-top' && catalogStartRef.current) {
+                scrollBelowHeader(catalogStartRef.current);
+              }
+            }}
+            onShowAll={() => {
+              updateFilters({savedOnly: false});
+            }}
             onOpenCourse={(course) => {
               setDialog({kind: 'detail', course});
             }}
@@ -150,7 +178,7 @@ export function HomePage({courses}: HomePageProps) {
               toggleSaved(courseId);
             }}
             onClearFilters={() => {
-              setFilters(DEFAULT_FILTERS);
+              resetFilters(DEFAULT_FILTERS);
             }}
           />
         </div>
@@ -196,7 +224,7 @@ export function HomePage({courses}: HomePageProps) {
             <ListingForm
               onSubmitted={() => {
                 // Clear filters so the new listing is visible at the top.
-                setFilters(DEFAULT_FILTERS);
+                resetFilters(DEFAULT_FILTERS);
                 setDialog(null);
                 showToast('Your training was added to this browser’s catalog.');
               }}

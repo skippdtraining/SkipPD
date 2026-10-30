@@ -10,6 +10,8 @@
   --purple: #6854d8;
   --line: #e9e7ee;
   --paper: #faf9f6;
+  /* Soft tint behind the hero, so it reads as its own band above the catalog. */
+  --hero-bg: #f3f0fc;
   --body-font: var(--font-dm-sans), sans-serif;
   --head-font: var(--font-manrope), sans-serif;
 }
@@ -83,12 +85,12 @@ header {
   font-size: 18px;
   transform: rotate(-6deg);
 }
-nav {
+header nav {
   display: flex;
   align-items: center;
   gap: 30px;
 }
-nav button,
+header nav button,
 .plain {
   border: 0;
   background: none;
@@ -141,7 +143,90 @@ nav button,
   font-family: var(--body-font);
 }
 
-/* Hero */
+/* Header search: compact copy of the hero search, shown once the hero box
+ * scrolls away. Kept in the layout at zero width so it can animate in. */
+.header-search {
+  flex: 0 1 0;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-6px);
+  transition:
+    max-width 0.3s ease,
+    flex-grow 0.3s ease,
+    opacity 0.2s ease,
+    transform 0.3s ease;
+}
+header.with-search .header-search {
+  flex-grow: 1;
+  max-width: 460px;
+  opacity: 1;
+  transform: none;
+}
+.search.search-compact {
+  margin: 0;
+  padding: 4px;
+  gap: 4px;
+  border-radius: 9px;
+  box-shadow: none;
+  background: var(--paper);
+}
+.search.search-compact span {
+  font-size: 17px;
+  padding: 3px 4px 3px 8px;
+}
+.search.search-compact .btn {
+  padding: 7px 12px;
+  font-size: 13px;
+}
+
+/* ☰ menu button: phones only (shown in the 730px media query). */
+.menu-toggle {
+  display: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: white;
+  font-size: 20px;
+}
+
+/* Footer social icons */
+.footer-social {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.footer-social a {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.footer-social a:hover {
+  color: var(--purple);
+  border-color: var(--purple);
+}
+.footer-social svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* Hero: full-width tinted band with a dividing line, separating search from the catalog. */
+.hero-band {
+  background: var(--hero-bg);
+  border-bottom: 1px solid var(--line);
+}
+/* Brand text in one element, so the flex gap does not split "Skip" and "PD". */
+.brand-name {
+  display: inline;
+}
 .hero {
   max-width: 1400px;
   margin: auto;
@@ -194,20 +279,6 @@ nav button,
   border: 0;
   outline: 0;
   background: none;
-}
-.popular {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 13px;
-}
-.popular button {
-  background: none;
-  border: 0;
-  font-size: 11px;
-  color: #585267;
-  padding: 3px 7px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 .hero-art {
   position: relative;
@@ -278,28 +349,6 @@ nav button,
 .green {
   color: #3a8567;
 }
-.trust {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 48px;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  padding: 17px 5%;
-  background: white;
-  font-size: 12px;
-  color: #666276;
-}
-.trust span {
-  display: flex;
-  gap: 9px;
-  align-items: center;
-}
-.trust i {
-  font-style: normal;
-  color: var(--purple);
-  font-size: 16px;
-}
 
 /* Catalog */
 .main {
@@ -320,26 +369,8 @@ nav button,
 }
 .title-row p {
   color: var(--muted);
-  margin: 0;
+  margin: 0 0 24px;
   font-size: 12px;
-}
-.chips {
-  display: flex;
-  gap: 8px;
-  margin: 25px 0;
-  flex-wrap: wrap;
-}
-.chip {
-  padding: 10px 16px;
-  background: white;
-  border: 1px solid var(--line);
-  border-radius: 25px;
-  font-size: 12px;
-}
-.chip.active {
-  background: var(--purple);
-  color: white;
-  border-color: var(--purple);
 }
 .catalog {
   display: grid;
@@ -594,14 +625,147 @@ nav button,
   color: #7b718f;
   font-size: 12px;
 }
-footer {
-  border-top: 1px solid var(--line);
-  padding: 25px 5%;
+
+/* Learning outcomes list in the listing form */
+.outcome-list {
+  border: 0;
+  padding: 0;
+  margin: 0 0 15px;
+}
+.outcome-list legend {
+  padding: 0;
+  margin-bottom: 7px;
+}
+.outcome-row {
   display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.outcome-remove {
+  flex: 0 0 40px;
+  border: 1px solid #ded9e7;
+  border-radius: 7px;
+  background: white;
+  font-size: 18px;
+}
+.outcome-remove:hover {
+  border-color: #a05c69;
+  color: #a05c69;
+}
+.outcome-add {
+  align-self: flex-start;
+}
+
+/* Catalog pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
   align-items: center;
-  justify-content: space-between;
-  font-size: 11px;
+  gap: 6px;
+  margin-top: 28px;
+}
+.page-arrow,
+.page-number {
+  min-width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: white;
+  font-weight: 600;
+}
+.page-arrow:hover:not(:disabled),
+.page-number:hover {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+.page-number.active {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: white;
+}
+.page-arrow:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.link-button {
+  border: 0;
+  background: none;
+  color: var(--purple);
+  font-weight: 700;
+  margin-left: 10px;
+  padding: 0;
+}
+
+/* Site footer */
+.site-footer {
+  border-top: 1px solid var(--line);
+  background: white;
+  padding: 40px 5% 24px;
+  font-size: 13px;
   color: var(--muted);
+}
+.footer-top {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+}
+.footer-about p {
+  margin: 10px 0 0;
+  max-width: 280px;
+  line-height: 1.6;
+}
+.footer-brand {
+  font-size: 19px;
+  color: var(--ink);
+}
+.footer-links {
+  display: flex;
+  /* Top-align columns so all titles sit on the same line. */
+  align-items: flex-start;
+  gap: 64px;
+}
+.footer-links h4 {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.footer-links ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.footer-links li {
+  margin: 8px 0;
+}
+.footer-links a:hover {
+  color: var(--purple);
+}
+.footer-bottom {
+  max-width: 1400px;
+  margin: 32px auto 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+
+/* Placeholder ("coming soon") pages */
+.placeholder-page {
+  max-width: 720px;
+  margin: 80px auto;
+  padding: 0 5%;
+  text-align: center;
+}
+.placeholder-page h1 {
+  font: 800 32px var(--head-font);
+  margin: 12px 0;
+}
+.placeholder-page p {
+  color: var(--muted);
+  line-height: 1.7;
 }
 
 /* Modal */
@@ -739,7 +903,17 @@ dialog::backdrop {
   font-size: 12px;
 }
 
-/* Responsive */
+/* Responsive
+ * Breakpoints (max-width): 1050px tablet, 730px phone, 480px small phone.
+ * Phone rules follow common mobile guidance:
+ * - tap targets at least 40px tall,
+ * - text at least 12px, form inputs 16px (stops iOS from zooming in),
+ * - rows that would wrap badly (nav) scroll sideways instead,
+ * - filters collapse behind a toggle so results are visible first.
+ */
+.filters-toggle {
+  display: none;
+}
 @media (min-width: 1500px) {
   .hero,
   .main {
@@ -754,127 +928,270 @@ dialog::backdrop {
   .hero-art {
     transform: scale(0.9);
   }
-  nav {
+  header nav {
     gap: 18px;
-  }
-  .trust {
-    gap: 25px;
   }
 }
 @media (max-width: 730px) {
+  /* Header: brand + menu button on one row; search and menu drop below. */
   header {
     height: auto;
-    min-height: 60px;
     flex-wrap: wrap;
-    padding: 10px 5%;
-    gap: 10px;
+    padding: 10px 4%;
+    gap: 0;
   }
-  nav {
-    width: 100%;
-    justify-content: space-between;
-    gap: 10px;
-    font-size: 11px;
+  .brand {
+    font-size: 20px;
+    flex: 1;
   }
-  nav .btn {
-    padding: 9px 11px;
+  .menu-toggle {
+    display: grid;
+  }
+  /* Search: full-width row under the brand (animated height). */
+  .header-search {
+    order: 3;
+    flex: 0 0 100%;
+    max-width: none;
+    max-height: 0;
+    transition:
+      max-height 0.3s ease,
+      margin 0.3s ease,
+      opacity 0.2s ease,
+      transform 0.3s ease;
+  }
+  header.with-search .header-search {
+    max-width: none;
+    max-height: 60px;
+    margin-top: 10px;
+  }
+  .search.search-compact input {
+    font-size: 16px;
+  }
+  /* Menu: hidden until the ☰ button is tapped, then a vertical list. */
+  header nav {
+    order: 4;
+    flex: 0 0 100%;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+    font-size: 15px;
+  }
+  header.menu-open nav {
+    display: flex;
+  }
+  header nav button {
+    min-height: 44px;
+    padding: 10px 4px;
+    text-align: left;
+  }
+  header nav .btn {
+    justify-content: center;
+    margin-top: 6px;
   }
   .hero {
     grid-template-columns: 1fr;
-    padding-top: 35px;
+    padding: 28px 4% 28px;
   }
   .hero-art {
     display: none;
   }
   .hero h1 {
-    font-size: 37px;
+    font-size: 34px;
+    letter-spacing: -1px;
   }
-  .trust {
-    flex-wrap: wrap;
-    gap: 12px 22px;
-    font-size: 10px;
+  .hero p {
+    font-size: 15px;
   }
-  .title-row {
-    align-items: flex-start;
+  .search input {
+    font-size: 16px;
+  }
+  .search .btn {
+    padding: 11px 14px;
+  }
+  .main {
+    padding: 0 4%;
+    margin-top: 24px;
   }
   .title-row h2 {
     font-size: 22px;
   }
+  .title-row p {
+    font-size: 13px;
+  }
   .catalog {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  /* Filters: collapsed behind a toggle button. */
+  .filters-toggle {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    min-height: 44px;
+  }
+  .filters:not(.open) .filter-panel {
+    display: none;
   }
   .filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 12px;
-  }
-  .filters h3 {
-    width: 100%;
-    margin: 0;
-  }
-  .filter-group {
-    border: 0;
     padding: 0;
-    margin: 0;
-    flex: 1;
+    border: 0;
+    background: none;
   }
-  .filter-group h4 {
-    margin: 0 0 6px;
+  .filter-panel {
+    margin-top: 10px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: white;
+    padding: 14px;
+  }
+  .filter-group h4,
+  .check,
+  .filter-group select,
+  .filters h3 button {
+    font-size: 14px;
   }
   .check {
-    margin: 6px 0;
+    min-height: 36px;
+    margin: 2px 0;
+  }
+  .check input {
+    width: 20px;
+    height: 20px;
+  }
+  .filter-group select {
+    font-size: 16px;
+    min-height: 44px;
   }
   .filter-note {
     display: none;
   }
-  .chips {
-    gap: 6px;
-    margin: 20px 0;
-  }
-  .chip {
-    padding: 8px 11px;
-    font-size: 10px;
-  }
-  .grid {
-    gap: 12px;
-  }
-  .body {
-    padding: 12px;
-  }
-  .cover {
-    height: 130px;
-  }
-  .course h3 {
+  .catalog-top,
+  .catalog-top select {
     font-size: 13px;
   }
-  .meta {
-    font-size: 9px;
-    gap: 7px;
+  .catalog-top select {
+    min-height: 40px;
+  }
+  .grid {
+    gap: 14px;
+  }
+  .category,
+  .tag,
+  .badge,
+  .meta,
+  .trainer,
+  .details,
+  .price small {
+    font-size: 12px;
+  }
+  .course h3 {
+    font-size: 16px;
+    min-height: 0;
+  }
+  .details {
+    min-height: 40px;
+  }
+  .bookmark {
+    width: 40px;
+    height: 40px;
   }
   .bottom-banner {
-    padding: 23px;
+    padding: 22px;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
   }
   .bottom-banner h2 {
     font-size: 20px;
   }
-  footer {
-    gap: 15px;
+  .bottom-banner p {
+    font-size: 14px;
+  }
+  .site-footer {
+    padding: 32px 4% 20px;
+  }
+  .footer-top {
+    flex-direction: column;
+    gap: 28px;
+  }
+  .footer-links {
     flex-wrap: wrap;
+    gap: 28px 40px;
+  }
+  .footer-links li {
+    margin: 0;
+  }
+  .footer-links a {
+    display: inline-block;
+    padding: 8px 0;
+    font-size: 14px;
+  }
+  /* Dialogs: nearly full screen, scroll inside, comfortable form fields. */
+  dialog {
+    width: calc(100% - 16px);
+    max-height: calc(100dvh - 16px);
+    border-radius: 14px;
+  }
+  .modal-head {
+    padding: 14px 16px;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 1;
+  }
+  .modal-head h2 {
+    font-size: 18px;
+  }
+  .close {
+    width: 40px;
+    height: 40px;
+  }
+  .modal-body {
+    padding: 16px;
   }
   .two {
     grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .field {
+    font-size: 14px;
+  }
+  .field input,
+  .field select,
+  .field textarea {
+    font-size: 16px;
+    min-height: 44px;
+  }
+  .notice {
+    font-size: 13px;
+  }
+  .toast {
+    width: calc(100% - 32px);
+    text-align: center;
+    font-size: 14px;
   }
   .demo {
-    margin-left: 0;
+    margin-left: 6px;
   }
 }
-@media (max-width: 400px) {
+@media (max-width: 480px) {
   .grid {
     grid-template-columns: 1fr;
   }
   .cover {
-    height: 180px;
+    height: 170px;
+  }
+  .hero h1 {
+    font-size: 30px;
+  }
+}
+/* Respect users who turn off animations in their device settings. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -3,7 +3,9 @@
  * and the site footer.
  */
 
-import {SITE} from '@/config/site';
+import Link from 'next/link';
+import {FOOTER_COLUMNS, SITE, SITE_NAME, SOCIAL_LINKS} from '@/config/site';
+import {SocialIcon} from './SocialIcon';
 
 interface TrainerBannerProps {
   onListTraining: () => void;
@@ -25,16 +27,52 @@ export function TrainerBanner({onListTraining}: TrainerBannerProps) {
   );
 }
 
-/** Page footer. */
+/** Page footer: brand, link columns and copyright. Links come from config/site.ts. */
 export function SiteFooter() {
   return (
-    <footer>
-      <span className="brand footer-brand">
-        {SITE.nameStart}
-        <b>{SITE.nameEnd}</b>
-      </span>
-      <span>{SITE.footerTagline}</span>
-      <span>Preview · Sample listings</span>
+    <footer className="site-footer">
+      <div className="footer-top">
+        <div className="footer-about">
+          <span className="brand footer-brand">
+            <span className="brand-name">
+              {SITE.nameStart}
+              <b>{SITE.nameEnd}</b>
+            </span>
+          </span>
+          <p>{SITE.footerTagline}</p>
+          <div className="footer-social">
+            {SOCIAL_LINKS.map((social) => (
+              // External site: new tab, and noopener so it cannot control this page.
+              <a
+                key={social.label}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${SITE_NAME} on ${social.label}`}
+              >
+                <SocialIcon icon={social.icon} />
+              </a>
+            ))}
+          </div>
+        </div>
+        <nav className="footer-links" aria-label="Footer">
+          {FOOTER_COLUMNS.map((column) => (
+            <div key={column.title}>
+              <h4>{column.title}</h4>
+              <ul>
+                {column.links.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href}>{link.label}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
+      </div>
+      <div className="footer-bottom">
+        © {SITE.copyrightYear} {SITE_NAME}. All rights reserved.
+      </div>
     </footer>
   );
 }

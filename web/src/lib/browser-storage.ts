@@ -4,9 +4,9 @@
  * requests.
  *
  * TEMPORARY. Each store is replaced by a database table:
- * - saved courses -> Step 5
- * - own listings  -> Step 4
- * - requests      -> Step 6
+ * - saved courses -> Step 6
+ * - own listings  -> Step 5
+ * - requests      -> Step 7
  * Components only call the functions below, so swapping the storage later
  * does not require changing the components much.
  */

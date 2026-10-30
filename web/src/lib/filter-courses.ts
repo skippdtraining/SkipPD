@@ -1,9 +1,13 @@
 /**
- * @fileoverview Catalog search, filter and sort logic.
+ * @fileoverview Catalog search, filter and sort logic for listings stored
+ * in this browser.
  *
- * Kept as a pure function (no React, no browser APIs) so it is easy to read
- * and test. In Step 3 the same filtering moves into database queries; the
- * {@link CatalogFilters} shape stays the same so the UI does not change.
+ * Database courses are filtered by the server (lib/data/). Listings a
+ * trainer creates with the listing form still live in localStorage, so the
+ * same rules are applied to them here, in the browser. Kept as pure
+ * functions (no React, no browser APIs) so they are easy to read and test.
+ *
+ * TEMPORARY: delete once the listing form saves to the database.
  */
 
 import {SHORT_COURSE_MAX_HOURS} from '@/config/catalog';
@@ -62,10 +66,10 @@ function matchesFilters(
 }
 
 /**
- * Returns a sorted copy. "recommended" keeps the original order, which for
- * now is newest browser listings first, then the sample courses.
+ * Returns a sorted copy. "recommended" keeps the original order. The sort is
+ * stable, so courses with equal price or length keep their original order.
  */
-function sortCourses(courses: Course[], sort: CatalogFilters['sort']): Course[] {
+export function sortCourses(courses: Course[], sort: CatalogFilters['sort']): Course[] {
   const sorted = [...courses];
   if (sort === 'low') sorted.sort((a, b) => a.price - b.price);
   if (sort === 'high') sorted.sort((a, b) => b.price - a.price);

@@ -4,8 +4,9 @@
  *
  * Why pages: showing every course makes the page very long. At most
  * COURSES_PER_PAGE cards are shown; arrows and page numbers move between
- * pages. In Step 3 the database returns one page at a time instead of
- * slicing here.
+ * pages. The server returns every matching course and pages are sliced
+ * here, because browser-only listings are merged in first. Once listings
+ * are saved to the database, the server can return one page at a time.
  */
 
 import {COURSES_PER_PAGE} from '@/config/catalog';

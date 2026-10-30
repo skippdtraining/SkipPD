@@ -33,6 +33,12 @@ export const COURSES_PER_PAGE = 6;
  */
 export const PAGE_CHANGE_SCROLL: 'catalog-top' | 'none' = 'catalog-top';
 
+/**
+ * Wait this long after the last keystroke or filter click before asking the
+ * server for new results, so typing a word sends one request, not one per letter.
+ */
+export const SEARCH_DEBOUNCE_MS = 250;
+
 /** Most learning outcomes a listing can have. */
 export const MAX_OUTCOMES = 8;
 

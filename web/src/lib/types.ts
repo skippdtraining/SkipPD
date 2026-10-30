@@ -3,7 +3,8 @@
  *
  * Every component and helper imports its types from here, so there is one
  * source of truth for what a "course" or a "booking request" looks like.
- * In Step 3 these shapes will mirror the Supabase database tables.
+ * Database rows are converted into these shapes in lib/data/, so database
+ * column names never reach components.
  */
 
 /**
@@ -22,20 +23,11 @@ export const GRADES: Grade[] = ['K–5', '6–8', '9–12'];
 export const FORMATS: Format[] = ['Live online', 'In person'];
 
 /**
- * Suggested training topics shown in the listing form. A trainer can also
- * pick "Other" and type their own topic, so a course's topic is free text
+ * Value of the listing-form option that reveals the custom topic field.
+ * The suggested topics themselves come from the `categories` database table.
+ * Because trainers can type their own topic, a course's topic is free text
  * (see {@link Course.category}) and there is no topic filter.
  */
-export const CATEGORIES = [
-  'Literacy',
-  'EdTech & AI',
-  'ESL & ELL',
-  'Special education',
-  'Classroom management',
-  'Leadership',
-];
-
-/** Value of the listing-form option that reveals the custom topic field. */
 export const OTHER_CATEGORY = 'Other';
 
 /** Which built-in illustration to draw when a listing has no uploaded image. */
@@ -44,10 +36,10 @@ export type CoverType =
 
 /** A training listing shown in the catalog. */
 export interface Course {
-  /** Unique id. Sample data uses 1-6; browser-created listings use a timestamp. */
+  /** Unique id. Database listings use small numbers; browser-created listings use a timestamp. */
   id: number;
   title: string;
-  /** Topic: one of {@link CATEGORIES} or a custom one typed by the trainer. */
+  /** Topic: a suggested category or a custom one typed by the trainer. */
   category: string;
   /** Trainer display name. Becomes a link to the trainer's profile in Step 4. */
   trainer: string;
@@ -59,7 +51,7 @@ export interface Course {
   /** Price per participant, in USD. */
   price: number;
   grades: Grade[];
-  /** Search keywords. Not entered in the listing form; only sample data has them. */
+  /** Search keywords. Not entered in the listing form; set in the database. */
   tags: string[];
   description: string;
   /** "What you'll take away" bullet points. */
@@ -108,6 +100,16 @@ export interface CatalogFilters {
   sort: 'recommended' | 'low' | 'high' | 'duration';
   /** True when the "Saved" tab is active. */
   savedOnly: boolean;
+}
+
+/**
+ * What the catalog asks the course repository for. Same as
+ * {@link CatalogFilters}, except the browser-only "Saved" tab becomes a list
+ * of course ids, because the server cannot see the browser's saved list.
+ */
+export interface CourseQuery extends Omit<CatalogFilters, 'savedOnly'> {
+  /** When set, only these course ids are returned (used by the Saved tab). */
+  ids?: number[];
 }
 
 /** Filter state when the page first loads or after "Clear all". */

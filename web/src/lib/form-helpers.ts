@@ -21,14 +21,6 @@ export function readNumber(data: FormData, field: string, fallback: number): num
   return readText(data, field) !== '' && Number.isFinite(value) ? value : fallback;
 }
 
-/** Splits text into trimmed, non-empty parts. */
-export function splitList(text: string, separator: string): string[] {
-  return text
-    .split(separator)
-    .map((part) => part.trim())
-    .filter((part) => part !== '');
-}
-
 /** Reads a file as a data URL (text) so it can be stored in localStorage. */
 export function readFileAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {

@@ -13,9 +13,6 @@ export const SHORT_COURSE_MAX_HOURS = 2;
 /** "Under $X" options in the price filter, in USD. */
 export const PRICE_FILTER_OPTIONS = [75, 150, 300];
 
-/** Listings keep at most this many search keywords. */
-export const MAX_LISTING_TAGS = 5;
-
 /** Largest accepted cover image: 1 MB. */
 export const MAX_IMAGE_BYTES = 1024 * 1024;
 

@@ -9,12 +9,7 @@
 'use client';
 
 import {useState} from 'react';
-import {
-  IMAGE_TYPES,
-  MAX_CUSTOM_TOPIC_LENGTH,
-  MAX_IMAGE_BYTES,
-  MAX_LISTING_TAGS,
-} from '@/config/catalog';
+import {IMAGE_TYPES, MAX_CUSTOM_TOPIC_LENGTH, MAX_IMAGE_BYTES} from '@/config/catalog';
 import {addListing} from '@/lib/browser-storage';
 import {readFileAsDataUrl, readNumber, readText, splitList} from '@/lib/form-helpers';
 import {
@@ -26,6 +21,9 @@ import {
   type Format,
   type Grade,
 } from '@/lib/types';
+
+/** Shown as trainer on browser-created listings until accounts exist (Step 4). */
+const PREVIEW_TRAINER_NAME = 'You (preview)';
 
 /** Default look for listings without an image (purple "books" artwork). */
 const DEFAULT_COVER = {color: '#e7dff6', accent: '#8264ad', type: 'books'} as const;
@@ -64,8 +62,10 @@ export function ListingForm({onSubmitted, onError}: ListingFormProps) {
     const course: Course = {
       id: Date.now(),
       title: readText(data, 'title'),
-      trainer: readText(data, 'trainer'),
-      role: readText(data, 'role'),
+      // Trainer name and credentials will come from the signed-in account
+      // (Step 4); until then the listing is labelled with a placeholder.
+      trainer: PREVIEW_TRAINER_NAME,
+      role: '',
       category: isOtherTopic
         ? readText(data, 'customCategory')
         : readText(data, 'category'),
@@ -73,7 +73,7 @@ export function ListingForm({onSubmitted, onError}: ListingFormProps) {
       hours: readNumber(data, 'hours', 1),
       price: readNumber(data, 'price', 0),
       grades: gradeChoice === 'all' ? [...GRADES] : [gradeChoice as Grade],
-      tags: splitList(readText(data, 'tags'), ',').slice(0, MAX_LISTING_TAGS),
+      tags: [],
       description: readText(data, 'description'),
       outcomes: splitList(readText(data, 'outcomes'), '\n'),
       ...DEFAULT_COVER,
@@ -105,21 +105,6 @@ export function ListingForm({onSubmitted, onError}: ListingFormProps) {
             required
           />
         </label>
-        <div className="two">
-          <label className="field">
-            Trainer name
-            <input name="trainer" maxLength={90} required />
-          </label>
-          <label className="field">
-            Experience / credentials
-            <input
-              name="role"
-              maxLength={180}
-              placeholder="e.g., Literacy coach · 12 years teaching"
-              required
-            />
-          </label>
-        </div>
         <div className="two">
           <label className="field">
             Topic
@@ -173,15 +158,6 @@ export function ListingForm({onSubmitted, onError}: ListingFormProps) {
               <option key={grade}>{grade}</option>
             ))}
           </select>
-        </label>
-        <label className="field">
-          Keywords (comma separated)
-          <input
-            name="tags"
-            placeholder="Phonics, reading, literacy"
-            maxLength={150}
-            required
-          />
         </label>
         <label className="field">
           Course description

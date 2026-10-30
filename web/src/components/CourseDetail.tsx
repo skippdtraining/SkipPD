@@ -24,7 +24,7 @@ export function CourseDetail({course, onRequest}: CourseDetailProps) {
         <span className="avatar">{initials(course.trainer)}</span>
         <strong>{course.trainer}</strong>
       </div>
-      <p className="small-text">{course.role}</p>
+      {course.role !== '' && <p className="small-text">{course.role}</p>}
       <p>{course.description}</p>
       <h4>What you’ll take away</h4>
       <ul>

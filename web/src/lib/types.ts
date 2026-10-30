@@ -51,7 +51,7 @@ export interface Course {
   category: string;
   /** Trainer display name. Becomes a link to the trainer's profile in Step 4. */
   trainer: string;
-  /** Trainer experience / credentials line, e.g. "Literacy coach · 12 years". */
+  /** Trainer credentials line; comes from the trainer's profile from Step 4. Empty if unknown. */
   role: string;
   format: Format;
   /** Session length in hours. */
@@ -59,7 +59,7 @@ export interface Course {
   /** Price per participant, in USD. */
   price: number;
   grades: Grade[];
-  /** Search keywords, max 5. */
+  /** Search keywords. Not entered in the listing form; only sample data has them. */
   tags: string[];
   description: string;
   /** "What you'll take away" bullet points. */

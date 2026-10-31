@@ -268,11 +268,15 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
             onOpenCourse={(course) => {
               setDialog({kind: 'detail', course});
             }}
-            onToggleSave={(courseId) => {
-              withAccount(() => {
-                toggleSaved(courseId);
-              });
-            }}
+            onToggleSave={
+              viewer
+                ? (courseId) => {
+                    withAccount(() => {
+                      toggleSaved(courseId);
+                    });
+                  }
+                : undefined
+            }
             onClearFilters={() => {
               resetFilters(DEFAULT_FILTERS);
             }}

@@ -13,7 +13,8 @@ interface CourseCardProps {
   saved: boolean;
   /** Opens the course detail dialog. */
   onOpen: () => void;
-  onToggleSave: () => void;
+  /** Omitted for guests: the heart is then hidden. */
+  onToggleSave?: () => void;
 }
 
 /** Catalog tile for a single course. */
@@ -44,18 +45,20 @@ export function CourseCard({course, saved, onOpen, onToggleSave}: CourseCardProp
           />
         )}
         <span className="badge">◷ {course.format}</span>
-        <button
-          className={`bookmark ${saved ? 'on' : ''}`}
-          onClick={(event) => {
-            // Stop the click from also opening the course via the cover.
-            event.stopPropagation();
-            onToggleSave();
-          }}
-          aria-label={`${saved ? 'Unsave' : 'Save'} ${course.title}`}
-          aria-pressed={saved}
-        >
-          {saved ? '♥' : '♡'}
-        </button>
+        {onToggleSave && (
+          <button
+            className={`bookmark ${saved ? 'on' : ''}`}
+            onClick={(event) => {
+              // Stop the click from also opening the course via the cover.
+              event.stopPropagation();
+              onToggleSave();
+            }}
+            aria-label={`${saved ? 'Unsave' : 'Save'} ${course.title}`}
+            aria-pressed={saved}
+          >
+            {saved ? '♥' : '♡'}
+          </button>
+        )}
       </div>
 
       <div className="body">

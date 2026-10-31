@@ -1323,3 +1323,48 @@ dialog::backdrop {
     scroll-behavior: auto !important;
   }
 }
+
+/* Account pages on phones: no footer, larger and clearer text. */
+@media (max-width: 730px) {
+  .auth-footer {
+    display: none;
+  }
+  .auth-page {
+    margin: 28px auto 40px;
+  }
+  .auth-card {
+    padding: 24px 20px;
+  }
+  .auth-card h1 {
+    font-size: 28px;
+  }
+  .auth-intro,
+  .auth-card .notice,
+  .form-error,
+  .account-status,
+  .profile-summary,
+  .role-choice .check,
+  .role-choice legend,
+  .auth-card .field,
+  .auth-links,
+  .link-button {
+    font-size: 16px;
+  }
+  .auth-card .field input,
+  .auth-card .field select,
+  .auth-card .field textarea {
+    font-size: 16px;
+    padding: 13px;
+  }
+  .auth-card .field small {
+    font-size: 14px;
+  }
+  .auth-card .btn {
+    font-size: 16px;
+    min-height: 48px;
+  }
+  .profile-row {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}

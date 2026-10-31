@@ -235,14 +235,16 @@ Decisions taken in Step 3:
 - Pagination stays in the browser while trainer-created listings still live in localStorage; it can move to the server once listings are in the database.
 
 ### Step 4 - Accounts (current)
-Prerequisite (owner): run `supabase/migrations/0002_accounts.sql`; configure Supabase Auth (Site URL, Redirect URLs, Google provider), see HOW-TO "Accounts setup".
+Prerequisite (owner): run `supabase/migrations/0002_accounts.sql` and `0003_split_profiles.sql`; configure Supabase Auth (Site URL, Redirect URLs, Google provider), see HOW-TO "Accounts setup".
 1. Sign-up / sign-in with email + password (confirmation email) or Google; forgot / reset password; sign-out.
 2. After the first sign-in, `/onboarding` asks for the account type and profile:
    - Trainer: full name, credentials line, currently employed (yes/no) + place of employment, about text, optional PD certification file (PDF/JPG/PNG, max 4 MB, private storage).
    - School: contact name, school or district, contact's position. The email is flagged automatically when it looks like a school address.
 3. `/account` shows the review status ("Not certified" / "Certified", school verified or not), lets users edit their profile and change their password.
-4. Guests can browse; Saved, My requests, booking and listing send them to sign-in. Only trainers can open the listing form.
+4. Guests can browse; their header shows only Sign in and List your training, and cards have no save heart. Booking and listing send them to sign-in. Only trainers can open the listing form.
 5. The admin approves certifications and schools in the Supabase dashboard (HOW-TO "Approve a certification or school").
 **Checkpoint:** a Trainer and a School account can be created on the Vercel preview; changing `certification_status` / `school_status` in the dashboard changes the account page.
+
+Before launch: custom SMTP (needs a domain) and the token-hash email templates (HOW-TO "Accounts setup").
 
 Not in Step 4: the "Not certified" label next to listings arrives with listing CRUD (Step 6), when listings get an owner. Saved courses and requests still live in the browser until Steps 7 and 8.

@@ -94,14 +94,19 @@ export function SiteHeader({
         {menuOpen ? '✕' : '☰'}
       </button>
       <nav id="main-nav">
-        <button
-          className={savedOnly ? 'nav-active' : ''}
-          aria-pressed={savedOnly}
-          onClick={choose(onShowSaved)}
-        >
-          Saved <span className="saved-count">{savedCount}</span>
-        </button>
-        <button onClick={choose(onShowRequests)}>My requests</button>
+        {/* Guests only see Sign in and List your training. */}
+        {viewer && (
+          <>
+            <button
+              className={savedOnly ? 'nav-active' : ''}
+              aria-pressed={savedOnly}
+              onClick={choose(onShowSaved)}
+            >
+              Saved <span className="saved-count">{savedCount}</span>
+            </button>
+            <button onClick={choose(onShowRequests)}>My requests</button>
+          </>
+        )}
         {viewer ? (
           <Link href={viewer.profile ? '/account' : '/onboarding'}>Account</Link>
         ) : (

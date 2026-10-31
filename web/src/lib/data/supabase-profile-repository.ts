@@ -1,9 +1,10 @@
 /**
  * @fileoverview {@link ProfileRepository} backed by Supabase: the
- * `profiles` table and the private `certifications` storage bucket
- * (supabase/migrations/0002_accounts.sql).
+ * `profiles`, `trainer_profiles` and `school_profiles` tables and the
+ * private `certifications` storage bucket (supabase/migrations/0002, 0003).
  *
- * The only file that knows profile column names. Review columns
+ * The only file that knows profile column names. It joins the common row
+ * with the trainer or school row into the app's single `Profile` type. Review columns
  * (certification_status, school_status) are read here but never written:
  * the database does not let users change them.
  *
@@ -15,47 +16,81 @@ import {getRequestClient} from '@/lib/supabase/clients';
 import type {AccountRole, Profile, ReviewStatus} from '../types';
 import type {ProfileRepository} from './profile-repository';
 
-/** Columns read from `public.profiles`, in database naming. */
-interface ProfileRow {
-  role: string;
-  full_name: string;
-  email: string;
+/** Trainer-only columns (`public.trainer_profiles`). */
+interface TrainerRow {
   credentials: string;
-  is_employed: boolean | null;
+  is_employed: boolean;
   employer: string;
   bio: string;
   certification_path: string | null;
   certification_status: string;
+}
+
+/** School-only columns (`public.school_profiles`). */
+interface SchoolRow {
   school_name: string;
   contact_position: string;
   is_likely_school_email: boolean;
   school_status: string;
 }
 
+/** A `profiles` row with its one-to-one detail row embedded (null if none). */
+interface ProfileRow {
+  role: string;
+  full_name: string;
+  email: string;
+  trainer_profiles: TrainerRow | null;
+  school_profiles: SchoolRow | null;
+}
+
 const PROFILE_COLUMNS =
-  'role, full_name, email, credentials, is_employed, employer, bio, certification_path, ' +
-  'certification_status, school_name, contact_position, is_likely_school_email, school_status';
+  'role, full_name, email, ' +
+  'trainer_profiles(credentials, is_employed, employer, bio, certification_path, certification_status), ' +
+  'school_profiles(school_name, contact_position, is_likely_school_email, school_status)';
 
 const CERTIFICATION_BUCKET = 'certifications';
 
-/** Converts a database row into the app's {@link Profile} type. */
+/** Converts the joined rows into the app's flat {@link Profile} type. */
 function toProfile(row: ProfileRow): Profile {
+  const trainer = row.trainer_profiles;
+  const school = row.school_profiles;
   return {
-    // Safe: the table's CHECK constraints only allow these values.
+    // Safe: the tables' CHECK constraints only allow these values.
     role: row.role as AccountRole,
-    certificationStatus: row.certification_status as ReviewStatus,
-    schoolStatus: row.school_status as ReviewStatus,
+    certificationStatus: (trainer?.certification_status ?? 'none') as ReviewStatus,
+    schoolStatus: (school?.school_status ?? 'none') as ReviewStatus,
     fullName: row.full_name,
     email: row.email,
-    credentials: row.credentials,
-    isEmployed: row.is_employed,
-    employer: row.employer,
-    bio: row.bio,
-    hasCertification: row.certification_path !== null,
-    schoolName: row.school_name,
-    contactPosition: row.contact_position,
-    isLikelySchoolEmail: row.is_likely_school_email,
+    credentials: trainer?.credentials ?? '',
+    isEmployed: trainer ? trainer.is_employed : null,
+    employer: trainer?.employer ?? '',
+    bio: trainer?.bio ?? '',
+    hasCertification: Boolean(trainer?.certification_path),
+    schoolName: school?.school_name ?? '',
+    contactPosition: school?.contact_position ?? '',
+    isLikelySchoolEmail: school?.is_likely_school_email ?? false,
   };
+}
+
+/**
+ * Inserts the row if the user has none in `table`, otherwise updates it.
+ * (Not an upsert: users may not update the `id` column.)
+ */
+async function saveOwnRow(
+  supabase: SupabaseClient,
+  table: string,
+  userId: string,
+  values: Record<string, unknown>,
+): Promise<void> {
+  const {data: existing} = await supabase
+    .from(table)
+    .select('id')
+    .eq('id', userId)
+    .maybeSingle();
+  const {error} = existing
+    ? await supabase.from(table).update(values).eq('id', userId)
+    : await supabase.from(table).insert({id: userId, ...values});
+  if (error) throw new Error(`Could not save ${table}: ${error.message}`);
 }
 
 /** Returns the request client and the signed-in user's id, or throws. */
@@ -90,27 +125,33 @@ export function createSupabaseProfileRepository(): ProfileRepository {
 
     async saveMyProfile(input) {
       const {supabase, userId} = await requireUser();
-      const editable = {
-        full_name: input.fullName,
-        credentials: input.credentials,
-        is_employed: input.isEmployed,
-        employer: input.employer,
-        bio: input.bio,
-        school_name: input.schoolName,
-        contact_position: input.contactPosition,
-      };
       const {data: existing} = await supabase
         .from('profiles')
-        .select('id')
+        .select('role')
         .eq('id', userId)
+        .returns<{role: string}[]>()
         .maybeSingle();
-      // Insert vs update: users may set `role` only once, on insert.
-      const {error} = existing
-        ? await supabase.from('profiles').update(editable).eq('id', userId)
-        : await supabase
-            .from('profiles')
-            .insert({id: userId, role: input.role, ...editable});
-      if (error) throw new Error(`Could not save profile: ${error.message}`);
+      // The account type is set once, on insert; it never changes.
+      const role = existing?.role ?? input.role;
+      await saveOwnRow(
+        supabase,
+        'profiles',
+        userId,
+        existing ? {full_name: input.fullName} : {role, full_name: input.fullName},
+      );
+      if (role === 'trainer') {
+        await saveOwnRow(supabase, 'trainer_profiles', userId, {
+          credentials: input.credentials,
+          is_employed: input.isEmployed ?? false,
+          employer: input.employer,
+          bio: input.bio,
+        });
+      } else {
+        await saveOwnRow(supabase, 'school_profiles', userId, {
+          school_name: input.schoolName,
+          contact_position: input.contactPosition,
+        });
+      }
     },
 
     async uploadMyCertification(file) {
@@ -124,7 +165,7 @@ export function createSupabaseProfileRepository(): ProfileRepository {
         throw new Error(`Could not upload certification: ${upload.error.message}`);
       }
       const {error} = await supabase
-        .from('profiles')
+        .from('trainer_profiles')
         .update({certification_path: path})
         .eq('id', userId);
       if (error) throw new Error(`Could not attach certification: ${error.message}`);

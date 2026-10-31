@@ -32,7 +32,10 @@ export function AuthShell({title, intro, children}: AuthShellProps) {
           {children}
         </section>
       </main>
-      <SiteFooter />
+      {/* Hidden on phones (globals.css) so the form gets the whole screen. */}
+      <div className="auth-footer">
+        <SiteFooter />
+      </div>
     </>
   );
 }

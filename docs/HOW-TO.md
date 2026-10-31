@@ -46,11 +46,11 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Password length, profile field limits, certification file size/types | `web/src/config/accounts.ts` | Also change the matching limit in the database (new migration). |
 | Page opened after sign-in | `web/src/config/accounts.ts` → `AFTER_SIGN_IN_PATH` | |
 | Account type labels / hints | `web/src/lib/types.ts` → `ACCOUNT_ROLES` | |
-| Profile form fields | `web/src/components/ProfileForm.tsx` + `lib/profile-form.ts` (validation) + `lib/data/supabase-profile-repository.ts` (columns) | New column needs a migration. |
+| Profile form fields | `web/src/components/ProfileForm.tsx` + `lib/profile-form.ts` (validation) + `lib/data/supabase-profile-repository.ts` (columns) | New column needs a migration: common fields in `profiles`, others in `trainer_profiles` or `school_profiles`. |
 | Review status wording ("Not certified"...) | `web/src/components/AccountStatus.tsx` | |
-| Who can save / book / list | `web/src/components/HomePage.tsx` → `withAccount`, `openListingForm` | |
+| Who can save / book / list | `web/src/components/HomePage.tsx` → `withAccount`, `openListingForm` | Guest header items: `components/SiteHeader.tsx`. |
 | Sign-in vendor | `web/src/lib/auth/auth-service.ts` → `getAuthService()` | Same pattern as the database. |
-| Approve a certification or school | Supabase dashboard → `profiles` | See recipe below. |
+| Approve a certification or school | Supabase dashboard → `trainer_profiles` / `school_profiles` | See recipe below. |
 | Extra school email domains | Supabase dashboard → `school_email_domains` | See recipe below. |
 | Required PR reviewer | `.github/CODEOWNERS` | |
 | Files git ignores | `.gitignore` | |
@@ -92,7 +92,7 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 ### Approve a certification or school
 1. Find the user's id: Table Editor → `profiles` → `id` column of their row (the `email` column helps).
 2. Storage → `certifications` → open the folder with that id → click the file → **Download** (or **Get URL** for a link valid for a limited time).
-3. Trainers: set `certification_status` to `approved` or `rejected`. Schools: check `is_likely_school_email`, then set `school_status` to `approved` or `rejected`.
+3. Trainers: Table Editor → `trainer_profiles` → same `id` → set `certification_status` to `approved` or `rejected`. Schools: `school_profiles` → check `is_likely_school_email`, then set `school_status`. Click **Save** in the dashboard.
 4. The user sees the new status on `/account` at once. Step 5 moves this into an admin page.
 
 ### Add a school email domain

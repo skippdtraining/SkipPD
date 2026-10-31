@@ -54,6 +54,7 @@ Email links and Google return to /auth/callback.
 | `docs/assets/` | Images used by the docs (e.g. `jobs-page-reference.jpeg`). |
 | `supabase/migrations/` | SQL that creates the database tables, run in order in the Supabase SQL Editor. `0001_catalog.sql`: `categories`, `listings`, Row Level Security (public read of published listings). |
 | `supabase/migrations/0002_accounts.sql` | `profiles` (trainer/school details, review statuses), `school_email_domains`, `is_likely_school_email()`, the private `certifications` storage bucket, and the rules that stop users changing review statuses. |
+| `supabase/migrations/0003_split_profiles.sql` | Moves trainer-only fields to `trainer_profiles` and school-only fields to `school_profiles`; `profiles` keeps role, name, email. Copies existing data. |
 | `supabase/seed.sql` | Starter data: six suggested topics and the six POC courses. Re-runnable (empties the tables first). |
 | `web/` | **The Next.js application.** Run all npm commands inside this folder. |
 
@@ -103,7 +104,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 |---|---|
 | `HomePage.tsx` | **The conductor.** Owns page state (filters, which dialog is open, toast message), fetches server results when filters change, merges in browser listings, and wires all the sections together. Start reading here. |
 | `SiteHeader.tsx` | Sticky top bar: logo, compact search (fades in once the hero search scrolls away), Saved / My requests, Sign in or Account, and "List your training" (behind a ☰ menu on phones). |
-| `AuthShell.tsx` | Page frame for the account pages: logo, centred card, footer. |
+| `AuthShell.tsx` | Page frame for the account pages: logo, centred card, footer (hidden on phones, where text is larger). |
 | `AuthForm.tsx` | Generic form for sign-in/up and password pages: runs a server action, shows its error or success note. |
 | `GoogleSignInButton.tsx` | "Continue with Google" button (a form posting to a server action). |
 | `ProfileForm.tsx` | Trainer / school profile form used by onboarding and the account page. |
@@ -138,7 +139,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 |---|---|
 | `course-repository.ts` | The `CourseRepository` **interface** (what the app can ask about courses) and `getCourseRepository()`, the one line that picks the backend. |
 | `profile-repository.ts` | The `ProfileRepository` interface (current user's profile, certification upload) and `getProfileRepository()`. |
-| `supabase-profile-repository.ts` | Supabase implementation: `profiles` table and `certifications` bucket. Never writes review statuses. |
+| `supabase-profile-repository.ts` | Supabase implementation: joins `profiles` with `trainer_profiles` or `school_profiles` into one `Profile`; `certifications` bucket. Never writes review statuses. |
 | `supabase-course-repository.ts` | Supabase implementation. The only file with table/column names and the Supabase client. Turns a `CourseQuery` into a database query (search, filters, sort) and rows into `Course`. Reads `SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY`. Server only. |
 
 ## `src/lib/auth/`: sign-in (the auth boundary)
@@ -176,6 +177,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 ---
 
 ## Changelog of this map
+- **Step 4 follow-up:** profiles split into `trainer_profiles` / `school_profiles` (migration 0003); guests see only Sign in and List your training (no hearts); account pages on phones drop the footer and use larger text.
 - **Step 4:** accounts. Added `supabase/migrations/0002_accounts.sql`, `src/proxy.ts`, `lib/auth/`, `lib/supabase/`, profile repository, `lib/viewer.ts`, `lib/profile-form.ts`, `lib/request-origin.ts`, `config/accounts.ts`, account pages and server actions, auth components. Course repository now uses the shared client. Roadmap: new Step 5 (admin role); later steps shifted by one.
 - **Step 3:** added `supabase/` (migration + seed), `supabase-course-repository.ts`, `app/api/courses/route.ts`, `course-query-params.ts`, `catalog-api.ts`, `.env.example`; removed the sample data files; suggested topics now come from the `categories` table.
 - **Step 1:** initial structure; `HomeClient` split into section components; docs added.

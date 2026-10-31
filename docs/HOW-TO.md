@@ -73,14 +73,16 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 ### Accounts setup (Supabase Auth, once per project)
 1. SQL Editor: run `supabase/migrations/0002_accounts.sql`.
 2. Authentication → Sign In / Providers → Email: keep **Confirm email** on. Set minimum password length to 8 (`MIN_PASSWORD_LENGTH`).
-3. Authentication → URL Configuration:
+3. Authentication → URL Configuration (where Supabase may send users back to):
    - **Site URL**: the production address, e.g. `https://<your-site>.vercel.app`.
-   - **Redirect URLs**: add `http://localhost:3000/**`, `https://<your-site>.vercel.app/**` and `https://*-<your-vercel-team>.vercel.app/**` (previews).
-4. Google sign-in:
-   1. Google Cloud Console → create a project → APIs & Services → OAuth consent screen: External, app name SkipPD, your support email. Publish it when ready for real users.
-   2. Credentials → Create credentials → OAuth client ID → Web application.
-   3. Authorized redirect URI: `https://<project-ref>.supabase.co/auth/v1/callback` (shown in Supabase → Authentication → Providers → Google).
-   4. Copy the Client ID and Client secret into Supabase → Authentication → Providers → Google, and enable it.
+   - **Redirect URLs**: `http://localhost:3000/**`, `https://skip-*-skip-pd.vercel.app/**` (all Vercel previews) and the production address followed by `/**`.
+   - In these patterns `*` matches any characters except `.` and `/`; `/**` matches any path.
+4. Google sign-in (Google Cloud Console, https://console.cloud.google.com, free, no billing needed):
+   1. Project picker → **New project** → name `SkipPD` → Create, and select it.
+   2. Search **Google Auth Platform** (older: OAuth consent screen) → Get started: app name `SkipPD`, support email, Audience **External**, contact email → Create.
+   3. **Clients** → Create client → **Web application**, name `SkipPD web`. Under **Authorized redirect URIs** add only `https://zlkbjqhywukharqnyizd.supabase.co/auth/v1/callback`. Google always returns to Supabase, so previews and localhost are not listed here.
+   4. Copy the Client ID and Client secret into Supabase → Authentication → Sign In / Providers → Google, enable, Save. Never put the secret in code or Vercel.
+   5. New apps are in **Testing**: only accounts under Audience → Test users can sign in. Click **Publish app** before launch.
 5. Emails: Supabase's built-in sender allows only a few emails per hour, for testing. Before launch, set up custom SMTP (Authentication → Emails → SMTP), e.g. Resend or SendGrid.
 
 ### Approve a certification or school

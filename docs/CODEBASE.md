@@ -87,10 +87,10 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `sign-up/page.tsx` | Create an account (email confirmation) or Google. |
 | `forgot-password/page.tsx` / `reset-password/page.tsx` | Request a reset email / set a new password (also used for "Change password"). |
 | `onboarding/page.tsx` | First-time profile form: account type plus trainer or school details. |
-| `account/page.tsx` | Review status, profile editing, change password, sign out. |
-| `auth/callback/route.ts` | Where email links and Google sign-in return: swaps the one-time code for a session, then opens `next` or `/onboarding`. |
+| `account/page.tsx` | Review status, profile summary with Edit button, back to trainings, change password, sign out. |
+| `auth/callback/route.ts` | Where email links (`token_hash`) and Google sign-in (`code`) return: creates the session, then opens `next` or `/onboarding`. An already-used confirmation link asks the user to sign in. |
 | `actions/auth.ts` | Server actions: sign in, sign up, Google, forgot/reset password, sign out. |
-| `actions/profile.ts` | Server action: validate and save the profile form, upload the certification. |
+| `actions/profile.ts` | Server action: validate and save the profile form, upload the certification. New profiles go to the home page (welcome message); edits return to the account summary. |
 | `api/courses/route.ts` | `GET /api/courses?q=&format=&grade=&duration=&maxPrice=&sort=&ids=`: catalog search for the browser. Returns `{courses}`. |
 | `globals.css` | All styles, ported from the POC and grouped by page area. Colours are CSS variables in `:root`. The header is sticky and 64px tall. The "Responsive" section at the end adapts the layout for tablets and phones. |
 | `[slug]/page.tsx` | **Temporary.** "Coming soon" page for each footer link (`/about`, `/terms`...), generated from `FOOTER_COLUMNS`. Real pages get their own folder later. |
@@ -107,6 +107,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `AuthForm.tsx` | Generic form for sign-in/up and password pages: runs a server action, shows its error or success note. |
 | `GoogleSignInButton.tsx` | "Continue with Google" button (a form posting to a server action). |
 | `ProfileForm.tsx` | Trainer / school profile form used by onboarding and the account page. |
+| `AccountProfile.tsx` | Account page: read-only profile summary; "Edit profile" swaps in `ProfileForm`, saving returns to the summary. |
 | `AccountStatus.tsx` | Account page box: "Not certified" / "Certified" for trainers, verification status for schools. |
 | `SearchBox.tsx` | Search form used twice: large in the hero, compact in the header. Both share one query. |
 | `Hero.tsx` | Headline, search box and artwork. |

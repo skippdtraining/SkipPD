@@ -83,11 +83,15 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
    3. **Clients** → Create client → **Web application**, name `SkipPD web`. Under **Authorized redirect URIs** add only `https://zlkbjqhywukharqnyizd.supabase.co/auth/v1/callback`. Google always returns to Supabase, so previews and localhost are not listed here.
    4. Copy the Client ID and Client secret into Supabase → Authentication → Sign In / Providers → Google, enable, Save. Never put the secret in code or Vercel.
    5. New apps are in **Testing**: only accounts under Audience → Test users can sign in. Click **Publish app** before launch.
-5. Emails: Supabase's built-in sender allows only a few emails per hour, for testing. Before launch, set up custom SMTP (Authentication → Emails → SMTP), e.g. Resend or SendGrid.
+5. Email links (Authentication → Emails → Templates). Change the link in two templates so links work even when opened in another browser or mail app:
+   - **Confirm signup**: `<a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email">Confirm your email</a>`
+   - **Reset password**: `<a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=recovery">Reset your password</a>`
+   - `RedirectTo` already contains `/auth/callback?next=...`, hence `&` not `?`.
+6. Emails: Supabase's built-in sender allows only a few emails per hour, for testing. Before launch, set up custom SMTP (Authentication → Emails → SMTP), e.g. Resend or SendGrid.
 
 ### Approve a certification or school
-1. Storage → `certifications` → open the user's folder (named by user id) to view the file.
-2. Table Editor → `profiles` → find the row (the `email` column helps).
+1. Find the user's id: Table Editor → `profiles` → `id` column of their row (the `email` column helps).
+2. Storage → `certifications` → open the folder with that id → click the file → **Download** (or **Get URL** for a link valid for a limited time).
 3. Trainers: set `certification_status` to `approved` or `rejected`. Schools: check `is_likely_school_email`, then set `school_status` to `approved` or `rejected`.
 4. The user sees the new status on `/account` at once. Step 5 moves this into an admin page.
 

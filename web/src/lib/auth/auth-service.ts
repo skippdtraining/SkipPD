@@ -18,6 +18,9 @@ export interface AuthUser {
   email: string;
 }
 
+/** Kinds of email link: sign-up confirmation or password recovery. */
+export type EmailLinkType = 'email' | 'recovery';
+
 /** Outcome of an auth call: success, or a message to show the user. */
 export type AuthResult = {ok: true} | {ok: false; message: string};
 
@@ -39,6 +42,12 @@ export interface AuthService {
   getGoogleSignInUrl(callbackUrl: string): Promise<string>;
   /** Finishes a sign-in that came back with a one-time code (email link, Google). */
   completeSignIn(code: string): Promise<AuthResult>;
+  /**
+   * Finishes an email link that carries a token hash instead of a code.
+   * Works in any browser, unlike `completeSignIn`, which needs the browser
+   * that started the sign-up.
+   */
+  verifyEmailToken(tokenHash: string, type: EmailLinkType): Promise<AuthResult>;
   /** Emails a password-reset link that returns to `resetUrl`. */
   sendPasswordReset(email: string, resetUrl: string): Promise<AuthResult>;
   /** Sets a new password for the signed-in user. */

@@ -872,6 +872,29 @@ header.with-search .header-search {
   color: #a2463f;
 }
 
+/* Account page profile summary */
+.profile-summary {
+  margin: 0 0 18px;
+  font-size: 13px;
+}
+.profile-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+}
+.profile-row dt {
+  color: var(--muted);
+}
+.profile-row dd {
+  margin: 0;
+  white-space: pre-line;
+}
+.form-cancel {
+  margin-top: 10px;
+}
+
 /* Modal */
 dialog {
   border: 0;

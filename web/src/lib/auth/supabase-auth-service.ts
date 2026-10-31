@@ -64,6 +64,12 @@ export function createSupabaseAuthService(): AuthService {
       return toResult(error);
     },
 
+    async verifyEmailToken(tokenHash, type) {
+      const supabase = await getRequestClient();
+      const {error} = await supabase.auth.verifyOtp({token_hash: tokenHash, type});
+      return toResult(error);
+    },
+
     async sendPasswordReset(email, resetUrl) {
       const supabase = await getRequestClient();
       const {error} = await supabase.auth.resetPasswordForEmail(email, {

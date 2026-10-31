@@ -1,8 +1,9 @@
 /**
  * @fileoverview Route for "/sign-in": email + password or Google.
  *
- * `?next=/path` returns the user to that page afterwards; `?error=link`
- * explains that an email link expired. Next.js requires a default export.
+ * `?next=/path` returns the user to that page afterwards. `?error=confirmed`
+ * follows a sign-up link that was already used (the email is confirmed);
+ * `?error=link` follows a password-reset link that expired. Next.js requires a default export.
  */
 
 import type {Metadata} from 'next';
@@ -27,6 +28,11 @@ async function SignInContent({searchParams}: PageProps<'/sign-in'>) {
   );
   return (
     <>
+      {params.error === 'confirmed' && (
+        <p className="notice" role="status">
+          Your email is confirmed. Please sign in to continue.
+        </p>
+      )}
       {params.error === 'link' && (
         <p className="form-error" role="alert">
           That link has expired or was already used. Please sign in or request a new one.

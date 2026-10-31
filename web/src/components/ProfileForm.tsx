@@ -8,7 +8,7 @@
 
 'use client';
 
-import {useActionState, useState} from 'react';
+import {useActionState, useEffect, useState} from 'react';
 import {saveProfileAction} from '@/app/actions/profile';
 import {
   CERTIFICATION_TYPES,
@@ -21,14 +21,24 @@ interface ProfileFormProps {
   /** Existing profile to edit, or null for a new one. */
   profile: Profile | null;
   submitLabel: string;
+  /** Called after an existing profile was saved (not used on onboarding). */
+  onSaved?: () => void;
+  /** Shows a Cancel button that calls this. */
+  onCancel?: () => void;
 }
 
 /** Trainer or school profile form. */
-export function ProfileForm({profile, submitLabel}: ProfileFormProps) {
+export function ProfileForm({profile, submitLabel, onSaved, onCancel}: ProfileFormProps) {
   const [state, formAction, pending] = useActionState(saveProfileAction, {});
   const [role, setRole] = useState<AccountRole | null>(profile?.role ?? null);
   const [isEmployed, setIsEmployed] = useState(profile?.isEmployed ?? false);
   const maxMegabytes = MAX_CERTIFICATION_BYTES / (1024 * 1024);
+
+  // Each successful save bumps savedCount; tell the parent once per save.
+  useEffect(() => {
+    if (state.savedCount) onSaved?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.savedCount]);
 
   return (
     <form action={formAction}>
@@ -163,6 +173,11 @@ export function ProfileForm({profile, submitLabel}: ProfileFormProps) {
       <button className="btn wide" disabled={pending || !role}>
         {pending ? 'Saving…' : submitLabel}
       </button>
+      {onCancel && (
+        <button type="button" className="btn light wide form-cancel" onClick={onCancel}>
+          Cancel
+        </button>
+      )}
     </form>
   );
 }

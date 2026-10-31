@@ -1,5 +1,6 @@
 /**
- * @fileoverview Route for "/account": review status, profile editing,
+ * @fileoverview Route for "/account": review status, profile summary (with
+ * an Edit button),
  * password change and sign-out. Next.js requires a default export.
  */
 
@@ -10,7 +11,7 @@ import {Suspense} from 'react';
 import {signOutAction} from '@/app/actions/auth';
 import {AccountStatus} from '@/components/AccountStatus';
 import {AuthShell} from '@/components/AuthShell';
-import {ProfileForm} from '@/components/ProfileForm';
+import {AccountProfile} from '@/components/AccountProfile';
 import {SITE_NAME} from '@/config/site';
 import {getViewer} from '@/lib/viewer';
 
@@ -25,8 +26,9 @@ async function AccountContent() {
     <>
       <p className="auth-intro">Signed in as {viewer.email}</p>
       <AccountStatus profile={viewer.profile} />
-      <ProfileForm profile={viewer.profile} submitLabel="Save changes" />
+      <AccountProfile profile={viewer.profile} />
       <div className="auth-links">
+        <Link href="/">← Back to trainings</Link>
         <Link href="/reset-password">Change password</Link>
         <form action={signOutAction}>
           <button className="link-button">Sign out</button>

@@ -26,6 +26,7 @@ import {
   type Viewer,
 } from '@/lib/types';
 import {PAGE_CHANGE_SCROLL, SEARCH_DEBOUNCE_MS} from '@/config/catalog';
+import {SITE_NAME} from '@/config/site';
 import {scrollBelowHeader} from '@/lib/scroll';
 import {useIsOffscreen} from '@/lib/use-is-offscreen';
 import {useToast} from '@/lib/use-toast';
@@ -78,6 +79,17 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
   const [filters, setFilters] = useState<CatalogFilters>(DEFAULT_FILTERS);
   const [dialog, setDialog] = useState<OpenDialog>(null);
   const [toast, showToast] = useToast();
+
+  // Onboarding sends new users here with ?welcome=1: greet them once, then
+  // drop the flag so a reload does not greet again.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('welcome') !== '1') return;
+    showToast(`Your profile is saved. Welcome to ${SITE_NAME}!`);
+    url.searchParams.delete('welcome');
+    window.history.replaceState(null, '', url);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [page, setPage] = useState(1);
   const catalogTitleRef = useRef<HTMLHeadingElement>(null);
   // Zero-height marker at the line between the search area and the catalog.

@@ -21,7 +21,8 @@ interface CatalogGridProps {
   savedOnly: boolean;
   onSortChange: (sort: CatalogFilters['sort']) => void;
   onOpenCourse: (course: Course) => void;
-  onToggleSave: (courseId: number) => void;
+  /** Omitted for guests: hearts are hidden. */
+  onToggleSave?: (courseId: number) => void;
   onClearFilters: () => void;
   /** Current page, starting at 1. */
   page: number;
@@ -92,9 +93,12 @@ export function CatalogGrid({
               onOpen={() => {
                 onOpenCourse(course);
               }}
-              onToggleSave={() => {
-                onToggleSave(course.id);
-              }}
+              onToggleSave={
+                onToggleSave &&
+                (() => {
+                  onToggleSave(course.id);
+                })
+              }
             />
           ))
         ) : (

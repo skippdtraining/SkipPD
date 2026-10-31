@@ -1,7 +1,7 @@
 /**
  * @fileoverview Top navigation bar. Sticky (see `header` in globals.css) so
- * it stays visible while scrolling. Step 4 adds login / logout and
- * role-specific links (e.g. "Jobs" for teachers).
+ * it stays visible while scrolling. Shows "Sign in" for guests and
+ * "Account" for signed-in users.
  *
  * When the hero search box scrolls away, a compact copy of it fades in here
  * so search is always one tap away.
@@ -12,15 +12,19 @@
 
 'use client';
 
+import Link from 'next/link';
 import {useState} from 'react';
 
 import {SITE, SITE_NAME} from '@/config/site';
+import type {Viewer} from '@/lib/types';
 import {SearchBox} from './SearchBox';
 
 interface SiteHeaderProps {
   /** True when the "Saved" view is active; clicking Saved again returns to all trainings. */
   savedOnly: boolean;
   savedCount: number;
+  /** The signed-in visitor, or null for guests. */
+  viewer: Viewer | null;
   onShowSaved: () => void;
   onShowRequests: () => void;
   onListTraining: () => void;
@@ -35,6 +39,7 @@ interface SiteHeaderProps {
 export function SiteHeader({
   savedOnly,
   savedCount,
+  viewer,
   onShowSaved,
   onShowRequests,
   onListTraining,
@@ -89,14 +94,24 @@ export function SiteHeader({
         {menuOpen ? '✕' : '☰'}
       </button>
       <nav id="main-nav">
-        <button
-          className={savedOnly ? 'nav-active' : ''}
-          aria-pressed={savedOnly}
-          onClick={choose(onShowSaved)}
-        >
-          Saved <span className="saved-count">{savedCount}</span>
-        </button>
-        <button onClick={choose(onShowRequests)}>My requests</button>
+        {/* Guests only see Sign in and List your training. */}
+        {viewer && (
+          <>
+            <button
+              className={savedOnly ? 'nav-active' : ''}
+              aria-pressed={savedOnly}
+              onClick={choose(onShowSaved)}
+            >
+              Saved <span className="saved-count">{savedCount}</span>
+            </button>
+            <button onClick={choose(onShowRequests)}>My requests</button>
+          </>
+        )}
+        {viewer ? (
+          <Link href={viewer.profile ? '/account' : '/onboarding'}>Account</Link>
+        ) : (
+          <Link href="/sign-in">Sign in</Link>
+        )}
         <button className="btn small" onClick={choose(onListTraining)}>
           + List your training
         </button>

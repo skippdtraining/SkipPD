@@ -36,7 +36,7 @@ After the training takes place and the hiring party confirms, the trainer is pai
 A chat lets the trainer and the hiring party settle training details. One chat thread per booking.
 
 ### 1.4 Accounts, profiles and ratings (planned)
-Applies once users and the database exist (roadmap Steps 4 and 7, ratings in the "Later" step):
+Applies once users and the database exist (roadmap Steps 4 and 8, ratings in the "Later" step):
 - After login, teachers and schools get **different pages**, each tailored to their role.
 - The current header items **Saved** and **My requests** are removed. Each user has a **profile page** instead:
   - teachers see the trainings they listed (and their incoming jobs);
@@ -77,6 +77,11 @@ Optional later improvements: attendance check-in via QR code / link at the sessi
 | Ratings | Trainer ratings shown next to listings; planned for the "Later" step |
 | Roadmap change | Step 2 added for UI changes after the Step 1 review; later steps shifted by one |
 | Proof of training | Hiring party confirms + evidence fallback (section 2.1) |
+| Sign-in (Step 4) | Email + password (email must be confirmed) and Google. Catalog stays public; saving, booking and listing need an account |
+| Account types (Step 4) | **Trainer** (can list and book) and **School** (can book). Chosen once, cannot change |
+| Trainer vetting (Step 4) | Anyone can sign up and list. A PD certification file is optional and reviewed manually; until approved, the profile and listings show "Not certified" |
+| School verification (Step 4) | Schools should use a school email. Emails on .edu, .k12.xx.us or the admin's domain list are flagged as "likely school"; every school is still approved manually |
+| Admin (Step 4-5) | Approvals happen in the Supabase dashboard in Step 4; Step 5 adds an admin role and admin page |
 
 ---
 
@@ -137,7 +142,7 @@ Optional later improvements: attendance check-in via QR code / link at the sessi
 **Free-tier caveats:** Supabase free projects pause after ~1 week of inactivity and have 500 MB DB / 1 GB storage. Vercel Hobby is officially for non-commercial use - move to Pro ($20/mo) before charging real money.
 
 ### 5.2 Data model (entities, not final schema)
-- **Profile** - user id, role (`teacher` | `school`), name, email, credentials/bio, school/organization, Stripe account id (later)
+- **Profile** - user id, role (`trainer` | `school`), name, email; trainer: credentials, employment, bio, certification file + review status; school: school/district, contact position, school-email hint + verification status; Stripe account id (later)
 - **Training listing** - owner (teacher), title, category, format, duration hours, price per person, grade levels, tags, description, outcomes, image, active flag
 - **Saved listing** - user, listing
 - **Booking** - listing, requester, trainer, status, current agreed terms, created/updated
@@ -155,7 +160,7 @@ requested -> negotiating <-> negotiating -> accepted -> paid -> delivered -> com
  rejected      rejected                    cancelled  cancelled  disputed -> completed | refunded
 ```
 - Only the party who did *not* make the latest proposal can accept it.
-- Until payments exist (step 11), `accepted` goes straight to `scheduled`/`delivered`.
+- Until payments exist (step 12), `accepted` goes straight to `scheduled`/`delivered`.
 
 ### 5.4 Difficulty ranking
 | Easy | Medium | Hard (later) |
@@ -172,38 +177,39 @@ requested -> negotiating <-> negotiating -> accepted -> paid -> delivered -> com
 | # | Step | Done when |
 |---|---|---|
 | 1 ✅ | Repo + Next.js skeleton, port POC UI as static pages, deploy to Vercel | POC look-alike live on a Vercel URL |
-| 2 | UI changes: frontend design revisions agreed after the Step 1 review (header, layout, styling); no backend work | Revised design live on a Vercel preview and approved by the owner |
-| 3 | Supabase project, initial schema, seed the 6 sample courses; catalog/search/filters/sort read from DB | Live site shows DB data; adding a row in Supabase shows on site |
-| 4 | Auth: signup with role, login/logout, role-specific pages and profile page (replaces header Saved / My requests, see 1.4) | Can create Teacher and School accounts; header and pages change per role |
-| 5 | Listing CRUD for teachers + image upload; RLS policies | Teacher creates/edits/deletes own listing; school cannot list |
-| 6 | Saved listings per user | Saved items persist across devices |
-| 7 | Booking requests; "My requests" (requester) and "Jobs" (trainer) pages | Request appears on trainer's Jobs page |
-| 8 | Negotiation (accept / counter / reject) + email notifications | Full negotiation round-trip works with emails |
-| 9 | Chat per booking (realtime) | Both parties chat live on a booking |
-| 10 | Completion flow: delivered, confirm, auto-confirm, dispute, evidence upload, minimal admin page | A booking can reach `completed` or `disputed` |
-| 11 | Stripe Connect: trainer onboarding, payment on accept, payout on completion | Test-mode payment end to end |
-| 12 | Later: trainer ratings next to listings (see 1.4), reviews, self-paced, PD certificates, Google login, analytics | - |
+| 2 ✅ | UI changes: frontend design revisions agreed after the Step 1 review (header, layout, styling); no backend work | Revised design live on a Vercel preview and approved by the owner |
+| 3 ✅ | Supabase project, initial schema, seed the 6 sample courses; catalog/search/filters/sort read from DB | Live site shows DB data; adding a row in Supabase shows on site |
+| 4 | Auth: email/password (with email confirmation) and Google sign-in; Trainer or School profile; trainer PD certification upload; school email hint; account page | Can create Trainer and School accounts; certification and school approval visible on the account page |
+| 5 | Admin role: `admin` flag on accounts, admin page to review certifications and verify schools (replaces approving in the Supabase dashboard) | Admin approves a certification and a school from the site |
+| 6 | Listing CRUD for teachers + image upload; RLS policies | Teacher creates/edits/deletes own listing; school cannot list |
+| 7 | Saved listings per user | Saved items persist across devices |
+| 8 | Booking requests; "My requests" (requester) and "Jobs" (trainer) pages; profile pages replace header Saved / My requests (see 1.4) | Request appears on trainer's Jobs page |
+| 9 | Negotiation (accept / counter / reject) + email notifications | Full negotiation round-trip works with emails |
+| 10 | Chat per booking (realtime) | Both parties chat live on a booking |
+| 11 | Completion flow: delivered, confirm, auto-confirm, dispute, evidence upload, dispute handling on the admin page | A booking can reach `completed` or `disputed` |
+| 12 | Stripe Connect: trainer onboarding, payment on accept, payout on completion | Test-mode payment end to end |
+| 13 | Later: trainer ratings next to listings (see 1.4), reviews, self-paced, PD certificates for attendees, analytics | - |
 
 Rule: do not start step N+1 until step N is deployed and manually tested.
 
 ---
 
 ## 7. Open Questions (to decide before the relevant step)
-1. **Platform fee** - what % does SkipPD keep? (step 11)
-2. **Group pricing** - always price x participants, or can trainers quote a flat group price during negotiation? (step 8)
-3. **Cancellation / refund policy** - who can cancel after payment, and how much is refunded? (step 11)
-4. **Auto-confirm window** - 7 days OK? (step 10)
-5. **Trainer vetting** - anyone can list, or manual approval / credential check first? (step 5)
-6. **In-person travel costs** - part of the price, or negotiated separately? (step 8)
-7. **Who is admin** - you only, or a team? (step 10)
+1. **Platform fee** - what % does SkipPD keep? (step 12)
+2. **Group pricing** - always price x participants, or can trainers quote a flat group price during negotiation? (step 9)
+3. **Cancellation / refund policy** - who can cancel after payment, and how much is refunded? (step 12)
+4. **Auto-confirm window** - 7 days OK? (step 11)
+5. ~~**Trainer vetting**~~ - decided in Step 4: anyone can list; optional certification, manually approved.
+6. **In-person travel costs** - part of the price, or negotiated separately? (step 9)
+7. **Who is admin** - you only, or a team? (step 11)
 8. ~~**Product name**~~ - decided: **SkipPD**.
 9. **Privacy** - will any student data ever be stored (e.g. in evidence photos)? If yes, FERPA/COPPA considerations apply. Recommendation: forbid student-identifiable data in uploads.
 
 ---
 
-## 8. Current step - Step 3: Database-backed catalog
+## 8. Current step - Step 4: Accounts
 
-**Status:** Step 2 merged into `dev`. Step 3 in progress on branch `feature/step-3-supabase-catalog`.
+**Status:** Step 3 merged into `dev`. Step 4 in progress on branch `feature/step-4-accounts`.
 
 ### Step 1 - Skeleton + deploy (done)
 Next.js app in `web/`, POC UI ported into documented components, sample data in a local file, Vercel connected (Root Directory `web`).
@@ -214,7 +220,7 @@ Next.js app in `web/`, POC UI ported into documented components, sample data in 
 3. Review on the Vercel preview URL of the PR.
 **Checkpoint:** owner approves the revised design; PR merged into `dev`.
 
-### Step 3 - Database-backed catalog (current)
+### Step 3 - Database-backed catalog (done)
 Prerequisite (owner): create the Supabase project and share the Project URL + publishable key.
 1. Add categories and listings tables in Supabase.
 2. Seed the 6 POC courses.
@@ -227,3 +233,18 @@ Decisions taken in Step 3:
 - Only the publishable key is used. Row Level Security allows public read of published listings and categories, and no writes.
 - The home page reads the database on every request (no cache), so dashboard edits show on the next page load.
 - Pagination stays in the browser while trainer-created listings still live in localStorage; it can move to the server once listings are in the database.
+
+### Step 4 - Accounts (current)
+Prerequisite (owner): run `supabase/migrations/0002_accounts.sql` and `0003_split_profiles.sql`; configure Supabase Auth (Site URL, Redirect URLs, Google provider), see HOW-TO "Accounts setup".
+1. Sign-up / sign-in with email + password (confirmation email) or Google; forgot / reset password; sign-out.
+2. After the first sign-in, `/onboarding` asks for the account type and profile:
+   - Trainer: full name, credentials line, currently employed (yes/no) + place of employment, about text, optional PD certification file (PDF/JPG/PNG, max 4 MB, private storage).
+   - School: contact name, school or district, contact's position. The email is flagged automatically when it looks like a school address.
+3. `/account` shows the review status ("Not certified" / "Certified", school verified or not), lets users edit their profile and change their password.
+4. Guests can browse; their header shows only Sign in and List your training, and cards have no save heart. Booking and listing send them to sign-in. Only trainers can open the listing form.
+5. The admin approves certifications and schools in the Supabase dashboard (HOW-TO "Approve a certification or school").
+**Checkpoint:** a Trainer and a School account can be created on the Vercel preview; changing `certification_status` / `school_status` in the dashboard changes the account page.
+
+Before launch: custom SMTP (needs a domain) and the token-hash email templates (HOW-TO "Accounts setup").
+
+Not in Step 4: the "Not certified" label next to listings arrives with listing CRUD (Step 6), when listings get an owner. Saved courses and requests still live in the browser until Steps 7 and 8.

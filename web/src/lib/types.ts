@@ -61,7 +61,7 @@ export interface Course {
   /** Cover accent colour (hex), used by the illustration. */
   accent: string;
   type: CoverType;
-  /** Optional uploaded cover image as a data URL. Moves to file storage in Step 5. */
+  /** Optional uploaded cover image as a data URL. Moves to file storage in Step 6. */
   image?: string;
 }
 
@@ -122,3 +122,56 @@ export const DEFAULT_FILTERS: CatalogFilters = {
   sort: 'recommended',
   savedOnly: false,
 };
+
+/** Account type, chosen once at sign-up. Trainers can also book PD. */
+export type AccountRole = 'trainer' | 'school';
+
+/** Account types with their sign-up labels, in display order. */
+export const ACCOUNT_ROLES: {value: AccountRole; label: string; hint: string}[] = [
+  {value: 'trainer', label: 'Trainer', hint: 'I teach PD (and may book PD too).'},
+  {value: 'school', label: 'School', hint: 'I book PD for my school or district.'},
+];
+
+/**
+ * Admin review state of a certification or a school account.
+ * 'none' means nothing to review (no certification uploaded).
+ */
+export type ReviewStatus = 'none' | 'pending' | 'approved' | 'rejected';
+
+/** Profile fields a user fills in and may edit later. */
+export interface ProfileInput {
+  role: AccountRole;
+  fullName: string;
+  /** Trainer: credentials line shown on their courses, e.g. "Literacy coach · 14 years". */
+  credentials: string;
+  /** Trainer: currently employed? Null for schools. */
+  isEmployed: boolean | null;
+  /** Trainer: current place of employment; empty when not employed. */
+  employer: string;
+  /** Trainer: general description about themselves. */
+  bio: string;
+  /** School: name of the school or district. */
+  schoolName: string;
+  /** School: the contact person's position, e.g. "Principal". */
+  contactPosition: string;
+}
+
+/** A user's profile as stored, including fields only the admin can change. */
+export interface Profile extends ProfileInput {
+  email: string;
+  /** True once a certification file was uploaded. */
+  hasCertification: boolean;
+  /** Trainer: "Certified" only when this is 'approved'. */
+  certificationStatus: ReviewStatus;
+  /** School: the email looks like a school address (hint for the admin). */
+  isLikelySchoolEmail: boolean;
+  /** School: admin approval of the account. */
+  schoolStatus: ReviewStatus;
+}
+
+/** The signed-in visitor, or null for guests. */
+export interface Viewer {
+  email: string;
+  /** Null until the user finished the profile form (/onboarding). */
+  profile: Profile | null;
+}

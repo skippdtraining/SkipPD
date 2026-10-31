@@ -1,6 +1,6 @@
 /**
  * @fileoverview Content of the "My booking requests" dialog. Reads requests
- * from browser storage for now; Step 7 reads them from the database.
+ * from browser storage for now; Step 8 reads them from the database.
  */
 
 'use client';
@@ -24,7 +24,7 @@ export function RequestList() {
       )}
       {requests.map((request) => (
         <div key={request.id} className="request">
-          {/* "Draft" until Step 7 adds real statuses (requested, negotiating...). */}
+          {/* "Draft" until Step 8 adds real statuses (requested, negotiating...). */}
           <span className="status">Draft request</span>
           <strong>{request.course}</strong>
           <p>

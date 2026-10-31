@@ -73,6 +73,15 @@ export function AccountProfile({profile}: AccountProfileProps) {
           <>
             <Row label="Credentials" value={profile.credentials} />
             <Row
+              label="Teaching license"
+              value={
+                profile.licenseNumber
+                  ? `${profile.licenseState} ${profile.licenseNumber}`
+                  : 'None'
+              }
+              locked={isFieldLocked(profile, 'license')}
+            />
+            <Row
               label="Employment"
               value={profile.isEmployed ? profile.employer : 'Not currently employed'}
             />

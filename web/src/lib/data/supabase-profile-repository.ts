@@ -24,6 +24,9 @@ interface TrainerRow {
   bio: string;
   certification_path: string | null;
   certification_status: string;
+  license_state: string;
+  license_number: string;
+  license_status: string;
 }
 
 /** School-only columns (`public.school_profiles`). */
@@ -45,7 +48,8 @@ interface ProfileRow {
 
 const PROFILE_COLUMNS =
   'role, full_name, email, ' +
-  'trainer_profiles(credentials, is_employed, employer, bio, certification_path, certification_status), ' +
+  'trainer_profiles(credentials, is_employed, employer, bio, certification_path, ' +
+  'certification_status, license_state, license_number, license_status), ' +
   'school_profiles(school_name, contact_position, is_likely_school_email, school_status)';
 
 const CERTIFICATION_BUCKET = 'certifications';
@@ -62,6 +66,9 @@ function toProfile(row: ProfileRow): Profile {
     fullName: row.full_name,
     email: row.email,
     credentials: trainer?.credentials ?? '',
+    licenseState: trainer?.license_state ?? '',
+    licenseNumber: trainer?.license_number ?? '',
+    licenseStatus: (trainer?.license_status ?? 'none') as ReviewStatus,
     isEmployed: trainer ? trainer.is_employed : null,
     employer: trainer?.employer ?? '',
     bio: trainer?.bio ?? '',
@@ -142,6 +149,8 @@ export function createSupabaseProfileRepository(): ProfileRepository {
       if (role === 'trainer') {
         await saveOwnRow(supabase, 'trainer_profiles', userId, {
           credentials: input.credentials,
+          license_state: input.licenseState,
+          license_number: input.licenseNumber,
           is_employed: input.isEmployed ?? false,
           employer: input.employer,
           bio: input.bio,

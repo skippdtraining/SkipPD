@@ -150,6 +150,10 @@ export interface ProfileInput {
   employer: string;
   /** Trainer: general description about themselves. */
   bio: string;
+  /** Trainer: two-letter US state that issued their teaching license; empty if none. */
+  licenseState: string;
+  /** Trainer: teaching license number; empty if none. */
+  licenseNumber: string;
   /** School: name of the school or district. */
   schoolName: string;
   /** School: the contact person's position, e.g. "Principal". */
@@ -163,6 +167,8 @@ export interface Profile extends ProfileInput {
   hasCertification: boolean;
   /** Trainer: "Certified" only when this is 'approved'. */
   certificationStatus: ReviewStatus;
+  /** Trainer: "Licensed" only when this is 'approved'. */
+  licenseStatus: ReviewStatus;
   /** School: the email looks like a school address (hint for the admin). */
   isLikelySchoolEmail: boolean;
   /** School: admin approval of the account. */

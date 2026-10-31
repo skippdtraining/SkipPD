@@ -95,10 +95,16 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 3. Trainers: Table Editor → `trainer_profiles` → same `id` → set `certification_status` to `approved` or `rejected`. Schools: `school_profiles` → check `is_likely_school_email`, then set `school_status`. Click **Save** in the dashboard.
 4. The user sees the new status on `/account` at once. Step 5 moves this into an admin page.
 
+### Verify a trainer's teaching license
+1. Table Editor → `trainer_profiles` → rows with `license_status` = `pending`; note `license_state` and `license_number`.
+2. Open that state's public educator license lookup (search "<state> teacher certification lookup") and check that the number exists, is active and matches the trainer's name in `profiles`.
+3. Set `license_status` to `approved` or `rejected` → Save. Once approved, the license fields are locked for the trainer.
+
 ### Change a locked field for a user
 After approval, a trainer's name and a school's name are locked on the site (rule: `web/src/lib/profile-locks.ts` + `supabase/migrations/0004_lock_approved_profiles.sql`; change both together).
 1. Trainer name: Table Editor → `profiles` → edit `full_name` → Save.
-2. School name: Table Editor → `school_profiles` → edit `school_name` → Save.
+2. License: `trainer_profiles` → `license_state` / `license_number` (editing them resets `license_status` to `pending`; set it back to `approved` if correct).
+3. School name: Table Editor → `school_profiles` → edit `school_name` → Save.
 
 ### Add a school email domain
 1. Table Editor → `school_email_domains` → Insert row: `domain` in lower case, e.g. `browardschools.com` (subdomains count too).

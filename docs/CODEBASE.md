@@ -56,6 +56,7 @@ Email links and Google return to /auth/callback.
 | `supabase/migrations/0002_accounts.sql` | `profiles` (trainer/school details, review statuses), `school_email_domains`, `is_likely_school_email()`, the private `certifications` storage bucket, and the rules that stop users changing review statuses. |
 | `supabase/migrations/0003_split_profiles.sql` | Moves trainer-only fields to `trainer_profiles` and school-only fields to `school_profiles`; `profiles` keeps role, name, email. Copies existing data. |
 | `supabase/migrations/0004_lock_approved_profiles.sql` | Locks the trainer's name and the school's name once approved (site users only; the dashboard can still edit). |
+| `supabase/migrations/0005_trainer_license.sql` | Optional teaching license (state + number) on `trainer_profiles` with its own `license_status`; resets to pending on change, locked once approved. |
 | `supabase/seed.sql` | Starter data: six suggested topics and the six POC courses. Re-runnable (empties the tables first). |
 | `web/` | **The Next.js application.** Run all npm commands inside this folder. |
 
@@ -110,7 +111,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `GoogleSignInButton.tsx` | "Continue with Google" button (a form posting to a server action). |
 | `ProfileForm.tsx` | Trainer / school profile form used by onboarding and the account page. |
 | `AccountProfile.tsx` | Account page: read-only profile summary; "Edit profile" swaps in `ProfileForm`, saving returns to the summary. |
-| `AccountStatus.tsx` | Account page box: "Not certified" / "Certified" for trainers, verification status for schools. |
+| `AccountStatus.tsx` | Account page status: certificate ("Certified") and teaching license ("Licensed") for trainers, verification for schools. |
 | `SearchBox.tsx` | Search form used twice: large in the hero, compact in the header. Both share one query. |
 | `Hero.tsx` | Headline, search box and artwork. |
 | `FilterSidebar.tsx` | Format, grade, duration and price filters; collapsed behind a "Filters" button on phones. Only reports changes; filtering runs on the server. |
@@ -179,7 +180,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 ---
 
 ## Changelog of this map
-- **Step 4 follow-up:** `profile-locks.ts` + migration 0004 (locked fields after approval); profiles split into `trainer_profiles` / `school_profiles` (migration 0003); guests see only Sign in and List your training (no hearts); account pages on phones drop the footer and use larger text.
+- **Step 4 follow-up:** trainer teaching license (migration 0005); `profile-locks.ts` + migration 0004 (locked fields after approval); profiles split into `trainer_profiles` / `school_profiles` (migration 0003); guests see only Sign in and List your training (no hearts); account pages on phones drop the footer and use larger text.
 - **Step 4:** accounts. Added `supabase/migrations/0002_accounts.sql`, `src/proxy.ts`, `lib/auth/`, `lib/supabase/`, profile repository, `lib/viewer.ts`, `lib/profile-form.ts`, `lib/request-origin.ts`, `config/accounts.ts`, account pages and server actions, auth components. Course repository now uses the shared client. Roadmap: new Step 5 (admin role); later steps shifted by one.
 - **Step 3:** added `supabase/` (migration + seed), `supabase-course-repository.ts`, `app/api/courses/route.ts`, `course-query-params.ts`, `catalog-api.ts`, `.env.example`; removed the sample data files; suggested topics now come from the `categories` table.
 - **Step 1:** initial structure; `HomeClient` split into section components; docs added.

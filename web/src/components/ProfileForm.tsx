@@ -14,6 +14,7 @@ import {
   CERTIFICATION_TYPES,
   MAX_CERTIFICATION_BYTES,
   PROFILE_LIMITS,
+  US_STATES,
 } from '@/config/accounts';
 import {isFieldLocked, LOCKED_FIELD_NOTE} from '@/lib/profile-locks';
 import {ACCOUNT_ROLES, type AccountRole, type Profile} from '@/lib/types';
@@ -122,6 +123,39 @@ export function ProfileForm({profile, submitLabel, onSaved, onCancel}: ProfileFo
               placeholder="e.g., Literacy coach · 14 years in education"
             />
           </label>
+          <div className="two">
+            <label className="field">
+              Teaching license state (optional)
+              {isFieldLocked(profile, 'license') ? (
+                <input
+                  name="licenseState"
+                  defaultValue={profile?.licenseState}
+                  readOnly
+                />
+              ) : (
+                <select name="licenseState" defaultValue={profile?.licenseState ?? ''}>
+                  <option value="">No license</option>
+                  {US_STATES.map((state) => (
+                    <option key={state}>{state}</option>
+                  ))}
+                </select>
+              )}
+            </label>
+            <label className="field">
+              License number
+              <input
+                name="licenseNumber"
+                defaultValue={profile?.licenseNumber}
+                maxLength={PROFILE_LIMITS.licenseNumber}
+                readOnly={isFieldLocked(profile, 'license')}
+              />
+            </label>
+          </div>
+          <p className="field-note">
+            {isFieldLocked(profile, 'license')
+              ? LOCKED_FIELD_NOTE
+              : 'We check it on your state’s public license lookup. Without it, your profile shows "Not licensed".'}
+          </p>
           <fieldset className="role-choice">
             <legend>Are you currently employed?</legend>
             {[true, false].map((value) => (

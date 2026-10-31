@@ -7,6 +7,7 @@
  */
 
 import {
+  US_STATES,
   CERTIFICATION_TYPES,
   MAX_CERTIFICATION_BYTES,
   PROFILE_LIMITS,
@@ -71,11 +72,26 @@ export function parseProfileForm(
         schoolName,
         contactPosition,
         credentials: '',
+        licenseState: '',
+        licenseNumber: '',
         isEmployed: null,
         employer: '',
         bio: '',
       },
     };
+  }
+
+  // License is optional, but state and number go together.
+  const licenseState = readText(data, 'licenseState').toUpperCase();
+  const licenseNumber = readText(data, 'licenseNumber');
+  if (licenseState !== '' && !US_STATES.includes(licenseState)) {
+    return {ok: false, message: 'Choose a valid license state.'};
+  }
+  if (licenseNumber.length > PROFILE_LIMITS.licenseNumber) {
+    return {ok: false, message: 'License number is too long.'};
+  }
+  if ((licenseState === '') !== (licenseNumber === '')) {
+    return {ok: false, message: 'Enter both the license state and number, or neither.'};
   }
 
   const isEmployed = readText(data, 'isEmployed') === 'yes';
@@ -106,6 +122,8 @@ export function parseProfileForm(
       role,
       fullName,
       credentials,
+      licenseState,
+      licenseNumber,
       isEmployed,
       employer: isEmployed ? employer : '',
       bio,

@@ -14,6 +14,14 @@ const CERTIFICATION_TEXT: Record<ReviewStatus, string> = {
     'Not certified. Your certification was not approved; you can upload a new file.',
 };
 
+/** Trainer teaching-license wording per review status. */
+const LICENSE_TEXT: Record<ReviewStatus, string> = {
+  none: 'Not licensed. Add your teaching license below to get the "Licensed" badge.',
+  pending: 'Not licensed yet. Your teaching license is waiting for review.',
+  approved: 'Licensed. Your teaching license was verified.',
+  rejected: 'Not licensed. We could not verify your license; check the state and number.',
+};
+
 /** School verification wording per review status. */
 const SCHOOL_TEXT: Record<ReviewStatus, string> = {
   none: 'Waiting for verification.',
@@ -26,15 +34,35 @@ interface AccountStatusProps {
   profile: Profile;
 }
 
-/** Shows the admin review state of the profile. */
-export function AccountStatus({profile}: AccountStatusProps) {
-  const status =
-    profile.role === 'trainer' ? profile.certificationStatus : profile.schoolStatus;
-  const text =
-    profile.role === 'trainer' ? CERTIFICATION_TEXT[status] : SCHOOL_TEXT[status];
+/** One coloured status line. */
+function StatusLine({status, text}: {status: ReviewStatus; text: string}) {
   return (
     <p className={`account-status status-${status}`} role="status">
       {text}
     </p>
+  );
+}
+
+/** Shows the admin review state(s): certificate + license for trainers. */
+export function AccountStatus({profile}: AccountStatusProps) {
+  if (profile.role === 'school') {
+    return (
+      <StatusLine
+        status={profile.schoolStatus}
+        text={SCHOOL_TEXT[profile.schoolStatus]}
+      />
+    );
+  }
+  return (
+    <>
+      <StatusLine
+        status={profile.certificationStatus}
+        text={CERTIFICATION_TEXT[profile.certificationStatus]}
+      />
+      <StatusLine
+        status={profile.licenseStatus}
+        text={LICENSE_TEXT[profile.licenseStatus]}
+      />
+    </>
   );
 }

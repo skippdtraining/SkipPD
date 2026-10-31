@@ -13,11 +13,14 @@ import type {Profile, ProfileInput} from './types';
 export const LOCKED_FIELD_NOTE = 'Locked after approval. Contact us to change it.';
 
 /** Profile fields that can be locked. */
-export type LockableField = 'fullName' | 'schoolName';
+export type LockableField = 'fullName' | 'schoolName' | 'license';
 
 /** True when `field` can no longer be changed by the user. */
 export function isFieldLocked(profile: Profile | null, field: LockableField): boolean {
   if (!profile) return false;
+  if (field === 'license') {
+    return profile.role === 'trainer' && profile.licenseStatus === 'approved';
+  }
   if (field === 'fullName') {
     return profile.role === 'trainer' && profile.certificationStatus === 'approved';
   }
@@ -36,5 +39,11 @@ export function keepLockedFields(
     schoolName: isFieldLocked(profile, 'schoolName')
       ? profile.schoolName
       : input.schoolName,
+    licenseState: isFieldLocked(profile, 'license')
+      ? profile.licenseState
+      : input.licenseState,
+    licenseNumber: isFieldLocked(profile, 'license')
+      ? profile.licenseNumber
+      : input.licenseNumber,
   };
 }

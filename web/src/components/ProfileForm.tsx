@@ -15,6 +15,7 @@ import {
   MAX_CERTIFICATION_BYTES,
   PROFILE_LIMITS,
 } from '@/config/accounts';
+import {isFieldLocked, LOCKED_FIELD_NOTE} from '@/lib/profile-locks';
 import {ACCOUNT_ROLES, type AccountRole, type Profile} from '@/lib/types';
 
 interface ProfileFormProps {
@@ -77,8 +78,10 @@ export function ProfileForm({profile, submitLabel, onSaved, onCancel}: ProfileFo
             defaultValue={profile?.fullName}
             maxLength={PROFILE_LIMITS.fullName}
             autoComplete="name"
+            readOnly={isFieldLocked(profile, 'fullName')}
             required
           />
+          {isFieldLocked(profile, 'fullName') && <small>{LOCKED_FIELD_NOTE}</small>}
         </label>
       )}
 
@@ -90,8 +93,10 @@ export function ProfileForm({profile, submitLabel, onSaved, onCancel}: ProfileFo
               name="schoolName"
               defaultValue={profile?.schoolName}
               maxLength={PROFILE_LIMITS.schoolName}
+              readOnly={isFieldLocked(profile, 'schoolName')}
               required
             />
+            {isFieldLocked(profile, 'schoolName') && <small>{LOCKED_FIELD_NOTE}</small>}
           </label>
           <label className="field">
             Your position

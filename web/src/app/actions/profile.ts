@@ -10,6 +10,7 @@ import {redirect} from 'next/navigation';
 import {getAuthService} from '@/lib/auth/auth-service';
 import {getProfileRepository} from '@/lib/data/profile-repository';
 import {parseProfileForm} from '@/lib/profile-form';
+import {keepLockedFields} from '@/lib/profile-locks';
 
 /** What the profile form shows after submitting. */
 export interface ProfileFormState {
@@ -35,7 +36,8 @@ export async function saveProfileAction(
   if (!parsed.ok) return {error: parsed.message};
 
   try {
-    await repository.saveMyProfile(parsed.input);
+    // Ignore changes to locked fields, even if the form was tampered with.
+    await repository.saveMyProfile(keepLockedFields(parsed.input, existing));
     if (parsed.certification)
       await repository.uploadMyCertification(parsed.certification);
   } catch (error) {

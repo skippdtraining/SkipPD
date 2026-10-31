@@ -95,6 +95,11 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 3. Trainers: Table Editor → `trainer_profiles` → same `id` → set `certification_status` to `approved` or `rejected`. Schools: `school_profiles` → check `is_likely_school_email`, then set `school_status`. Click **Save** in the dashboard.
 4. The user sees the new status on `/account` at once. Step 5 moves this into an admin page.
 
+### Change a locked field for a user
+After approval, a trainer's name and a school's name are locked on the site (rule: `web/src/lib/profile-locks.ts` + `supabase/migrations/0004_lock_approved_profiles.sql`; change both together).
+1. Trainer name: Table Editor → `profiles` → edit `full_name` → Save.
+2. School name: Table Editor → `school_profiles` → edit `school_name` → Save.
+
 ### Add a school email domain
 1. Table Editor → `school_email_domains` → Insert row: `domain` in lower case, e.g. `browardschools.com` (subdomains count too).
 2. Existing profiles update their hint the next time they are saved.

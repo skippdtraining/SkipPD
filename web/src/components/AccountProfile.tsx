@@ -9,6 +9,7 @@
 'use client';
 
 import {useState} from 'react';
+import {isFieldLocked, LOCKED_FIELD_NOTE} from '@/lib/profile-locks';
 import type {Profile} from '@/lib/types';
 import {ProfileForm} from './ProfileForm';
 
@@ -17,12 +18,24 @@ interface AccountProfileProps {
 }
 
 /** One label/value row; skipped when the value is empty. */
-function Row({label, value}: {label: string; value: string}) {
+function Row({label, value, locked}: {label: string; value: string; locked?: boolean}) {
   if (value === '') return null;
   return (
     <div className="profile-row">
       <dt>{label}</dt>
-      <dd>{value}</dd>
+      <dd>
+        {value}
+        {locked && (
+          <span
+            className="lock-icon"
+            title={LOCKED_FIELD_NOTE}
+            aria-label={LOCKED_FIELD_NOTE}
+          >
+            {' '}
+            🔒
+          </span>
+        )}
+      </dd>
     </div>
   );
 }
@@ -51,7 +64,11 @@ export function AccountProfile({profile}: AccountProfileProps) {
     <>
       <dl className="profile-summary">
         <Row label="Account type" value={isTrainer ? 'Trainer' : 'School'} />
-        <Row label={isTrainer ? 'Name' : 'Contact name'} value={profile.fullName} />
+        <Row
+          label={isTrainer ? 'Name' : 'Contact name'}
+          value={profile.fullName}
+          locked={isFieldLocked(profile, 'fullName')}
+        />
         {isTrainer ? (
           <>
             <Row label="Credentials" value={profile.credentials} />
@@ -67,7 +84,11 @@ export function AccountProfile({profile}: AccountProfileProps) {
           </>
         ) : (
           <>
-            <Row label="School or district" value={profile.schoolName} />
+            <Row
+              label="School or district"
+              value={profile.schoolName}
+              locked={isFieldLocked(profile, 'schoolName')}
+            />
             <Row label="Position" value={profile.contactPosition} />
           </>
         )}

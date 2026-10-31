@@ -895,6 +895,15 @@ header.with-search .header-search {
   margin-top: 10px;
 }
 
+.field input[readonly] {
+  background: #f4f2f7;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+.lock-icon {
+  font-size: 11px;
+}
+
 /* Modal */
 dialog {
   border: 0;

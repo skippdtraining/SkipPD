@@ -6,12 +6,11 @@
  * run in the database, and converts rows into the app's {@link Course} type.
  * Tables are defined in `supabase/migrations/0001_catalog.sql`.
  *
- * Server only: it reads secrets-style environment variables, and it is only
- * imported by server code (`app/page.tsx`, `app/actions.ts`).
+ * Server only: it is imported by `app/page.tsx` and `app/api/courses`.
  */
 
-import {createClient, type SupabaseClient} from '@supabase/supabase-js';
 import {SHORT_COURSE_MAX_HOURS} from '@/config/catalog';
+import {getPublicClient} from '@/lib/supabase/clients';
 import type {Course, CoverType, Format, Grade} from '../types';
 import type {CourseRepository} from './course-repository';
 
@@ -37,24 +36,6 @@ interface ListingRow {
 const LISTING_COLUMNS =
   'id, title, category, trainer_name, trainer_role, format, hours, price_usd, grades, ' +
   'tags, description, outcomes, cover_color, cover_accent, cover_type';
-
-/** Reused across requests so each call does not build a new client. */
-let client: SupabaseClient | null = null;
-
-/** Returns the shared Supabase client, created from environment variables. */
-function getClient(): SupabaseClient {
-  if (client) return client;
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) {
-    throw new Error(
-      'Missing SUPABASE_URL or SUPABASE_PUBLISHABLE_KEY. See docs/HOW-TO.md (Supabase).',
-    );
-  }
-  // No user sessions yet (Step 4 adds sign-in), so nothing to persist.
-  client = createClient(url, key, {auth: {persistSession: false}});
-  return client;
-}
 
 /** Escapes LIKE wildcards so a search for "50%" matches the text "50%". */
 function escapeLike(text: string): string {
@@ -91,7 +72,7 @@ export function createSupabaseCourseRepository(): CourseRepository {
       // The Saved tab with nothing saved: skip the round trip.
       if (query.ids && query.ids.length === 0) return [];
 
-      let request = getClient().from('listings').select(LISTING_COLUMNS);
+      let request = getPublicClient().from('listings').select(LISTING_COLUMNS);
 
       const text = query.query.toLowerCase().trim();
       if (text !== '') request = request.ilike('search_text', `%${escapeLike(text)}%`);
@@ -117,7 +98,7 @@ export function createSupabaseCourseRepository(): CourseRepository {
     },
 
     async listCategories() {
-      const {data, error} = await getClient()
+      const {data, error} = await getPublicClient()
         .from('categories')
         .select('name')
         .order('sort_order')

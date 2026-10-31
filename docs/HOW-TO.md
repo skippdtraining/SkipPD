@@ -43,6 +43,15 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Database tables / seed data | `supabase/migrations/*.sql`, `supabase/seed.sql` | See "Supabase setup" recipe. |
 | Supabase URL / key | `web/.env.local` (local), Vercel → Settings → Environment Variables | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`. Template: `web/.env.example`. |
 | Where course data comes from (database) | `web/src/lib/data/course-repository.ts` → `getCourseRepository()` | See recipe below. |
+| Password length, profile field limits, certification file size/types | `web/src/config/accounts.ts` | Also change the matching limit in the database (new migration). |
+| Page opened after sign-in | `web/src/config/accounts.ts` → `AFTER_SIGN_IN_PATH` | |
+| Account type labels / hints | `web/src/lib/types.ts` → `ACCOUNT_ROLES` | |
+| Profile form fields | `web/src/components/ProfileForm.tsx` + `lib/profile-form.ts` (validation) + `lib/data/supabase-profile-repository.ts` (columns) | New column needs a migration. |
+| Review status wording ("Not certified"...) | `web/src/components/AccountStatus.tsx` | |
+| Who can save / book / list | `web/src/components/HomePage.tsx` → `withAccount`, `openListingForm` | |
+| Sign-in vendor | `web/src/lib/auth/auth-service.ts` → `getAuthService()` | Same pattern as the database. |
+| Approve a certification or school | Supabase dashboard → `profiles` | See recipe below. |
+| Extra school email domains | Supabase dashboard → `school_email_domains` | See recipe below. |
 | Required PR reviewer | `.github/CODEOWNERS` | |
 | Files git ignores | `.gitignore` | |
 
@@ -60,6 +69,29 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 3. Copy `web/.env.example` to `web/.env.local` and fill in the Project URL and publishable key (Project Settings → API Keys).
 4. Vercel → Project → Settings → Environment Variables: add `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` for Production and Preview, then redeploy.
 5. Never use the secret (service role) key in this app. It bypasses Row Level Security.
+
+### Accounts setup (Supabase Auth, once per project)
+1. SQL Editor: run `supabase/migrations/0002_accounts.sql`.
+2. Authentication → Sign In / Providers → Email: keep **Confirm email** on. Set minimum password length to 8 (`MIN_PASSWORD_LENGTH`).
+3. Authentication → URL Configuration:
+   - **Site URL**: the production address, e.g. `https://<your-site>.vercel.app`.
+   - **Redirect URLs**: add `http://localhost:3000/**`, `https://<your-site>.vercel.app/**` and `https://*-<your-vercel-team>.vercel.app/**` (previews).
+4. Google sign-in:
+   1. Google Cloud Console → create a project → APIs & Services → OAuth consent screen: External, app name SkipPD, your support email. Publish it when ready for real users.
+   2. Credentials → Create credentials → OAuth client ID → Web application.
+   3. Authorized redirect URI: `https://<project-ref>.supabase.co/auth/v1/callback` (shown in Supabase → Authentication → Providers → Google).
+   4. Copy the Client ID and Client secret into Supabase → Authentication → Providers → Google, and enable it.
+5. Emails: Supabase's built-in sender allows only a few emails per hour, for testing. Before launch, set up custom SMTP (Authentication → Emails → SMTP), e.g. Resend or SendGrid.
+
+### Approve a certification or school
+1. Storage → `certifications` → open the user's folder (named by user id) to view the file.
+2. Table Editor → `profiles` → find the row (the `email` column helps).
+3. Trainers: set `certification_status` to `approved` or `rejected`. Schools: check `is_likely_school_email`, then set `school_status` to `approved` or `rejected`.
+4. The user sees the new status on `/account` at once. Step 5 moves this into an admin page.
+
+### Add a school email domain
+1. Table Editor → `school_email_domains` → Insert row: `domain` in lower case, e.g. `browardschools.com` (subdomains count too).
+2. Existing profiles update their hint the next time they are saved.
 
 ### Change the database schema
 1. Add a new numbered file, e.g. `supabase/migrations/0002_<topic>.sql`. Never edit a migration that was already run.

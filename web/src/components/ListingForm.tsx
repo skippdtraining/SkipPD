@@ -1,7 +1,7 @@
 /**
  * @fileoverview "Share your expertise" form for creating a training listing.
  *
- * Currently saves the listing in the browser (same as the POC). In Step 5 it
+ * Currently saves the listing in the browser (same as the POC). In Step 6 it
  * is only available to teacher accounts, writes to the database, and uploads
  * the image to Supabase Storage instead of storing it as text.
  */

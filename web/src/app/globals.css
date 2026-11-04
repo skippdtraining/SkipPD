@@ -904,6 +904,154 @@ header.with-search .header-search {
   background: #a2463f;
 }
 
+/* Support Center (/support and /support/<article>) */
+.support-page {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 40px 5% 72px;
+}
+.support-back {
+  color: var(--muted);
+  font-weight: 600;
+}
+.support-back:hover,
+.support-breadcrumb a:hover,
+.support-related a:hover {
+  color: var(--purple);
+}
+.support-intro {
+  text-align: center;
+  margin: 40px 0 48px;
+}
+.support-intro h1 {
+  font: 800 clamp(30px, 3.4vw, 42px)/1.15 var(--head-font);
+  letter-spacing: -1px;
+  margin: 12px 0;
+}
+.support-intro p {
+  color: var(--muted);
+  font-size: 16px;
+  margin: 0;
+}
+.support-category {
+  margin-top: 40px;
+}
+.support-category > h2 {
+  font: 800 20px var(--head-font);
+  margin: 0 0 4px;
+}
+.support-category > p {
+  color: var(--muted);
+  margin: 0 0 16px;
+}
+.support-article-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.support-article-card {
+  display: block;
+  height: 100%;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 20px;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.support-article-card:hover {
+  border-color: #cfc7f5;
+  box-shadow: 0 8px 24px #6854d81a;
+}
+.support-article-card h3 {
+  font: 700 15px var(--head-font);
+  margin: 0 0 6px;
+}
+.support-article-card p {
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 0;
+}
+.support-contact {
+  margin-top: 56px;
+  padding: 28px;
+  background: var(--hero-bg);
+  border-radius: 16px;
+  text-align: center;
+}
+.support-contact h2 {
+  font: 800 20px var(--head-font);
+  margin: 0 0 8px;
+}
+.support-contact p {
+  color: var(--muted);
+  margin: 0 0 18px;
+}
+.support-contact-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+/* Article page: narrower column for comfortable reading. */
+.support-article {
+  max-width: 760px;
+}
+.support-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.support-article article h1 {
+  font: 800 clamp(26px, 3vw, 36px)/1.2 var(--head-font);
+  letter-spacing: -0.5px;
+  margin: 24px 0 8px;
+}
+.support-article-summary {
+  color: var(--muted);
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+.support-article article h2 {
+  font: 800 18px var(--head-font);
+  margin: 28px 0 8px;
+}
+.support-article article p,
+.support-article article li {
+  font-size: 15px;
+  line-height: 1.7;
+}
+.support-article article li {
+  margin: 6px 0;
+}
+.support-related {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.support-related h2 {
+  font: 800 16px var(--head-font);
+  margin: 0 0 8px;
+}
+.support-related ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.support-related li {
+  margin: 8px 0;
+}
+.support-related a {
+  color: var(--purple);
+  font-weight: 600;
+}
+
 /* Modal */
 dialog {
   border: 0;

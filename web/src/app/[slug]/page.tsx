@@ -25,11 +25,17 @@ function findLink(slug: string): FooterLink | undefined {
   );
 }
 
+/**
+ * Footer paths that already have their own route folder (e.g. app/support).
+ * Skipped here so Next.js does not build a second, conflicting page for them.
+ */
+const PATHS_WITH_OWN_PAGE = new Set(['/support']);
+
 /** Tells Next.js which pages to build ahead of time: one per footer link. */
 export function generateStaticParams() {
-  return FOOTER_COLUMNS.flatMap((column) => column.links).map((link) => ({
-    slug: link.href.slice(1),
-  }));
+  return FOOTER_COLUMNS.flatMap((column) => column.links)
+    .filter((link) => !PATHS_WITH_OWN_PAGE.has(link.href))
+    .map((link) => ({slug: link.href.slice(1)}));
 }
 
 export async function generateMetadata({

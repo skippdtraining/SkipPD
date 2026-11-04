@@ -192,6 +192,10 @@ requested -> negotiating <-> negotiating -> accepted -> paid -> delivered -> com
 | 12 | Stripe Connect: trainer onboarding, payment on accept, payout on completion | Test-mode payment end to end |
 | 13 | Later: trainer ratings next to listings (see 1.4), reviews, self-paced, PD certificates for attendees, analytics | - |
 
+Future possibilities (after all steps):
+- **Sign in with Clever** for teachers whose district uses Clever. Needs a custom login flow in `lib/auth/` (Supabase has no Clever provider), Clever partner approval, and each district opting in. Revisit when districts ask for it.
+- Microsoft sign-in: decided against for now.
+
 Rule: do not start step N+1 until step N is deployed and manually tested.
 
 ---

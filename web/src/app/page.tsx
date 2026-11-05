@@ -19,17 +19,21 @@ import {HomePage} from '@/components/HomePage';
 import {getCourseRepository} from '@/lib/data/course-repository';
 import {toCourseQuery} from '@/lib/catalog-api';
 import {DEFAULT_FILTERS} from '@/lib/types';
+import {getViewer} from '@/lib/viewer';
 
-/** Loads the first catalog results and the topic list, then renders the page. */
+/** Loads the first catalog results, the topic list and the visitor, then renders the page. */
 async function HomeWithData() {
   // Opt out of build-time prerendering: data must be fresh per request.
   await connection();
   const repository = getCourseRepository();
-  const [initialCourses, categories] = await Promise.all([
+  const [initialCourses, categories, viewer] = await Promise.all([
     repository.searchCourses(toCourseQuery(DEFAULT_FILTERS, [])),
     repository.listCategories(),
+    getViewer(),
   ]);
-  return <HomePage initialCourses={initialCourses} categories={categories} />;
+  return (
+    <HomePage initialCourses={initialCourses} categories={categories} viewer={viewer} />
+  );
 }
 
 export default function Home() {

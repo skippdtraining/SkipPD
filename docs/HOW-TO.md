@@ -41,8 +41,19 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Search delay while typing | `web/src/config/catalog.ts` → `SEARCH_DEBOUNCE_MS` | |
 | Course content (title, price, outcomes...) | Supabase dashboard → Table Editor → `listings` | Live on next page load. Set `is_published` to false to hide a course; `recommended_rank` orders "Recommended". |
 | Database tables / seed data | `supabase/migrations/*.sql`, `supabase/seed.sql` | See "Supabase setup" recipe. |
+| Allowed return addresses for email links / Google (localhost, previews) | `web/src/config/site.ts` → `ALLOWED_ORIGIN_PATTERNS` | Production comes from Vercel (`VERCEL_PROJECT_PRODUCTION_URL`) or optional `SITE_URL`. Keep in sync with Supabase Redirect URLs. |
 | Supabase URL / key | `web/.env.local` (local), Vercel → Settings → Environment Variables | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`. Template: `web/.env.example`. |
 | Where course data comes from (database) | `web/src/lib/data/course-repository.ts` → `getCourseRepository()` | See recipe below. |
+| Password length, profile field limits, certification file size/types | `web/src/config/accounts.ts` | Also change the matching limit in the database (new migration). |
+| Page opened after sign-in | `web/src/config/accounts.ts` → `AFTER_SIGN_IN_PATH` | |
+| Account type labels / hints | `web/src/lib/types.ts` → `ACCOUNT_ROLES` | |
+| Profile form fields | `web/src/components/ProfileForm.tsx` + `lib/profile-form.ts` (validation) + `lib/data/supabase-profile-repository.ts` (columns) | New column needs a migration: common fields in `profiles`, others in `trainer_profiles` or `school_profiles`. |
+| Form error behaviour (scroll + focus) | `web/src/components/FormError.tsx` | |
+| Review status wording ("Not certified"...) | `web/src/components/AccountStatus.tsx` | |
+| Who can save / book / list | `web/src/components/HomePage.tsx` → `withAccount`, `openListingForm` | Guest header items: `components/SiteHeader.tsx`. |
+| Sign-in vendor | `web/src/lib/auth/auth-service.ts` → `getAuthService()` | Same pattern as the database. |
+| Approve a certification or school | Supabase dashboard → `trainer_profiles` / `school_profiles` | See recipe below. |
+| Extra school email domains | Supabase dashboard → `school_email_domains` | See recipe below. |
 | Required PR reviewer | `.github/CODEOWNERS` | |
 | Files git ignores | `.gitignore` | |
 
@@ -61,8 +72,53 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 4. Vercel → Project → Settings → Environment Variables: add `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` for Production and Preview, then redeploy.
 5. Never use the secret (service role) key in this app. It bypasses Row Level Security.
 
+### Accounts setup (Supabase Auth, once per project)
+1. SQL Editor: run every file in `supabase/migrations/` in number order, one at a time: `0001_catalog.sql` through `0008_lock_names_always.sql` (and any newer ones). Each file runs once per project.
+2. Authentication → Sign In / Providers → Email: keep **Confirm email** on. Set minimum password length to 8 (`MIN_PASSWORD_LENGTH`).
+3. Authentication → URL Configuration (where Supabase may send users back to):
+   - **Site URL**: the production address, e.g. `https://<your-site>.vercel.app`.
+   - **Redirect URLs**: `http://localhost:3000/**`, `https://skip-*-skip-pd.vercel.app/**` (all Vercel previews) and the production address followed by `/**`.
+   - In these patterns `*` matches any characters except `.` and `/`; `/**` matches any path.
+4. Google sign-in (Google Cloud Console, https://console.cloud.google.com, free, no billing needed):
+   1. Project picker → **New project** → name `SkipPD` → Create, and select it.
+   2. Search **Google Auth Platform** (older: OAuth consent screen) → Get started: app name `SkipPD`, support email, Audience **External**, contact email → Create.
+   3. **Clients** → Create client → **Web application**, name `SkipPD web`. Under **Authorized redirect URIs** add only `https://zlkbjqhywukharqnyizd.supabase.co/auth/v1/callback`. Google always returns to Supabase, so previews and localhost are not listed here.
+   4. Copy the Client ID and Client secret into Supabase → Authentication → Sign In / Providers → Google, enable, Save. Never put the secret in code or Vercel.
+   5. New apps are in **Testing**: only accounts under Audience → Test users can sign in. Click **Publish app** before launch.
+5. Email links (Authentication → Emails → Templates). Change the link in two templates so links work even when opened in another browser or mail app:
+   - **Confirm signup**: `<a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email">Confirm your email</a>`
+   - **Reset password**: `<a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=recovery">Reset your password</a>`
+   - `RedirectTo` already contains `/auth/callback?next=...`, hence `&` not `?`.
+6. Emails: Supabase's built-in sender allows only a few emails per hour, for testing. Before launch, set up custom SMTP (Authentication → Emails → SMTP), e.g. Resend or SendGrid.
+
+### Approve a certification or school
+1. Find the user's id: Table Editor → `profiles` → `id` column of their row (the `email` column helps).
+2. Storage → `certifications` → open the folder with that id → click the file → **Download** (or **Get URL** for a link valid for a limited time).
+3. Trainers: Table Editor → `trainer_profiles` → same `id` → set `certification_status` to `approved` or `rejected`. Schools: `school_profiles` → check `is_likely_school_email`, then set `school_status`. Click **Save** in the dashboard.
+4. The user sees the new status on `/account` at once. Step 5 moves this into an admin page.
+
+### Verify a trainer's teaching license
+1. Table Editor → `trainer_profiles` → rows with `license_status` = `pending`; note `license_state` and `license_number`.
+2. Open that state's public educator license lookup (search "<state> teacher certification lookup") and check that the number exists, is active and matches the trainer's name in `profiles`.
+3. Set `license_status` to `approved` or `rejected` → Save. Once approved, the license fields are locked for the trainer.
+
+### Change a locked field for a user
+Locked on the site (rule: `web/src/lib/profile-locks.ts` + migrations `0004`, `0005`, `0008`; change both sides together):
+- trainer name and school name, as soon as the profile is created (migration `0008`). The sign-up form warns about this (`NAME_FINAL_NOTE`); school contact name and position stay editable;
+- trainer license state and number, while `license_status` is `approved`.
+1. Trainer name: Table Editor → `profiles` → edit `full_name` → Save.
+2. License: `trainer_profiles` → `license_state` / `license_number` (editing them resets `license_status` to `pending`; set it back to `approved` if correct).
+3. School name: Table Editor → `school_profiles` → edit `school_name` → Save.
+
+### Account deletion
+Users delete their own account on `/account` (type DELETE). The app removes their certification files, then calls `delete_my_account()` (`supabase/migrations/0006_delete_account.sql`); profile rows cascade. To delete a user yourself: Authentication → Users → ⋯ → Delete user (also remove their folder in Storage → `certifications`).
+
+### Add a school email domain
+1. Table Editor → `school_email_domains` → Insert row: `domain` in lower case, e.g. `browardschools.com` (subdomains count too).
+2. Existing profiles update their hint the next time they are saved.
+
 ### Change the database schema
-1. Add a new numbered file, e.g. `supabase/migrations/0002_<topic>.sql`. Never edit a migration that was already run.
+1. Add a new numbered file, e.g. `supabase/migrations/0009_<topic>.sql` (the next free number). Never edit a migration that was already run.
 2. Run it in the SQL Editor.
 3. Update `ListingRow` / `toCourse` in `web/src/lib/data/supabase-course-repository.ts`, and `lib/types.ts` if the app type changes.
 

@@ -9,7 +9,7 @@ web/    the Next.js application
 ```
 
 ## Stack
-Next.js (App Router, TypeScript) · Supabase (from Step 3) · Vercel hosting.
+Next.js (App Router, TypeScript) · Supabase (database, auth, storage) · Vercel hosting.
 
 ## Run locally
 Requires Node.js 20.9+ (22 LTS recommended).

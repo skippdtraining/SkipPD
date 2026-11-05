@@ -1,0 +1,53 @@
+/**
+ * @fileoverview Which profile fields are locked after admin approval.
+ *
+ * Why: an approved trainer or school must not rename themselves into
+ * someone else. The database enforces the same rule
+ * (supabase/migrations/0004_lock_approved_profiles.sql); this file lets the
+ * form, the account summary and the save action agree with it.
+ */
+
+import type {Profile, ProfileInput} from './types';
+
+/** Note shown next to locked fields. */
+export const LOCKED_FIELD_NOTE = 'This cannot be changed. Contact us to change it.';
+
+/** Warning shown under name fields on a new profile, before they lock. */
+export const NAME_FINAL_NOTE =
+  'Check carefully: this cannot be changed after you save your profile.';
+
+/** Profile fields that can be locked. */
+export type LockableField = 'fullName' | 'schoolName' | 'license';
+
+/** True when `field` can no longer be changed by the user. */
+export function isFieldLocked(profile: Profile | null, field: LockableField): boolean {
+  if (!profile) return false;
+  if (field === 'license') {
+    return profile.role === 'trainer' && profile.licenseStatus === 'approved';
+  }
+  // Names are fixed as soon as the profile exists (migration 0008), so
+  // nobody can rename themselves into another trainer or school.
+  if (field === 'fullName') return profile.role === 'trainer';
+  return profile.role === 'school';
+}
+
+/** Returns `input` with locked fields reset to their stored values. */
+export function keepLockedFields(
+  input: ProfileInput,
+  profile: Profile | null,
+): ProfileInput {
+  if (!profile) return input;
+  return {
+    ...input,
+    fullName: isFieldLocked(profile, 'fullName') ? profile.fullName : input.fullName,
+    schoolName: isFieldLocked(profile, 'schoolName')
+      ? profile.schoolName
+      : input.schoolName,
+    licenseState: isFieldLocked(profile, 'license')
+      ? profile.licenseState
+      : input.licenseState,
+    licenseNumber: isFieldLocked(profile, 'license')
+      ? profile.licenseNumber
+      : input.licenseNumber,
+  };
+}

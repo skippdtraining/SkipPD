@@ -13,13 +13,20 @@
 
 'use client';
 
+import {useRouter} from 'next/navigation';
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {toggleSaved, useOwnListings, useSavedIds} from '@/lib/browser-storage';
 import {fetchCourses, toCourseQuery} from '@/lib/catalog-api';
 import {courseQueryToParams} from '@/lib/course-query-params';
 import {filterCourses, sortCourses} from '@/lib/filter-courses';
-import {DEFAULT_FILTERS, type CatalogFilters, type Course} from '@/lib/types';
+import {
+  DEFAULT_FILTERS,
+  type CatalogFilters,
+  type Course,
+  type Viewer,
+} from '@/lib/types';
 import {PAGE_CHANGE_SCROLL, SEARCH_DEBOUNCE_MS} from '@/config/catalog';
+import {SITE_NAME} from '@/config/site';
 import {scrollBelowHeader} from '@/lib/scroll';
 import {useIsOffscreen} from '@/lib/use-is-offscreen';
 import {useToast} from '@/lib/use-toast';
@@ -57,6 +64,8 @@ interface HomePageProps {
   initialCourses: Course[];
   /** Suggested topics for the listing form, loaded by the server. */
   categories: string[];
+  /** The signed-in visitor, or null for guests. */
+  viewer: Viewer | null;
 }
 
 /** Identifies a server query, so the same search is never sent twice in a row. */
@@ -65,10 +74,28 @@ function queryKey(filters: CatalogFilters, savedIds: number[]): string {
 }
 
 /** Home page: header, hero, catalog, banner, footer and dialogs. */
-export function HomePage({initialCourses, categories}: HomePageProps) {
+export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
+  const router = useRouter();
   const [filters, setFilters] = useState<CatalogFilters>(DEFAULT_FILTERS);
   const [dialog, setDialog] = useState<OpenDialog>(null);
   const [toast, showToast] = useToast();
+
+  // Onboarding (?welcome=1) and account deletion (?deleted=1) send users
+  // here: show a message once, then drop the flag so a reload does not.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('welcome') === '1') {
+      showToast(`Your profile is saved. Welcome to ${SITE_NAME}!`);
+    } else if (url.searchParams.get('deleted') === '1') {
+      showToast('Your account was deleted.');
+    } else {
+      return;
+    }
+    url.searchParams.delete('welcome');
+    url.searchParams.delete('deleted');
+    window.history.replaceState(null, '', url);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [page, setPage] = useState(1);
   const catalogTitleRef = useRef<HTMLHeadingElement>(null);
   // Zero-height marker at the line between the search area and the catalog.
@@ -136,6 +163,24 @@ export function HomePage({initialCourses, categories}: HomePageProps) {
     setPage(1);
   }
 
+  /**
+   * Runs `action` only for signed-in users with a profile. Guests go to
+   * sign-in (and come back here); users without a profile go to onboarding.
+   */
+  function withAccount(action: () => void) {
+    if (!viewer) router.push('/sign-in?next=/');
+    else if (!viewer.profile) router.push('/onboarding');
+    else action();
+  }
+
+  /** Opens the listing form for trainers; explains the rule to schools. */
+  function openListingForm() {
+    withAccount(() => {
+      if (viewer?.profile?.role === 'trainer') setDialog({kind: 'listing'});
+      else showToast('Only trainer accounts can list training.');
+    });
+  }
+
   function scrollToCatalog() {
     catalogTitleRef.current?.scrollIntoView({behavior: 'smooth', block: 'center'});
   }
@@ -150,16 +195,19 @@ export function HomePage({initialCourses, categories}: HomePageProps) {
       <SiteHeader
         savedOnly={filters.savedOnly}
         savedCount={savedIds.length}
+        viewer={viewer}
         onShowSaved={() => {
           // Toggle: a second click returns to all trainings.
-          showCatalog(!filters.savedOnly);
+          withAccount(() => {
+            showCatalog(!filters.savedOnly);
+          });
         }}
         onShowRequests={() => {
-          setDialog({kind: 'requests'});
+          withAccount(() => {
+            setDialog({kind: 'requests'});
+          });
         }}
-        onListTraining={() => {
-          setDialog({kind: 'listing'});
-        }}
+        onListTraining={openListingForm}
         showSearch={heroSearchHidden}
         query={filters.query}
         onQueryChange={(query) => {
@@ -226,20 +274,22 @@ export function HomePage({initialCourses, categories}: HomePageProps) {
             onOpenCourse={(course) => {
               setDialog({kind: 'detail', course});
             }}
-            onToggleSave={(courseId) => {
-              toggleSaved(courseId);
-            }}
+            onToggleSave={
+              viewer
+                ? (courseId) => {
+                    withAccount(() => {
+                      toggleSaved(courseId);
+                    });
+                  }
+                : undefined
+            }
             onClearFilters={() => {
               resetFilters(DEFAULT_FILTERS);
             }}
           />
         </div>
 
-        <TrainerBanner
-          onListTraining={() => {
-            setDialog({kind: 'listing'});
-          }}
-        />
+        <TrainerBanner onListTraining={openListingForm} />
       </main>
 
       <SiteFooter />
@@ -258,7 +308,9 @@ export function HomePage({initialCourses, categories}: HomePageProps) {
             <CourseDetail
               course={dialog.course}
               onRequest={() => {
-                setDialog({kind: 'booking', course: dialog.course});
+                withAccount(() => {
+                  setDialog({kind: 'booking', course: dialog.course});
+                });
               }}
             />
           )}

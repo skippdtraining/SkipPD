@@ -35,7 +35,7 @@ Each `.ts` / `.tsx` file opens with a `@fileoverview` comment that answers:
 - Inside functions, comment only non-obvious decisions:
   - Good: `// Stop the click from also opening the course via the cover.`
   - Bad: `// Call stopPropagation.`
-- Mark temporary code with the step that removes it: `TEMPORARY: Step 5 ...`.
+- Mark temporary code with the step that removes it: `TEMPORARY: Step 6 ...`.
 
 ## 4. Naming
 
@@ -87,12 +87,13 @@ The goal: replacing a vendor (database, email, payments, hosting) touches **one 
 app/          routes: fetch data via repositories, render components
 components/   UI only: data in through props, events out through callbacks
 lib/data/     repositories: the ONLY code that talks to a database/API
+lib/auth/     sign-in service: the ONLY code that talks to the auth vendor
 lib/          pure logic and helpers (filtering, formatting, form parsing)
 config/       settings and constants, no logic
 ```
 
 **Rules**
-- **Vendor isolation.** Only `lib/data/*` may import a database SDK (e.g. `@supabase/supabase-js`). The same pattern applies later to other services: `lib/email/`, `lib/payments/`, `lib/auth/`. Each has an interface and one implementation per vendor.
+- **Vendor isolation.** Only `lib/supabase/` (client creation) and the `supabase-*` files in `lib/data/` and `lib/auth/` may import a Supabase package (`@supabase/supabase-js`, `@supabase/ssr`). The same pattern applies later to other services: `lib/email/`, `lib/payments/`. Each has an interface and one implementation per vendor.
 - **Interface first.** Each service has a TypeScript interface (e.g. `CourseRepository`) and a factory (`getCourseRepository()`). Code depends on the interface. Swapping vendors means adding an implementation file and changing the factory.
 - **App types, not vendor types.** Repositories convert database rows into the types in `lib/types.ts` before returning them. Vendor-generated types never leak into components.
 - **No hard-coded business values in components.** Prices, limits, thresholds and brand text go in `config/`.

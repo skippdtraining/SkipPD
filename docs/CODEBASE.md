@@ -59,6 +59,7 @@ Email links and Google return to /auth/callback.
 | `supabase/migrations/0005_trainer_license.sql` | Optional teaching license (state + number) on `trainer_profiles` with its own `license_status`; resets to pending on change, locked once approved. |
 | `supabase/migrations/0006_delete_account.sql` | `delete_my_account()` (deletes only the caller's account; profiles cascade) and a storage policy letting users delete their own certification files. |
 | `supabase/migrations/0007_hardening.sql` | Review fixes: `ever_approved` (name lock survives re-review), school-domain check internal only, trainer-only uploads (max 10), email sync from `auth.users`, `save_my_profile()` (profile + details in one transaction). |
+| `supabase/migrations/0008_lock_names_always.sql` | Trainer name and school name can never be changed by users once the profile exists (admin can in the dashboard). |
 | `supabase/seed.sql` | Starter data: six suggested topics and the six POC courses. Re-runnable (empties the tables first). |
 | `web/` | **The Next.js application.** Run all npm commands inside this folder. |
 

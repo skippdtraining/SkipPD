@@ -84,7 +84,7 @@ Optional later improvements: attendance check-in via QR code / link at the sessi
 | Account types (Step 4) | **Trainer** (can list and book) and **School** (can book). Chosen once, cannot change |
 | Trainer vetting (Step 4) | Anyone can sign up and list. A PD certification file is optional and reviewed manually; until approved, the profile and listings show "Not certified" |
 | School verification (Step 4) | Schools should use a school email. Emails on .edu, .k12.xx.us or the admin's domain list are flagged as "likely school"; every school is still approved manually |
-| Locked after approval (Step 4) | Approved trainer: name locked (credentials, employment, about, certification stay editable; a new file needs re-review). Approved school: school name locked (contact name, position editable). Admin can still edit in the dashboard |
+| Locked fields (Step 4) | Trainer name and school name locked from sign-up (migration 0008). Approved trainer: name locked (credentials, employment, about, certification stay editable; a new file needs re-review). Approved school: school name locked (contact name, position editable). Admin can still edit in the dashboard |
 | Teaching license (Step 4) | Separate from the PD-trainer certificate (PDF, kept). Optional state + license number, checked by the admin on the state's public lookup; trainers show "Licensed" / "Not licensed" and "Certified" / "Not certified" independently. Unlicensed trainers can still list. Locked once approved |
 | Admin (Step 4-5) | Approvals happen in the Supabase dashboard in Step 4; Step 5 adds an admin role and admin page |
 
@@ -244,7 +244,7 @@ Decisions taken in Step 3:
 - Pagination stays in the browser while trainer-created listings still live in localStorage; it can move to the server once listings are in the database.
 
 ### Step 4 - Accounts (current)
-Prerequisite (owner): run `supabase/migrations/0002_accounts.sql`, `0003_split_profiles.sql`, `0004_lock_approved_profiles.sql`, `0005_trainer_license.sql`, `0006_delete_account.sql` and `0007_hardening.sql`; configure Supabase Auth (Site URL, Redirect URLs, Google provider), see HOW-TO "Accounts setup".
+Prerequisite (owner): run `supabase/migrations/0002_accounts.sql`, `0003_split_profiles.sql`, `0004_lock_approved_profiles.sql`, `0005_trainer_license.sql`, `0006_delete_account.sql`, `0007_hardening.sql` and `0008_lock_names_always.sql`; configure Supabase Auth (Site URL, Redirect URLs, Google provider), see HOW-TO "Accounts setup".
 1. Sign-up / sign-in with email + password (confirmation email) or Google; forgot / reset password; sign-out.
 2. After the first sign-in, `/onboarding` asks for the account type and profile:
    - Trainer: full name, credentials line, currently employed (yes/no) + place of employment, about text, optional PD certification file (PDF/JPG/PNG, max 4 MB, private storage).

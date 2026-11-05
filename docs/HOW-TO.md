@@ -73,7 +73,7 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 5. Never use the secret (service role) key in this app. It bypasses Row Level Security.
 
 ### Accounts setup (Supabase Auth, once per project)
-1. SQL Editor: run every file in `supabase/migrations/` in number order, one at a time: `0001_catalog.sql` through `0007_hardening.sql` (and any newer ones). Each file runs once per project.
+1. SQL Editor: run every file in `supabase/migrations/` in number order, one at a time: `0001_catalog.sql` through `0008_lock_names_always.sql` (and any newer ones). Each file runs once per project.
 2. Authentication → Sign In / Providers → Email: keep **Confirm email** on. Set minimum password length to 8 (`MIN_PASSWORD_LENGTH`).
 3. Authentication → URL Configuration (where Supabase may send users back to):
    - **Site URL**: the production address, e.g. `https://<your-site>.vercel.app`.
@@ -103,8 +103,8 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 3. Set `license_status` to `approved` or `rejected` → Save. Once approved, the license fields are locked for the trainer.
 
 ### Change a locked field for a user
-Locked on the site (rule: `web/src/lib/profile-locks.ts` + migrations `0004`, `0005`, `0007`; change both sides together):
-- trainer name and school name, once **ever** approved (a new certificate sending the review back to pending does not unlock them; column `ever_approved`);
+Locked on the site (rule: `web/src/lib/profile-locks.ts` + migrations `0004`, `0005`, `0008`; change both sides together):
+- trainer name and school name, as soon as the profile is created (migration `0008`);
 - trainer license state and number, while `license_status` is `approved`.
 1. Trainer name: Table Editor → `profiles` → edit `full_name` → Save.
 2. License: `trainer_profiles` → `license_state` / `license_number` (editing them resets `license_status` to `pending`; set it back to `approved` if correct).
@@ -118,7 +118,7 @@ Users delete their own account on `/account` (type DELETE). The app removes thei
 2. Existing profiles update their hint the next time they are saved.
 
 ### Change the database schema
-1. Add a new numbered file, e.g. `supabase/migrations/0008_<topic>.sql` (the next free number). Never edit a migration that was already run.
+1. Add a new numbered file, e.g. `supabase/migrations/0009_<topic>.sql` (the next free number). Never edit a migration that was already run.
 2. Run it in the SQL Editor.
 3. Update `ListingRow` / `toCourse` in `web/src/lib/data/supabase-course-repository.ts`, and `lib/types.ts` if the app type changes.
 

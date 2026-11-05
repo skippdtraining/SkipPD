@@ -775,10 +775,6 @@ header.with-search .header-search {
   margin: 48px auto 80px;
   padding: 0 5%;
 }
-.auth-page .brand {
-  justify-content: center;
-  margin-bottom: 24px;
-}
 .auth-card {
   background: white;
   border: 1px solid var(--line);

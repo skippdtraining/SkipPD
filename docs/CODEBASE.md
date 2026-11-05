@@ -109,8 +109,9 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | File | What / why |
 |---|---|
 | `HomePage.tsx` | **The conductor.** Owns page state (filters, which dialog is open, toast message), fetches server results when filters change, merges in browser listings, and wires all the sections together. Start reading here. |
-| `SiteHeader.tsx` | Sticky top bar: logo, compact search (fades in once the hero search scrolls away), Saved / My requests, Sign in or Account, and "List your training" (behind a ☰ menu on phones). |
-| `AuthShell.tsx` | Page frame for the account pages: logo, centred card, footer (hidden on phones, where text is larger). |
+| `SiteHeader.tsx` | Sticky top bar on every page: logo, Saved / My requests, Sign in or Account, and "List your training" (behind a ☰ menu on phones). Home only: compact search and Saved; elsewhere My requests / List your training link to `/?open=...`. |
+| `PageHeader.tsx` | `SiteHeader` for all pages except home (no search). Looks up the visitor itself; used by `AuthShell` and placeholder pages. |
+| `AuthShell.tsx` | Page frame for the account pages: site header, centred card, footer (hidden on phones, where text is larger). |
 | `AuthForm.tsx` | Generic form for sign-in/up and password pages: runs a server action, shows its error or success note. |
 | `GoogleSignInButton.tsx` | "Continue with Google" button (a form posting to a server action). |
 | `ProfileForm.tsx` | Trainer / school profile form used by onboarding and the account page. |
@@ -187,6 +188,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 ---
 
 ## Changelog of this map
+- **Shared header:** `PageHeader.tsx` puts the site header (without search) on every page; `HomePage` opens dialogs from `/?open=requests|listing`.
 - **Step 4 name lock:** trainer and school names fixed from sign-up (migration 0008); sign-up form warns that they cannot change later. Pre-launch plan: combined `supabase/schema.sql` for a fresh production project.
 - **Step 4 review fixes:** migration 0007, `password-reset-pass.ts`, `account/password` page, origin allow-list, safer `safeNextPath`, repositories take the user id (one session lookup per request via cached `getViewer`).
 - **Step 4 follow-up:** account deletion (migration 0006), `FormError` scroll-to-error; roadmap: Saved step dropped, Step 12 "My learning" added; trainer teaching license (migration 0005); `profile-locks.ts` + migration 0004 (locked fields after approval); profiles split into `trainer_profiles` / `school_profiles` (migration 0003); guests see only Sign in and List your training (no hearts); account pages on phones drop the footer and use larger text.

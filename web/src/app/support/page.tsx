@@ -8,9 +8,10 @@
 
 import type {Metadata} from 'next';
 import Link from 'next/link';
+import {PageHeader} from '@/components/PageHeader';
 import {SiteFooter} from '@/components/SiteFooter';
 import {SITE_NAME} from '@/config/site';
-import {SUPPORT_CATEGORIES} from '@/config/support-articles';
+import {SUPPORT_CATEGORIES, SUPPORT_CONTACT_HREF} from '@/config/support-articles';
 
 export const metadata: Metadata = {
   title: `Support Center | ${SITE_NAME}`,
@@ -20,10 +21,8 @@ export const metadata: Metadata = {
 export default function SupportCenterPage() {
   return (
     <>
+      <PageHeader />
       <main className="support-page">
-        <Link className="support-back" href="/">
-          ← Back to {SITE_NAME}
-        </Link>
         <div className="support-intro">
           <div className="eyebrow">Support Center</div>
           <h1>How can we help?</h1>
@@ -51,7 +50,7 @@ export default function SupportCenterPage() {
         <div className="support-contact">
           <h2>Still need help?</h2>
           <p>Our team is happy to answer your questions.</p>
-          <Link className="btn" href="/contact">
+          <Link className="btn" href={SUPPORT_CONTACT_HREF}>
             Contact us
           </Link>
         </div>

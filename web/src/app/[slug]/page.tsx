@@ -27,7 +27,9 @@ function findLink(slug: string): FooterLink | undefined {
 
 /**
  * Footer paths that already have their own route folder (e.g. app/support).
- * Skipped here so Next.js does not build a second, conflicting page for them.
+ * Skipped here so Next.js does not build a second, unused page for them.
+ * (Next.js prefers the dedicated folder anyway, so a missing entry only
+ * wastes a build step; it does not break the page.)
  */
 const PATHS_WITH_OWN_PAGE = new Set(['/support']);
 

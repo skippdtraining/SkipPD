@@ -9,9 +9,10 @@
 import type {Metadata} from 'next';
 import Link from 'next/link';
 import {notFound} from 'next/navigation';
+import {PageHeader} from '@/components/PageHeader';
 import {SiteFooter} from '@/components/SiteFooter';
 import {SITE_NAME} from '@/config/site';
-import {ALL_SUPPORT_ARTICLES} from '@/config/support-articles';
+import {ALL_SUPPORT_ARTICLES, SUPPORT_CONTACT_HREF} from '@/config/support-articles';
 
 /** Most "Related articles" links shown under an article. */
 const MAX_RELATED_ARTICLES = 3;
@@ -46,11 +47,16 @@ export default async function SupportArticlePage({
 
   return (
     <>
+      <PageHeader />
       <main className="support-page support-article">
-        <nav className="support-breadcrumb" aria-label="Breadcrumb">
-          <Link href="/support">Support Center</Link>
-          <span aria-hidden="true">/</span>
-          <span>{article.categoryTitle}</span>
+        <nav aria-label="Breadcrumb">
+          <ol className="support-breadcrumb">
+            <li>
+              <Link href="/support">Support Center</Link>
+            </li>
+            <li>{article.categoryTitle}</li>
+            <li aria-current="page">{article.title}</li>
+          </ol>
         </nav>
         <article>
           <h1>{article.title}</h1>
@@ -61,13 +67,14 @@ export default async function SupportArticlePage({
               // Sections have no id and never reorder, so the index is a stable key.
               <section key={index}>
                 {section.heading && <h2>{section.heading}</h2>}
-                {section.paragraphs?.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
+                {/* Index keys: two lines may share the same text. */}
+                {section.paragraphs?.map((paragraph, paragraphIndex) => (
+                  <p key={paragraphIndex}>{paragraph}</p>
                 ))}
                 {section.list && (
                   <List>
-                    {section.list.map((item) => (
-                      <li key={item}>{item}</li>
+                    {section.list.map((item, itemIndex) => (
+                      <li key={itemIndex}>{item}</li>
                     ))}
                   </List>
                 )}
@@ -90,10 +97,7 @@ export default async function SupportArticlePage({
         <div className="support-contact">
           <h2>Didn&apos;t find your answer?</h2>
           <div className="support-contact-actions">
-            <Link className="btn light" href="/support">
-              ← All articles
-            </Link>
-            <Link className="btn" href="/contact">
+            <Link className="btn" href={SUPPORT_CONTACT_HREF}>
               Contact us
             </Link>
           </div>

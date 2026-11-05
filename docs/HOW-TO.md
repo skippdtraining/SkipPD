@@ -34,7 +34,7 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Search box text / placeholder | `web/src/components/SearchBox.tsx` | |
 | Hero headline and text | `web/src/components/Hero.tsx` | |
 | Footer links (add / rename / remove) | `web/src/config/site.ts` → `FOOTER_COLUMNS` | A "Coming soon" page is created automatically for each link. |
-| Support Center articles (add / edit / reorder) | `web/src/config/support-articles.ts` → `SUPPORT_CATEGORIES` | Each article gets a page at `/support/<slug>` automatically. Slugs must be unique. |
+| Support Center articles (add / edit / reorder) | `web/src/config/support-articles.ts` → `SUPPORT_CATEGORIES` | Each article gets a page at `/support/<slug>` automatically. Slugs must be unique (the build fails otherwise). "Contact us" target: `SUPPORT_CONTACT_HREF` in the same file. |
 | Footer social icons (URLs, add / remove) | `web/src/config/site.ts` → `SOCIAL_LINKS` | URLs are placeholders until the accounts exist. New platform: add its icon in `components/SocialIcon.tsx`. |
 | Phone menu (☰) | `web/src/components/SiteHeader.tsx`, CSS `.menu-toggle` + 730px block | |
 | Footer copyright year | `web/src/config/site.ts` → `copyrightYear` | |

@@ -910,11 +910,6 @@ header.with-search .header-search {
   margin: 0 auto;
   padding: 40px 5% 72px;
 }
-.support-back {
-  color: var(--muted);
-  font-weight: 600;
-}
-.support-back:hover,
 .support-breadcrumb a:hover,
 .support-related a:hover {
   color: var(--purple);
@@ -1006,8 +1001,18 @@ header.with-search .header-search {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
   color: var(--muted);
   font-weight: 600;
+}
+.support-breadcrumb li + li::before {
+  content: '/';
+  margin-right: 8px;
+}
+.support-breadcrumb [aria-current='page'] {
+  color: var(--ink);
 }
 .support-article article h1 {
   font: 800 clamp(26px, 3vw, 36px)/1.2 var(--head-font);

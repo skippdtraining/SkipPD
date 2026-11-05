@@ -313,3 +313,19 @@ export const SUPPORT_CATEGORIES: SupportCategory[] = [
 export const ALL_SUPPORT_ARTICLES = SUPPORT_CATEGORIES.flatMap((category) =>
   category.articles.map((article) => ({...article, categoryTitle: category.title})),
 );
+
+// Fail the build on a repeated slug: the second article would never be shown.
+const seenSlugs = new Set<string>();
+for (const article of ALL_SUPPORT_ARTICLES) {
+  if (seenSlugs.has(article.slug)) {
+    throw new Error(`Duplicate support article slug: "${article.slug}"`);
+  }
+  seenSlugs.add(article.slug);
+}
+
+/**
+ * Where "Contact us" buttons in the Support Center lead. TEMPORARY: the
+ * contact article, while /contact is still a "Coming soon" page; switch to
+ * '/contact' once that page is real.
+ */
+export const SUPPORT_CONTACT_HREF = '/support/contact-support';

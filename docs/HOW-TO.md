@@ -104,7 +104,7 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 
 ### Change a locked field for a user
 Locked on the site (rule: `web/src/lib/profile-locks.ts` + migrations `0004`, `0005`, `0008`; change both sides together):
-- trainer name and school name, as soon as the profile is created (migration `0008`);
+- trainer name and school name, as soon as the profile is created (migration `0008`). The sign-up form warns about this (`NAME_FINAL_NOTE`); school contact name and position stay editable;
 - trainer license state and number, while `license_status` is `approved`.
 1. Trainer name: Table Editor → `profiles` → edit `full_name` → Save.
 2. License: `trainer_profiles` → `license_state` / `license_number` (editing them resets `license_status` to `pending`; set it back to `approved` if correct).

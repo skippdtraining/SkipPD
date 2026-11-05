@@ -169,7 +169,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 |---|---|
 | `types.ts` | **Single source of truth for data shapes:** `Course`, `BookingRequest`, `CatalogFilters`, `CourseQuery` (filters sent to the server), `AccountRole`, `Profile`, `ProfileInput`, `Viewer`, grade and format lists, and the default filters. Database rows are converted into these in `lib/data/`. |
 | `filter-courses.ts` | **Temporary.** Same search/filter/sort rules as the database query, applied in the browser to listings stored in this browser. Removed when listings move to the DB (Step 6). |
-| `profile-locks.ts` | Which fields are locked after approval (`isFieldLocked`, `keepLockedFields`). Mirrors migration 0004. |
+| `profile-locks.ts` | Which fields are locked (`isFieldLocked`, `keepLockedFields`) and the notes shown for them, including the sign-up warning `NAME_FINAL_NOTE`. Mirrors migrations 0004, 0005, 0008. |
 | `viewer.ts` | `getViewer()`: the signed-in visitor (id, email, profile) or null, looked up once per request; `safeNextPath()` blocks redirects to other sites. |
 | `profile-form.ts` | Reads and validates the profile form on the server (required fields per account type, lengths, certification file type/size). |
 | `request-origin.ts` | Site address for email and Google return links: the request's address if on the allow-list, else production. Stops forged headers from redirecting reset links. |
@@ -187,6 +187,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 ---
 
 ## Changelog of this map
+- **Step 4 name lock:** trainer and school names fixed from sign-up (migration 0008); sign-up form warns that they cannot change later. Pre-launch plan: combined `supabase/schema.sql` for a fresh production project.
 - **Step 4 review fixes:** migration 0007, `password-reset-pass.ts`, `account/password` page, origin allow-list, safer `safeNextPath`, repositories take the user id (one session lookup per request via cached `getViewer`).
 - **Step 4 follow-up:** account deletion (migration 0006), `FormError` scroll-to-error; roadmap: Saved step dropped, Step 12 "My learning" added; trainer teaching license (migration 0005); `profile-locks.ts` + migration 0004 (locked fields after approval); profiles split into `trainer_profiles` / `school_profiles` (migration 0003); guests see only Sign in and List your training (no hearts); account pages on phones drop the footer and use larger text.
 - **Step 4:** accounts. Added `supabase/migrations/0002_accounts.sql`, `src/proxy.ts`, `lib/auth/`, `lib/supabase/`, profile repository, `lib/viewer.ts`, `lib/profile-form.ts`, `lib/request-origin.ts`, `config/accounts.ts`, account pages and server actions, auth components. Course repository now uses the shared client. Roadmap: new Step 5 (admin role); later steps shifted by one.

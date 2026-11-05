@@ -84,7 +84,7 @@ Optional later improvements: attendance check-in via QR code / link at the sessi
 | Account types (Step 4) | **Trainer** (can list and book) and **School** (can book). Chosen once, cannot change |
 | Trainer vetting (Step 4) | Anyone can sign up and list. A PD certification file is optional and reviewed manually; until approved, the profile and listings show "Not certified" |
 | School verification (Step 4) | Schools should use a school email. Emails on .edu, .k12.xx.us or the admin's domain list are flagged as "likely school"; every school is still approved manually |
-| Locked fields (Step 4) | Trainer name and school name locked from sign-up (migration 0008). Approved trainer: name locked (credentials, employment, about, certification stay editable; a new file needs re-review). Approved school: school name locked (contact name, position editable). Admin can still edit in the dashboard |
+| Locked fields (Step 4) | Trainer name and school name locked from sign-up (migration 0008); the sign-up form warns about it. School contact name and position stay editable. Other trainer fields (credentials, employment, about, certification stay editable; a new file needs re-review). Approved school: school name locked (contact name, position editable). Admin can still edit in the dashboard |
 | Teaching license (Step 4) | Separate from the PD-trainer certificate (PDF, kept). Optional state + license number, checked by the admin on the state's public lookup; trainers show "Licensed" / "Not licensed" and "Certified" / "Not certified" independently. Unlicensed trainers can still list. Locked once approved |
 | Admin (Step 4-5) | Approvals happen in the Supabase dashboard in Step 4; Step 5 adds an admin role and admin page |
 

@@ -47,6 +47,7 @@ export const FOOTER_COLUMNS: Array<{title: string; links: FooterLink[]}> = [
   {
     title: 'Support',
     links: [
+      {label: 'Support Center', href: '/support'},
       {label: 'FAQ', href: '/faq'},
       {label: 'Contact Us', href: '/contact'},
     ],

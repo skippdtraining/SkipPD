@@ -34,6 +34,7 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Search box text / placeholder | `web/src/components/SearchBox.tsx` | |
 | Hero headline and text | `web/src/components/Hero.tsx` | |
 | Footer links (add / rename / remove) | `web/src/config/site.ts` → `FOOTER_COLUMNS` | A "Coming soon" page is created automatically for each link. |
+| Support Center articles (add / edit / reorder) | `web/src/config/support-articles.ts` → `SUPPORT_CATEGORIES` | Each article gets a page at `/support/<slug>` automatically. Slugs must be unique (the build fails otherwise). "Contact us" target: `SUPPORT_CONTACT_HREF` in the same file. |
 | Footer social icons (URLs, add / remove) | `web/src/config/site.ts` → `SOCIAL_LINKS` | URLs are placeholders until the accounts exist. New platform: add its icon in `components/SocialIcon.tsx`. |
 | Phone menu (☰) | `web/src/components/SiteHeader.tsx`, CSS `.menu-toggle` + 730px block | |
 | Footer copyright year | `web/src/config/site.ts` → `copyrightYear` | |
@@ -125,7 +126,7 @@ Users delete their own account on `/account` (type DELETE). The app removes thei
 
 ### Add a footer page
 1. Add `{label, href}` to a column in `FOOTER_COLUMNS` (`web/src/config/site.ts`). The footer link and a "Coming soon" page appear automatically.
-2. When the real content is ready, create `web/src/app/<path>/page.tsx` (e.g. `app/about/page.tsx`). It replaces the placeholder for that path.
+2. When the real content is ready, create `web/src/app/<path>/page.tsx` (e.g. `app/about/page.tsx`). It replaces the placeholder for that path. Also add the path to `PATHS_WITH_OWN_PAGE` in `web/src/app/[slug]/page.tsx` so no placeholder is built for it.
 
 ### Add a new setting
 1. Add a documented constant to the right file in `web/src/config/` (`site.ts` for branding, `catalog.ts` for catalog business rules, or a new file for a new area).

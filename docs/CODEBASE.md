@@ -100,8 +100,10 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `actions/profile.ts` | Server action: validate and save the profile form, upload the certification. New profiles go to the home page (welcome message); edits return to the account summary. Also `deleteAccountAction`. |
 | `api/courses/route.ts` | `GET /api/courses?q=&format=&grade=&duration=&maxPrice=&sort=`: catalog search for the browser. Returns `{courses}`. |
 | `globals.css` | All styles, ported from the POC and grouped by page area. Colours are CSS variables in `:root`. The header is sticky and 64px tall. The "Responsive" section at the end adapts the layout for tablets and phones. |
-| `[slug]/page.tsx` | **Temporary.** "Coming soon" page for each footer link (`/about`, `/terms`...), generated from `FOOTER_COLUMNS`. Real pages get their own folder later. |
+| `[slug]/page.tsx` | **Temporary.** "Coming soon" page for each footer link (`/about`, `/terms`...), generated from `FOOTER_COLUMNS`. Real pages get their own folder later; paths that already have one are listed in `PATHS_WITH_OWN_PAGE`. |
 | `../proxy.ts` (`src/proxy.ts`) | Next.js proxy (formerly middleware): refreshes the sign-in session cookie before each page. Does not block pages; each page checks the user itself. |
+| `support/page.tsx` | Support Center home (`/support`, linked from the footer): help articles grouped by category, plus a "Contact us" call to action. |
+| `support/[article]/page.tsx` | One help article (`/support/<slug>`) with breadcrumb and related articles. One page is pre-built per article. |
 | `favicon.ico` | Browser tab icon. It is still the Next.js default; replace it with the SkipPD logo later. |
 
 ## `src/components/`: UI building blocks
@@ -140,6 +142,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 |---|---|
 | `site.ts` | Brand name, stage label, tab title, SEO text, footer tagline, copyright year, footer links, and `ALLOWED_ORIGIN_PATTERNS` (where email/Google links may return). A rename is one edit here. |
 | `accounts.ts` | Password length, profile field limits, certification file size/types, page after sign-in. Keep in sync with `0002_accounts.sql`. |
+| `support-articles.ts` | Support Center content: categories and articles (title, summary, sections of paragraphs and lists). Edit text here; the `/support` pages render it. |
 | `catalog.ts` | Business settings: price filter brackets, "short course" hours, search debounce, custom-topic and image upload limits. |
 
 ## `src/lib/data/`: data access (the database boundary)

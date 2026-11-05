@@ -34,7 +34,7 @@ Email links and Google return to /auth/callback.
 ```
 
 - **Server vs. browser:** files in `app/` run on the server by default. That is where database reads happen. Files marked `'use client'` also run in the browser, because they react to clicks and typing.
-- **Temporary parts:** browser storage reproduces the POC behaviour. The database replaces it step by step: courses in Step 3 (done), listings in Step 6, saved courses in Step 7, and requests in Step 8.
+- **Temporary parts:** browser storage reproduces the POC behaviour. The database replaces it step by step: courses in Step 3 (done), listings in Step 6 and requests in Step 7. Saved courses are being removed (`feature/remove-saved`).
 
 ---
 
@@ -57,6 +57,7 @@ Email links and Google return to /auth/callback.
 | `supabase/migrations/0003_split_profiles.sql` | Moves trainer-only fields to `trainer_profiles` and school-only fields to `school_profiles`; `profiles` keeps role, name, email. Copies existing data. |
 | `supabase/migrations/0004_lock_approved_profiles.sql` | Locks the trainer's name and the school's name once approved (site users only; the dashboard can still edit). |
 | `supabase/migrations/0005_trainer_license.sql` | Optional teaching license (state + number) on `trainer_profiles` with its own `license_status`; resets to pending on change, locked once approved. |
+| `supabase/migrations/0006_delete_account.sql` | `delete_my_account()` (deletes only the caller's account; profiles cascade) and a storage policy letting users delete their own certification files. |
 | `supabase/seed.sql` | Starter data: six suggested topics and the six POC courses. Re-runnable (empties the tables first). |
 | `web/` | **The Next.js application.** Run all npm commands inside this folder. |
 
@@ -90,10 +91,10 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `sign-up/page.tsx` | Create an account (email confirmation) or Google. |
 | `forgot-password/page.tsx` / `reset-password/page.tsx` | Request a reset email / set a new password (also used for "Change password"). |
 | `onboarding/page.tsx` | First-time profile form: account type plus trainer or school details. |
-| `account/page.tsx` | Review status, profile summary with Edit button, back to trainings, change password, sign out. |
+| `account/page.tsx` | Review status, profile summary with Edit button, back to trainings, change password, sign out, delete account. |
 | `auth/callback/route.ts` | Where email links (`token_hash`) and Google sign-in (`code`) return: creates the session, then opens `next` or `/onboarding`. An already-used confirmation link asks the user to sign in. |
 | `actions/auth.ts` | Server actions: sign in, sign up, Google, forgot/reset password, sign out. |
-| `actions/profile.ts` | Server action: validate and save the profile form, upload the certification. New profiles go to the home page (welcome message); edits return to the account summary. |
+| `actions/profile.ts` | Server action: validate and save the profile form, upload the certification. New profiles go to the home page (welcome message); edits return to the account summary. Also `deleteAccountAction`. |
 | `api/courses/route.ts` | `GET /api/courses?q=&format=&grade=&duration=&maxPrice=&sort=&ids=`: catalog search for the browser. Returns `{courses}`. |
 | `globals.css` | All styles, ported from the POC and grouped by page area. Colours are CSS variables in `:root`. The header is sticky and 64px tall. The "Responsive" section at the end adapts the layout for tablets and phones. |
 | `[slug]/page.tsx` | **Temporary.** "Coming soon" page for each footer link (`/about`, `/terms`...), generated from `FOOTER_COLUMNS`. Real pages get their own folder later. |
@@ -111,6 +112,8 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `GoogleSignInButton.tsx` | "Continue with Google" button (a form posting to a server action). |
 | `ProfileForm.tsx` | Trainer / school profile form used by onboarding and the account page. |
 | `AccountProfile.tsx` | Account page: read-only profile summary; "Edit profile" swaps in `ProfileForm`, saving returns to the summary. |
+| `FormError.tsx` | Form error message that scrolls into view and takes focus after each failed submit. Used by all account forms. |
+| `DeleteAccount.tsx` | Account page "Delete account": typed DELETE confirmation, then permanent deletion. |
 | `AccountStatus.tsx` | Account page status: certificate ("Certified") and teaching license ("Licensed") for trainers, verification for schools. |
 | `SearchBox.tsx` | Search form used twice: large in the hero, compact in the header. Both share one query. |
 | `Hero.tsx` | Headline, search box and artwork. |
@@ -120,7 +123,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `CourseIllustration.tsx` | Built-in SVG cover art for courses without an image, with one drawing per topic type. Copied from the POC. |
 | `Modal.tsx` | Reusable pop-up built on the native `<dialog>` element. Closes on Esc, the × button, or a click outside. |
 | `CourseDetail.tsx` | Dialog content: the full course description and the "Request a session" button. |
-| `BookingForm.tsx` | Dialog content: the booking request form. Saves to the browser for now; Step 8 saves to the DB. |
+| `BookingForm.tsx` | Dialog content: the booking request form. Saves to the browser for now; Step 7 saves to the DB. |
 | `ListingForm.tsx` | Dialog content: the new-listing form, with image validation (max 1 MB) an "Other" topic option that reveals a free-text field. No trainer name, credentials or keywords: those come from the account (Step 4). Saves to the browser for now; Step 6 saves to the DB. |
 | `OutcomeListField.tsx` | Listing-form field: one input per learning outcome, "+ Add outcome" and × remove buttons. |
 | `RequestList.tsx` | Dialog content: "My booking requests", each with a Remove button. |
@@ -180,7 +183,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 ---
 
 ## Changelog of this map
-- **Step 4 follow-up:** trainer teaching license (migration 0005); `profile-locks.ts` + migration 0004 (locked fields after approval); profiles split into `trainer_profiles` / `school_profiles` (migration 0003); guests see only Sign in and List your training (no hearts); account pages on phones drop the footer and use larger text.
+- **Step 4 follow-up:** account deletion (migration 0006), `FormError` scroll-to-error; roadmap: Saved step dropped, Step 12 "My learning" added; trainer teaching license (migration 0005); `profile-locks.ts` + migration 0004 (locked fields after approval); profiles split into `trainer_profiles` / `school_profiles` (migration 0003); guests see only Sign in and List your training (no hearts); account pages on phones drop the footer and use larger text.
 - **Step 4:** accounts. Added `supabase/migrations/0002_accounts.sql`, `src/proxy.ts`, `lib/auth/`, `lib/supabase/`, profile repository, `lib/viewer.ts`, `lib/profile-form.ts`, `lib/request-origin.ts`, `config/accounts.ts`, account pages and server actions, auth components. Course repository now uses the shared client. Roadmap: new Step 5 (admin role); later steps shifted by one.
 - **Step 3:** added `supabase/` (migration + seed), `supabase-course-repository.ts`, `app/api/courses/route.ts`, `course-query-params.ts`, `catalog-api.ts`, `.env.example`; removed the sample data files; suggested topics now come from the `categories` table.
 - **Step 1:** initial structure; `HomeClient` split into section components; docs added.

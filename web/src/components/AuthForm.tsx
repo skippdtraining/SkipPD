@@ -9,6 +9,7 @@
 'use client';
 
 import {useActionState} from 'react';
+import {FormError} from './FormError';
 import type {AuthFormState} from '@/app/actions/auth';
 
 interface AuthFormProps {
@@ -33,11 +34,7 @@ export function AuthForm({action, submitLabel, children}: AuthFormProps) {
 
   return (
     <form action={formAction}>
-      {state.error && (
-        <p className="form-error" role="alert">
-          {state.error}
-        </p>
-      )}
+      <FormError message={state.error} trigger={state} />
       {children}
       <button className="btn wide" disabled={pending}>
         {pending ? 'Please wait…' : submitLabel}

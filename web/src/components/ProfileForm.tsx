@@ -18,6 +18,7 @@ import {
 } from '@/config/accounts';
 import {isFieldLocked, LOCKED_FIELD_NOTE} from '@/lib/profile-locks';
 import {ACCOUNT_ROLES, type AccountRole, type Profile} from '@/lib/types';
+import {FormError} from './FormError';
 
 interface ProfileFormProps {
   /** Existing profile to edit, or null for a new one. */
@@ -44,11 +45,7 @@ export function ProfileForm({profile, submitLabel, onSaved, onCancel}: ProfileFo
 
   return (
     <form action={formAction}>
-      {state.error && (
-        <p className="form-error" role="alert">
-          {state.error}
-        </p>
-      )}
+      <FormError message={state.error} trigger={state} />
 
       <fieldset className="role-choice" disabled={profile !== null}>
         <legend>Account type{profile && ' (cannot be changed)'}</legend>

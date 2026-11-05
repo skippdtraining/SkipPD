@@ -179,5 +179,23 @@ export function createSupabaseProfileRepository(): ProfileRepository {
         .eq('id', userId);
       if (error) throw new Error(`Could not attach certification: ${error.message}`);
     },
+
+    async deleteMyAccount() {
+      const {supabase, userId} = await requireUser();
+      // Files first: once the account is gone, the user can no longer
+      // delete them (Storage does not cascade with the account).
+      const {data: files, error: listError} = await supabase.storage
+        .from(CERTIFICATION_BUCKET)
+        .list(userId);
+      if (listError) throw new Error(`Could not list files: ${listError.message}`);
+      if (files.length > 0) {
+        const {error} = await supabase.storage
+          .from(CERTIFICATION_BUCKET)
+          .remove(files.map((file) => `${userId}/${file.name}`));
+        if (error) throw new Error(`Could not delete files: ${error.message}`);
+      }
+      const {error} = await supabase.rpc('delete_my_account');
+      if (error) throw new Error(`Could not delete account: ${error.message}`);
+    },
   };
 }

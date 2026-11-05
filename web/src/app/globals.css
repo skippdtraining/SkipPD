@@ -911,6 +911,32 @@ header.with-search .header-search {
   line-height: 1.5;
 }
 
+.form-error:focus {
+  outline: 2px solid #a2463f;
+  outline-offset: 2px;
+}
+.account-danger {
+  border-top: 1px solid var(--line);
+  margin-top: 22px;
+  padding-top: 16px;
+}
+.link-button.danger {
+  color: #a2463f;
+}
+.danger-zone h2 {
+  font: 800 18px var(--head-font);
+  margin: 0 0 6px;
+  color: #a2463f;
+}
+.danger-zone p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.btn.danger {
+  background: #a2463f;
+}
+
 /* Modal */
 dialog {
   border: 0;

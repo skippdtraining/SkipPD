@@ -24,6 +24,11 @@ export interface ProfileRepository {
    * its review status to "pending". The profile must already exist.
    */
   uploadMyCertification(file: File): Promise<void>;
+  /**
+   * Permanently deletes the current user's account, profile and uploaded
+   * files. The session is no longer valid afterwards.
+   */
+  deleteMyAccount(): Promise<void>;
 }
 
 /** Returns the repository the app should use. */

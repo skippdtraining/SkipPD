@@ -36,9 +36,9 @@ After the training takes place and the hiring party confirms, the trainer is pai
 A chat lets the trainer and the hiring party settle training details. One chat thread per booking.
 
 ### 1.4 Accounts, profiles and ratings (planned)
-Applies once users and the database exist (roadmap Steps 4 and 8, ratings in the "Later" step):
+Applies once users and the database exist (roadmap Steps 4 and 7, ratings in the "Later" step):
 - After login, teachers and schools get **different pages**, each tailored to their role.
-- The current header items **Saved** and **My requests** are removed. Each user has a **profile page** instead:
+- **Saved** is removed (decided Nov 2026). **My requests** becomes **My learning** (Step 12). Each user also has a **profile page**:
   - teachers see the trainings they listed (and their incoming jobs);
   - schools see the trainings they have hired before.
 - Each trainer has a **rating** given by schools after a completed training. It appears next to the trainer's listings so schools can compare.
@@ -73,7 +73,10 @@ Optional later improvements: attendance check-in via QR code / link at the sessi
 | Product name | SkipPD |
 | Topics | Suggested list plus "Other" with free text; no topic filter (search covers topics) |
 | Footer | About Us, How it works, Contact Us (page), FAQ, Terms of Service, Privacy Policy; "Coming soon" pages until content exists |
-| Logged-in experience | Separate teacher and school experiences; header Saved / My requests replaced by profile pages (see 1.4) |
+| Logged-in experience | Separate teacher and school experiences; profile pages (see 1.4) |
+| Saved feature | Removed (branch `feature/remove-saved`, right after Step 4). The old "Saved listings" step is dropped; later steps shifted down by one |
+| My learning (Step 12) | Full page replacing "My requests": upcoming + completed courses and learner certificates, for the account holder only. Last step because it needs bookings (Step 7) and completion (Step 10) |
+| Account deletion (Step 4) | Users can delete their account from `/account` (type DELETE); profile and files are removed |
 | Ratings | Trainer ratings shown next to listings; planned for the "Later" step |
 | Roadmap change | Step 2 added for UI changes after the Step 1 review; later steps shifted by one |
 | Proof of training | Hiring party confirms + evidence fallback (section 2.1) |
@@ -97,7 +100,7 @@ Optional later improvements: attendance check-in via QR code / link at the sessi
 | Category chips | All topics, Literacy, EdTech & AI, ESL & ELL, Special education, Classroom management, Leadership | Categories table or fixed enum |
 | Filters | Format (checkbox), Grade (K-5/6-8/9-12), Duration (<=2h / >2h), Max price (<$75/$150/$300) | Yes - DB query |
 | Sort | Recommended, price low/high, duration | Yes - DB query |
-| Saved (bookmarks) | Heart toggle + "Saved" view with counter | Yes - per user |
+| Saved (bookmarks) | Heart toggle + "Saved" view with counter | No - removed |
 | Course detail modal | Description, trainer + credentials, outcomes, hours, grades, price/person | Yes - DB |
 | Booking request form | Name, email, booking for (Myself / School team / Teacher group), participants, school, preferred date (>= today), focus message | Yes - DB + email |
 | My requests | Lists requests with status "Draft", remove button | Yes - DB |
@@ -146,7 +149,7 @@ Optional later improvements: attendance check-in via QR code / link at the sessi
 ### 5.2 Data model (entities, not final schema)
 - **Profile** - user id, role (`trainer` | `school`), name, email; trainer: credentials, employment, bio, certification file + review status; school: school/district, contact position, school-email hint + verification status; Stripe account id (later)
 - **Training listing** - owner (teacher), title, category, format, duration hours, price per person, grade levels, tags, description, outcomes, image, active flag
-- **Saved listing** - user, listing
+- **Learner certificate** (Step 12) - booking, account, issued date, file
 - **Booking** - listing, requester, trainer, status, current agreed terms, created/updated
 - **Booking proposal** - booking, author, date, participants, goals, price, created (one row per negotiation round = full history)
 - **Message** - booking, sender, text, created
@@ -162,14 +165,14 @@ requested -> negotiating <-> negotiating -> accepted -> paid -> delivered -> com
  rejected      rejected                    cancelled  cancelled  disputed -> completed | refunded
 ```
 - Only the party who did *not* make the latest proposal can accept it.
-- Until payments exist (step 12), `accepted` goes straight to `scheduled`/`delivered`.
+- Until payments exist (step 11), `accepted` goes straight to `scheduled`/`delivered`.
 
 ### 5.4 Difficulty ranking
 | Easy | Medium | Hard (later) |
 |---|---|---|
 | Catalog, search, filters, sort | Auth + roles + RLS | Payments / held funds / payouts |
 | Listing CRUD | Negotiation flow | Disputes + admin tooling |
-| Saved listings | Email notifications | Tax forms (1099 via Stripe), refunds |
+| My learning page | Email notifications | Tax forms (1099 via Stripe), refunds |
 | Image upload | Realtime chat | Self-paced content hosting |
 
 ---
@@ -184,13 +187,13 @@ requested -> negotiating <-> negotiating -> accepted -> paid -> delivered -> com
 | 4 | Auth: email/password (with email confirmation) and Google sign-in; Trainer or School profile; trainer PD certification upload; school email hint; account page | Can create Trainer and School accounts; certification and school approval visible on the account page |
 | 5 | Admin role: `admin` flag on accounts, admin page to review certifications and verify schools (replaces approving in the Supabase dashboard) | Admin approves a certification and a school from the site |
 | 6 | Listing CRUD for teachers + image upload; RLS policies | Teacher creates/edits/deletes own listing; school cannot list |
-| 7 | Saved listings per user | Saved items persist across devices |
-| 8 | Booking requests; "My requests" (requester) and "Jobs" (trainer) pages; profile pages replace header Saved / My requests (see 1.4) | Request appears on trainer's Jobs page |
-| 9 | Negotiation (accept / counter / reject) + email notifications | Full negotiation round-trip works with emails |
-| 10 | Chat per booking (realtime) | Both parties chat live on a booking |
-| 11 | Completion flow: delivered, confirm, auto-confirm, dispute, evidence upload, dispute handling on the admin page | A booking can reach `completed` or `disputed` |
-| 12 | Stripe Connect: trainer onboarding, payment on accept, payout on completion | Test-mode payment end to end |
-| 13 | Later: trainer ratings next to listings (see 1.4), reviews, self-paced, PD certificates for attendees, analytics | - |
+| 7 | Booking requests; simple "My requests" list (requester) and "Jobs" page (trainer) | Request appears on trainer's Jobs page |
+| 8 | Negotiation (accept / counter / reject) + email notifications | Full negotiation round-trip works with emails |
+| 9 | Chat per booking (realtime) | Both parties chat live on a booking |
+| 10 | Completion flow: delivered, confirm, auto-confirm, dispute, evidence upload, dispute handling on the admin page. Completed bookings stay linked to the account that booked them (needed by Step 12) | A booking can reach `completed` or `disputed` |
+| 11 | Stripe Connect: trainer onboarding, payment on accept, payout on completion | Test-mode payment end to end |
+| 12 | **My learning**: header "My requests" becomes "My learning", a full page for the signed-in account: upcoming booked courses, completed courses, and learner certificates (generated on completion). Only the account holder's own bookings (no attendee accounts) | A completed booking shows under "Completed" with a downloadable certificate |
+| 13 | Later: trainer ratings next to listings (see 1.4), reviews, self-paced, analytics | - |
 
 Future possibilities (after all steps):
 - **Sign in with Clever** for teachers whose district uses Clever. Needs a custom login flow in `lib/auth/` (Supabase has no Clever provider), Clever partner approval, and each district opting in. Revisit when districts ask for it.
@@ -201,13 +204,13 @@ Rule: do not start step N+1 until step N is deployed and manually tested.
 ---
 
 ## 7. Open Questions (to decide before the relevant step)
-1. **Platform fee** - what % does SkipPD keep? (step 12)
-2. **Group pricing** - always price x participants, or can trainers quote a flat group price during negotiation? (step 9)
-3. **Cancellation / refund policy** - who can cancel after payment, and how much is refunded? (step 12)
-4. **Auto-confirm window** - 7 days OK? (step 11)
+1. **Platform fee** - what % does SkipPD keep? (step 11)
+2. **Group pricing** - always price x participants, or can trainers quote a flat group price during negotiation? (step 8)
+3. **Cancellation / refund policy** - who can cancel after payment, and how much is refunded? (step 11)
+4. **Auto-confirm window** - 7 days OK? (step 10)
 5. ~~**Trainer vetting**~~ - decided in Step 4: anyone can list; optional certification, manually approved.
-6. **In-person travel costs** - part of the price, or negotiated separately? (step 9)
-7. **Who is admin** - you only, or a team? (step 11)
+6. **In-person travel costs** - part of the price, or negotiated separately? (step 8)
+7. **Who is admin** - you only, or a team? (step 10)
 8. ~~**Product name**~~ - decided: **SkipPD**.
 9. **Privacy** - will any student data ever be stored (e.g. in evidence photos)? If yes, FERPA/COPPA considerations apply. Recommendation: forbid student-identifiable data in uploads.
 
@@ -241,16 +244,17 @@ Decisions taken in Step 3:
 - Pagination stays in the browser while trainer-created listings still live in localStorage; it can move to the server once listings are in the database.
 
 ### Step 4 - Accounts (current)
-Prerequisite (owner): run `supabase/migrations/0002_accounts.sql`, `0003_split_profiles.sql`, `0004_lock_approved_profiles.sql` and `0005_trainer_license.sql`; configure Supabase Auth (Site URL, Redirect URLs, Google provider), see HOW-TO "Accounts setup".
+Prerequisite (owner): run `supabase/migrations/0002_accounts.sql`, `0003_split_profiles.sql`, `0004_lock_approved_profiles.sql`, `0005_trainer_license.sql` and `0006_delete_account.sql`; configure Supabase Auth (Site URL, Redirect URLs, Google provider), see HOW-TO "Accounts setup".
 1. Sign-up / sign-in with email + password (confirmation email) or Google; forgot / reset password; sign-out.
 2. After the first sign-in, `/onboarding` asks for the account type and profile:
    - Trainer: full name, credentials line, currently employed (yes/no) + place of employment, about text, optional PD certification file (PDF/JPG/PNG, max 4 MB, private storage).
    - School: contact name, school or district, contact's position. The email is flagged automatically when it looks like a school address.
 3. `/account` shows the review status ("Not certified" / "Certified", school verified or not), lets users edit their profile and change their password.
 4. Guests can browse; their header shows only Sign in and List your training, and cards have no save heart. Booking and listing send them to sign-in. Only trainers can open the listing form.
-5. The admin approves certifications and schools in the Supabase dashboard (HOW-TO "Approve a certification or school").
+5. Users can delete their account on `/account`; errors on all account forms scroll into view.
+6. The admin approves certifications and schools in the Supabase dashboard (HOW-TO "Approve a certification or school").
 **Checkpoint:** a Trainer and a School account can be created on the Vercel preview; changing `certification_status` / `school_status` in the dashboard changes the account page.
 
 Before launch: custom SMTP (needs a domain) and the token-hash email templates (HOW-TO "Accounts setup").
 
-Not in Step 4: the "Not certified" / "Not licensed" labels next to listings arrives with listing CRUD (Step 6), when listings get an owner. Saved courses and requests still live in the browser until Steps 7 and 8.
+Not in Step 4: the "Not certified" / "Not licensed" labels next to listings arrives with listing CRUD (Step 6), when listings get an owner. Requests still live in the browser until Step 7. Saved is removed on `feature/remove-saved`.

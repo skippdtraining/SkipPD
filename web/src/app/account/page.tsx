@@ -1,7 +1,7 @@
 /**
  * @fileoverview Route for "/account": review status, profile summary (with
  * an Edit button),
- * password change and sign-out. Next.js requires a default export.
+ * password change, sign-out and account deletion. Next.js requires a default export.
  */
 
 import type {Metadata} from 'next';
@@ -10,6 +10,7 @@ import {redirect} from 'next/navigation';
 import {Suspense} from 'react';
 import {signOutAction} from '@/app/actions/auth';
 import {AccountStatus} from '@/components/AccountStatus';
+import {DeleteAccount} from '@/components/DeleteAccount';
 import {AuthShell} from '@/components/AuthShell';
 import {AccountProfile} from '@/components/AccountProfile';
 import {SITE_NAME} from '@/config/site';
@@ -33,6 +34,9 @@ async function AccountContent() {
         <form action={signOutAction}>
           <button className="link-button">Sign out</button>
         </form>
+      </div>
+      <div className="account-danger">
+        <DeleteAccount />
       </div>
     </>
   );

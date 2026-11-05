@@ -48,3 +48,31 @@ export async function saveProfileAction(
   revalidatePath('/account');
   return {savedCount: (previous.savedCount ?? 0) + 1};
 }
+
+/** What the delete-account form shows after submitting. */
+export interface DeleteAccountState {
+  error?: string;
+}
+
+/** Word the user must type to confirm deletion. */
+const DELETE_CONFIRMATION = 'DELETE';
+
+/** Permanently deletes the signed-in user's account, then goes home. */
+export async function deleteAccountAction(
+  _previous: DeleteAccountState,
+  data: FormData,
+): Promise<DeleteAccountState> {
+  if (!(await getAuthService().getCurrentUser())) redirect('/sign-in');
+  if (String(data.get('confirm') ?? '').trim() !== DELETE_CONFIRMATION) {
+    return {error: `Type ${DELETE_CONFIRMATION} to confirm.`};
+  }
+  try {
+    await getProfileRepository().deleteMyAccount();
+  } catch (error) {
+    console.error(error);
+    return {error: 'Could not delete your account. Please try again.'};
+  }
+  // The account is gone; clear the leftover session cookie.
+  await getAuthService().signOut();
+  redirect('/?deleted=1');
+}

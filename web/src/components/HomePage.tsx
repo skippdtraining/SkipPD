@@ -80,13 +80,19 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
   const [dialog, setDialog] = useState<OpenDialog>(null);
   const [toast, showToast] = useToast();
 
-  // Onboarding sends new users here with ?welcome=1: greet them once, then
-  // drop the flag so a reload does not greet again.
+  // Onboarding (?welcome=1) and account deletion (?deleted=1) send users
+  // here: show a message once, then drop the flag so a reload does not.
   useEffect(() => {
     const url = new URL(window.location.href);
-    if (url.searchParams.get('welcome') !== '1') return;
-    showToast(`Your profile is saved. Welcome to ${SITE_NAME}!`);
+    if (url.searchParams.get('welcome') === '1') {
+      showToast(`Your profile is saved. Welcome to ${SITE_NAME}!`);
+    } else if (url.searchParams.get('deleted') === '1') {
+      showToast('Your account was deleted.');
+    } else {
+      return;
+    }
     url.searchParams.delete('welcome');
+    url.searchParams.delete('deleted');
     window.history.replaceState(null, '', url);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

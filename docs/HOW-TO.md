@@ -47,6 +47,7 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Page opened after sign-in | `web/src/config/accounts.ts` → `AFTER_SIGN_IN_PATH` | |
 | Account type labels / hints | `web/src/lib/types.ts` → `ACCOUNT_ROLES` | |
 | Profile form fields | `web/src/components/ProfileForm.tsx` + `lib/profile-form.ts` (validation) + `lib/data/supabase-profile-repository.ts` (columns) | New column needs a migration: common fields in `profiles`, others in `trainer_profiles` or `school_profiles`. |
+| Form error behaviour (scroll + focus) | `web/src/components/FormError.tsx` | |
 | Review status wording ("Not certified"...) | `web/src/components/AccountStatus.tsx` | |
 | Who can save / book / list | `web/src/components/HomePage.tsx` → `withAccount`, `openListingForm` | Guest header items: `components/SiteHeader.tsx`. |
 | Sign-in vendor | `web/src/lib/auth/auth-service.ts` → `getAuthService()` | Same pattern as the database. |
@@ -105,6 +106,9 @@ After approval, a trainer's name and a school's name are locked on the site (rul
 1. Trainer name: Table Editor → `profiles` → edit `full_name` → Save.
 2. License: `trainer_profiles` → `license_state` / `license_number` (editing them resets `license_status` to `pending`; set it back to `approved` if correct).
 3. School name: Table Editor → `school_profiles` → edit `school_name` → Save.
+
+### Account deletion
+Users delete their own account on `/account` (type DELETE). The app removes their certification files, then calls `delete_my_account()` (`supabase/migrations/0006_delete_account.sql`); profile rows cascade. To delete a user yourself: Authentication → Users → ⋯ → Delete user (also remove their folder in Storage → `certifications`).
 
 ### Add a school email domain
 1. Table Editor → `school_email_domains` → Insert row: `domain` in lower case, e.g. `browardschools.com` (subdomains count too).

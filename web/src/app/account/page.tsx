@@ -19,18 +19,24 @@ import {getViewer} from '@/lib/viewer';
 export const metadata: Metadata = {title: `Your account | ${SITE_NAME}`};
 
 /** Checks the session, then shows status and the filled-in profile form. */
-async function AccountContent() {
+async function AccountContent({searchParams}: PageProps<'/account'>) {
   const viewer = await getViewer();
   if (!viewer) redirect('/sign-in?next=/account');
   if (!viewer.profile) redirect('/onboarding');
   return (
     <>
       <p className="auth-intro">Signed in as {viewer.email}</p>
+      {(await searchParams).upload === 'failed' && (
+        <p className="form-error" role="alert">
+          Your profile was saved, but the certification file could not be uploaded. Use
+          Edit profile to try again.
+        </p>
+      )}
       <AccountStatus profile={viewer.profile} />
       <AccountProfile profile={viewer.profile} />
       <div className="auth-links">
         <Link href="/">← Back to trainings</Link>
-        <Link href="/reset-password">Change password</Link>
+        <Link href="/account/password">Change password</Link>
         <form action={signOutAction}>
           <button className="link-button">Sign out</button>
         </form>
@@ -42,11 +48,11 @@ async function AccountContent() {
   );
 }
 
-export default function AccountPage() {
+export default function AccountPage(props: PageProps<'/account'>) {
   return (
     <AuthShell title="Your account">
       <Suspense>
-        <AccountContent />
+        <AccountContent {...props} />
       </Suspense>
     </AuthShell>
   );

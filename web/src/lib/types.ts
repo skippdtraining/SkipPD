@@ -173,10 +173,17 @@ export interface Profile extends ProfileInput {
   isLikelySchoolEmail: boolean;
   /** School: admin approval of the account. */
   schoolStatus: ReviewStatus;
+  /**
+   * True once the trainer certificate or school was ever approved. Locks the
+   * name for good, even if a new certificate sends the review back to pending.
+   */
+  wasEverApproved: boolean;
 }
 
 /** The signed-in visitor, or null for guests. */
 export interface Viewer {
+  /** Account id (from the auth service). */
+  id: string;
   email: string;
   /** Null until the user finished the profile form (/onboarding). */
   profile: Profile | null;

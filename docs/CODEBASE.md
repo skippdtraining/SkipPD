@@ -26,7 +26,7 @@ Browser request "/"
   -> lib/auth/*               sign-in service: the ONLY code that knows the auth vendor
   -> lib/supabase/clients.ts  creates Supabase clients; used only by the two folders above
 
-Account pages: /sign-in, /sign-up, /forgot-password, /reset-password,
+Account pages: /sign-in, /sign-up, /forgot-password, /reset-password, /account/password,
 /onboarding, /account -> server actions in app/actions/ -> lib/auth + lib/data.
 Email links and Google return to /auth/callback.
   -> config/*                 branding + business settings
@@ -58,6 +58,7 @@ Email links and Google return to /auth/callback.
 | `supabase/migrations/0004_lock_approved_profiles.sql` | Locks the trainer's name and the school's name once approved (site users only; the dashboard can still edit). |
 | `supabase/migrations/0005_trainer_license.sql` | Optional teaching license (state + number) on `trainer_profiles` with its own `license_status`; resets to pending on change, locked once approved. |
 | `supabase/migrations/0006_delete_account.sql` | `delete_my_account()` (deletes only the caller's account; profiles cascade) and a storage policy letting users delete their own certification files. |
+| `supabase/migrations/0007_hardening.sql` | Review fixes: `ever_approved` (name lock survives re-review), school-domain check internal only, trainer-only uploads (max 10), email sync from `auth.users`, `save_my_profile()` (profile + details in one transaction). |
 | `supabase/seed.sql` | Starter data: six suggested topics and the six POC courses. Re-runnable (empties the tables first). |
 | `web/` | **The Next.js application.** Run all npm commands inside this folder. |
 
@@ -89,7 +90,8 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `page.tsx` | The `/` route. Server component: on every request gets the default catalog results, the topic list and the visitor (`getViewer()`) and passes them to `HomePage`. Never imports a database client directly. |
 | `sign-in/page.tsx` | Email + password sign-in and "Continue with Google". `?next=` returns to a page afterwards. |
 | `sign-up/page.tsx` | Create an account (email confirmation) or Google. |
-| `forgot-password/page.tsx` / `reset-password/page.tsx` | Request a reset email / set a new password (also used for "Change password"). |
+| `forgot-password/page.tsx` / `reset-password/page.tsx` | Request a reset email / set a new password. `/reset-password` only works right after a reset link (short-lived pass cookie). |
+| `account/password/page.tsx` | Change password while signed in; asks for the current password. |
 | `onboarding/page.tsx` | First-time profile form: account type plus trainer or school details. |
 | `account/page.tsx` | Review status, profile summary with Edit button, back to trainings, change password, sign out, delete account. |
 | `auth/callback/route.ts` | Where email links (`token_hash`) and Google sign-in (`code`) return: creates the session, then opens `next` or `/onboarding`. An already-used confirmation link asks the user to sign in. |
@@ -134,7 +136,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 
 | File | What / why |
 |---|---|
-| `site.ts` | Brand name, stage label, tab title, SEO text, footer tagline, copyright year and footer links. A rename is one edit here. |
+| `site.ts` | Brand name, stage label, tab title, SEO text, footer tagline, copyright year, footer links, and `ALLOWED_ORIGIN_PATTERNS` (where email/Google links may return). A rename is one edit here. |
 | `accounts.ts` | Password length, profile field limits, certification file size/types, page after sign-in. Keep in sync with `0002_accounts.sql`. |
 | `catalog.ts` | Business settings: price filter brackets, "short course" hours, search debounce, custom-topic and image upload limits. |
 
@@ -167,9 +169,10 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `types.ts` | **Single source of truth for data shapes:** `Course`, `BookingRequest`, `CatalogFilters`, `CourseQuery` (filters sent to the server), `AccountRole`, `Profile`, `ProfileInput`, `Viewer`, grade and format lists, and the default filters. Database rows are converted into these in `lib/data/`. |
 | `filter-courses.ts` | **Temporary.** Same search/filter/sort rules as the database query, applied in the browser to listings stored in this browser. Removed when listings move to the DB (Step 6). |
 | `profile-locks.ts` | Which fields are locked after approval (`isFieldLocked`, `keepLockedFields`). Mirrors migration 0004. |
-| `viewer.ts` | `getViewer()`: the signed-in visitor with their profile (or null); `safeNextPath()` blocks redirects to other sites. |
+| `viewer.ts` | `getViewer()`: the signed-in visitor (id, email, profile) or null, looked up once per request; `safeNextPath()` blocks redirects to other sites. |
 | `profile-form.ts` | Reads and validates the profile form on the server (required fields per account type, lengths, certification file type/size). |
-| `request-origin.ts` | Site address of the current request, so email and Google links return to the same site (production, preview or localhost). |
+| `request-origin.ts` | Site address for email and Google return links: the request's address if on the allow-list, else production. Stops forged headers from redirecting reset links. |
+| `password-reset-pass.ts` | Short-lived httpOnly cookie granted by a valid reset link; `/reset-password` requires it. |
 | `course-query-params.ts` | Encodes a `CourseQuery` into URL params (browser) and decodes + validates them (`/api/courses`). |
 | `catalog-api.ts` | Browser helper: `fetchCourses()` calls `/api/courses`; `toCourseQuery()` turns filters + saved ids into a server query. |
 | `local-store.ts` | Generic helper that keeps a list in `localStorage` and re-renders React when it changes, using `useSyncExternalStore`. |
@@ -183,6 +186,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 ---
 
 ## Changelog of this map
+- **Step 4 review fixes:** migration 0007, `password-reset-pass.ts`, `account/password` page, origin allow-list, safer `safeNextPath`, repositories take the user id (one session lookup per request via cached `getViewer`).
 - **Step 4 follow-up:** account deletion (migration 0006), `FormError` scroll-to-error; roadmap: Saved step dropped, Step 12 "My learning" added; trainer teaching license (migration 0005); `profile-locks.ts` + migration 0004 (locked fields after approval); profiles split into `trainer_profiles` / `school_profiles` (migration 0003); guests see only Sign in and List your training (no hearts); account pages on phones drop the footer and use larger text.
 - **Step 4:** accounts. Added `supabase/migrations/0002_accounts.sql`, `src/proxy.ts`, `lib/auth/`, `lib/supabase/`, profile repository, `lib/viewer.ts`, `lib/profile-form.ts`, `lib/request-origin.ts`, `config/accounts.ts`, account pages and server actions, auth components. Course repository now uses the shared client. Roadmap: new Step 5 (admin role); later steps shifted by one.
 - **Step 3:** added `supabase/` (migration + seed), `supabase-course-repository.ts`, `app/api/courses/route.ts`, `course-query-params.ts`, `catalog-api.ts`, `.env.example`; removed the sample data files; suggested topics now come from the `categories` table.

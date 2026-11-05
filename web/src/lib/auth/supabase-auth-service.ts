@@ -34,18 +34,15 @@ export function createSupabaseAuthService(): AuthService {
 
     async signUpWithPassword(email, password, confirmUrl) {
       const supabase = await getRequestClient();
-      const {data, error} = await supabase.auth.signUp({
+      const {error} = await supabase.auth.signUp({
         email,
         password,
         options: {emailRedirectTo: confirmUrl},
       });
-      if (error) return toResult(error);
-      // Supabase hides whether an email is taken: it returns a user with no
-      // identities instead of an error.
-      if (data.user && data.user.identities?.length === 0) {
-        return {ok: false, message: 'An account with this email already exists.'};
-      }
-      return {ok: true};
+      // An existing email also returns success (a user with no identities)
+      // and gets no new email. We keep it that way, so the sign-up form
+      // never reveals which emails have accounts.
+      return toResult(error);
     },
 
     async getGoogleSignInUrl(callbackUrl) {

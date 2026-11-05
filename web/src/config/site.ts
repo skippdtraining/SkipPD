@@ -83,3 +83,15 @@ export const SOCIAL_LINKS: SocialLink[] = [
   {label: 'Facebook', icon: 'facebook', href: 'https://www.facebook.com/'},
   {label: 'X', icon: 'x', href: 'https://x.com/'},
 ];
+
+/**
+ * Site addresses that email links and Google sign-in may return to, besides
+ * the production address (read from Vercel, see lib/request-origin.ts).
+ * Must match Supabase → Authentication → URL Configuration → Redirect URLs.
+ */
+export const ALLOWED_ORIGIN_PATTERNS: RegExp[] = [
+  // Local development on any port.
+  /^http:\/\/localhost:\d+$/,
+  // Vercel previews: https://skip-<id>-skip-pd.vercel.app
+  /^https:\/\/skip-[a-z0-9-]+-skip-pd\.vercel\.app$/,
+];

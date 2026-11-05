@@ -8,7 +8,7 @@
 
 'use client';
 
-import {useActionState, useEffect, useState} from 'react';
+import {useActionState, useEffect, useEffectEvent, useState} from 'react';
 import {saveProfileAction} from '@/app/actions/profile';
 import {
   CERTIFICATION_TYPES,
@@ -38,9 +38,12 @@ export function ProfileForm({profile, submitLabel, onSaved, onCancel}: ProfileFo
   const maxMegabytes = MAX_CERTIFICATION_BYTES / (1024 * 1024);
 
   // Each successful save bumps savedCount; tell the parent once per save.
+  // useEffectEvent always calls the latest onSaved without re-running.
+  const notifySaved = useEffectEvent(() => {
+    onSaved?.();
+  });
   useEffect(() => {
-    if (state.savedCount) onSaved?.();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (state.savedCount) notifySaved();
   }, [state.savedCount]);
 
   return (

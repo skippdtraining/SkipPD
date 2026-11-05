@@ -244,7 +244,7 @@ Decisions taken in Step 3:
 - Pagination stays in the browser while trainer-created listings still live in localStorage; it can move to the server once listings are in the database.
 
 ### Step 4 - Accounts (current)
-Prerequisite (owner): run `supabase/migrations/0002_accounts.sql`, `0003_split_profiles.sql`, `0004_lock_approved_profiles.sql`, `0005_trainer_license.sql` and `0006_delete_account.sql`; configure Supabase Auth (Site URL, Redirect URLs, Google provider), see HOW-TO "Accounts setup".
+Prerequisite (owner): run `supabase/migrations/0002_accounts.sql`, `0003_split_profiles.sql`, `0004_lock_approved_profiles.sql`, `0005_trainer_license.sql`, `0006_delete_account.sql` and `0007_hardening.sql`; configure Supabase Auth (Site URL, Redirect URLs, Google provider), see HOW-TO "Accounts setup".
 1. Sign-up / sign-in with email + password (confirmation email) or Google; forgot / reset password; sign-out.
 2. After the first sign-in, `/onboarding` asks for the account type and profile:
    - Trainer: full name, credentials line, currently employed (yes/no) + place of employment, about text, optional PD certification file (PDF/JPG/PNG, max 4 MB, private storage).

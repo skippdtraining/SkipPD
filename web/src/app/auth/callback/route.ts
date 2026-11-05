@@ -14,8 +14,8 @@
 import {NextResponse, type NextRequest} from 'next/server';
 import {AFTER_SIGN_IN_PATH} from '@/config/accounts';
 import {getAuthService, type EmailLinkType} from '@/lib/auth/auth-service';
-import {getProfileRepository} from '@/lib/data/profile-repository';
-import {safeNextPath} from '@/lib/viewer';
+import {grantResetPass} from '@/lib/password-reset-pass';
+import {getViewer, safeNextPath} from '@/lib/viewer';
 
 export async function GET(request: NextRequest) {
   const {searchParams, origin} = request.nextUrl;
@@ -36,8 +36,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/sign-in?error=${reason}`);
   }
 
-  // The reset-password page works without a profile; everything else needs one.
-  const profile = await getProfileRepository().getMyProfile();
-  const destination = profile || next === '/reset-password' ? next : '/onboarding';
-  return NextResponse.redirect(`${origin}${destination}`);
+  // A valid reset link (either link style) grants the short-lived pass that
+  // /reset-password requires; it works without a profile.
+  if (type === 'recovery' || next === '/reset-password') {
+    const response = NextResponse.redirect(`${origin}/reset-password`);
+    grantResetPass(response);
+    return response;
+  }
+  const viewer = await getViewer();
+  return NextResponse.redirect(`${origin}${viewer?.profile ? next : '/onboarding'}`);
 }

@@ -11,7 +11,6 @@
  * Server only.
  */
 
-import type {SupabaseClient} from '@supabase/supabase-js';
 import {getRequestClient} from '@/lib/supabase/clients';
 import type {AccountRole, Profile, ReviewStatus} from '../types';
 import type {ProfileRepository} from './profile-repository';
@@ -24,6 +23,7 @@ interface TrainerRow {
   bio: string;
   certification_path: string | null;
   certification_status: string;
+  ever_approved: boolean;
   license_state: string;
   license_number: string;
   license_status: string;
@@ -35,6 +35,7 @@ interface SchoolRow {
   contact_position: string;
   is_likely_school_email: boolean;
   school_status: string;
+  ever_approved: boolean;
 }
 
 /** A `profiles` row with its one-to-one detail row embedded (null if none). */
@@ -49,8 +50,8 @@ interface ProfileRow {
 const PROFILE_COLUMNS =
   'role, full_name, email, ' +
   'trainer_profiles(credentials, is_employed, employer, bio, certification_path, ' +
-  'certification_status, license_state, license_number, license_status), ' +
-  'school_profiles(school_name, contact_position, is_likely_school_email, school_status)';
+  'certification_status, ever_approved, license_state, license_number, license_status), ' +
+  'school_profiles(school_name, contact_position, is_likely_school_email, school_status, ever_approved)';
 
 const CERTIFICATION_BUCKET = 'certifications';
 
@@ -76,37 +77,12 @@ function toProfile(row: ProfileRow): Profile {
     schoolName: school?.school_name ?? '',
     contactPosition: school?.contact_position ?? '',
     isLikelySchoolEmail: school?.is_likely_school_email ?? false,
+    wasEverApproved: Boolean(trainer?.ever_approved || school?.ever_approved),
   };
 }
 
-/**
- * Inserts the row if the user has none in `table`, otherwise updates it.
- * (Not an upsert: users may not update the `id` column.)
- */
-async function saveOwnRow(
-  supabase: SupabaseClient,
-  table: string,
-  userId: string,
-  values: Record<string, unknown>,
-): Promise<void> {
-  const {data: existing} = await supabase
-    .from(table)
-    .select('id')
-    .eq('id', userId)
-    .maybeSingle();
-  const {error} = existing
-    ? await supabase.from(table).update(values).eq('id', userId)
-    : await supabase.from(table).insert({id: userId, ...values});
-  if (error) throw new Error(`Could not save ${table}: ${error.message}`);
-}
-
-/** Returns the request client and the signed-in user's id, or throws. */
-async function requireUser(): Promise<{supabase: SupabaseClient; userId: string}> {
-  const supabase = await getRequestClient();
-  const {data} = await supabase.auth.getUser();
-  if (!data.user) throw new Error('Not signed in.');
-  return {supabase, userId: data.user.id};
-}
+/** Most files listed per Storage request (the API caps a page at 100). */
+const LIST_PAGE_SIZE = 100;
 
 /** Keeps letters, digits, dots, dashes and underscores, so paths stay valid. */
 function safeFileName(name: string): string {
@@ -116,56 +92,41 @@ function safeFileName(name: string): string {
 /** Profile repository acting as the signed-in user. */
 export function createSupabaseProfileRepository(): ProfileRepository {
   return {
-    async getMyProfile() {
+    async getMyProfile(userId) {
       const supabase = await getRequestClient();
-      const {data: userData} = await supabase.auth.getUser();
-      if (!userData.user) return null;
       const {data, error} = await supabase
         .from('profiles')
         .select(PROFILE_COLUMNS)
-        .eq('id', userData.user.id)
+        .eq('id', userId)
         .returns<ProfileRow[]>()
         .maybeSingle();
       if (error) throw new Error(`Could not load profile: ${error.message}`);
       return data ? toProfile(data) : null;
     },
 
-    async saveMyProfile(input) {
-      const {supabase, userId} = await requireUser();
-      const {data: existing} = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .returns<{role: string}[]>()
-        .maybeSingle();
-      // The account type is set once, on insert; it never changes.
-      const role = existing?.role ?? input.role;
-      await saveOwnRow(
-        supabase,
-        'profiles',
-        userId,
-        existing ? {full_name: input.fullName} : {role, full_name: input.fullName},
-      );
-      if (role === 'trainer') {
-        await saveOwnRow(supabase, 'trainer_profiles', userId, {
-          credentials: input.credentials,
-          license_state: input.licenseState,
-          license_number: input.licenseNumber,
-          is_employed: input.isEmployed ?? false,
-          employer: input.employer,
-          bio: input.bio,
-        });
-      } else {
-        await saveOwnRow(supabase, 'school_profiles', userId, {
-          school_name: input.schoolName,
-          contact_position: input.contactPosition,
-        });
-      }
+    async saveMyProfile(_userId, input) {
+      const supabase = await getRequestClient();
+      // One database transaction for the profile and its details; the
+      // function works out the user from the session (migration 0007).
+      const {error} = await supabase.rpc('save_my_profile', {
+        p_role: input.role,
+        p_full_name: input.fullName,
+        p_credentials: input.credentials,
+        p_is_employed: input.isEmployed ?? false,
+        p_employer: input.employer,
+        p_bio: input.bio,
+        p_license_state: input.licenseState,
+        p_license_number: input.licenseNumber,
+        p_school_name: input.schoolName,
+        p_contact_position: input.contactPosition,
+      });
+      if (error) throw new Error(`Could not save profile: ${error.message}`);
     },
 
-    async uploadMyCertification(file) {
-      const {supabase, userId} = await requireUser();
-      // A new name per upload, so earlier files stay for the admin's records.
+    async uploadMyCertification(userId, file) {
+      const supabase = await getRequestClient();
+      // A new name per upload, so earlier files stay for the admin's records
+      // (the database caps each trainer at 10 files).
       const path = `${userId}/${Date.now()}-${safeFileName(file.name)}`;
       const upload = await supabase.storage
         .from(CERTIFICATION_BUCKET)
@@ -180,20 +141,32 @@ export function createSupabaseProfileRepository(): ProfileRepository {
       if (error) throw new Error(`Could not attach certification: ${error.message}`);
     },
 
-    async deleteMyAccount() {
-      const {supabase, userId} = await requireUser();
-      // Files first: once the account is gone, the user can no longer
-      // delete them (Storage does not cascade with the account).
-      const {data: files, error: listError} = await supabase.storage
-        .from(CERTIFICATION_BUCKET)
-        .list(userId);
-      if (listError) throw new Error(`Could not list files: ${listError.message}`);
-      if (files.length > 0) {
-        const {error} = await supabase.storage
-          .from(CERTIFICATION_BUCKET)
-          .remove(files.map((file) => `${userId}/${file.name}`));
-        if (error) throw new Error(`Could not delete files: ${error.message}`);
+    async deleteMyAccount(userId) {
+      const supabase = await getRequestClient();
+      const bucket = supabase.storage.from(CERTIFICATION_BUCKET);
+
+      // Detach the file first, so a failure below never leaves the profile
+      // pointing at a deleted file. (No-op for schools.)
+      await supabase
+        .from('trainer_profiles')
+        .update({certification_path: null})
+        .eq('id', userId);
+
+      // Files before the account: once the account is gone, the user can no
+      // longer delete them. Removed files leave the list, so always read the
+      // first page until it is empty.
+      for (;;) {
+        const {data: files, error} = await bucket.list(userId, {limit: LIST_PAGE_SIZE});
+        if (error) throw new Error(`Could not list files: ${error.message}`);
+        if (files.length === 0) break;
+        const removal = await bucket.remove(
+          files.map((file) => `${userId}/${file.name}`),
+        );
+        if (removal.error) {
+          throw new Error(`Could not delete files: ${removal.error.message}`);
+        }
       }
+
       const {error} = await supabase.rpc('delete_my_account');
       if (error) throw new Error(`Could not delete account: ${error.message}`);
     },

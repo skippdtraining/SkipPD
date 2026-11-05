@@ -8,6 +8,7 @@
 import {revalidatePath} from 'next/cache';
 import {redirect} from 'next/navigation';
 import {getAuthService} from '@/lib/auth/auth-service';
+import {getViewer} from '@/lib/viewer';
 import {getProfileRepository} from '@/lib/data/profile-repository';
 import {parseProfileForm} from '@/lib/profile-form';
 import {keepLockedFields} from '@/lib/profile-locks';
@@ -28,23 +29,39 @@ export async function saveProfileAction(
   data: FormData,
 ): Promise<ProfileFormState> {
   // Server actions can be called directly, so check the session here too.
-  if (!(await getAuthService().getCurrentUser())) redirect('/sign-in');
+  const viewer = await getViewer();
+  if (!viewer) redirect('/sign-in');
 
   const repository = getProfileRepository();
-  const existing = await repository.getMyProfile();
+  const existing = viewer.profile;
   const parsed = parseProfileForm(data, existing?.role ?? null);
   if (!parsed.ok) return {error: parsed.message};
 
   try {
     // Ignore changes to locked fields, even if the form was tampered with.
-    await repository.saveMyProfile(keepLockedFields(parsed.input, existing));
-    if (parsed.certification)
-      await repository.uploadMyCertification(parsed.certification);
+    await repository.saveMyProfile(viewer.id, keepLockedFields(parsed.input, existing));
   } catch (error) {
     console.error(error);
     return {error: 'Could not save your profile. Please try again.'};
   }
-  if (!existing) redirect('/?welcome=1');
+
+  // The profile is saved either way; a failed upload only needs a retry.
+  let uploadFailed = false;
+  if (parsed.certification) {
+    try {
+      await repository.uploadMyCertification(viewer.id, parsed.certification);
+    } catch (error) {
+      console.error(error);
+      uploadFailed = true;
+    }
+  }
+
+  if (!existing) redirect(uploadFailed ? '/account?upload=failed' : '/?welcome=1');
+  if (uploadFailed) {
+    return {
+      error: 'Your profile was saved, but the file could not be uploaded. Try again.',
+    };
+  }
   revalidatePath('/account');
   return {savedCount: (previous.savedCount ?? 0) + 1};
 }
@@ -62,12 +79,13 @@ export async function deleteAccountAction(
   _previous: DeleteAccountState,
   data: FormData,
 ): Promise<DeleteAccountState> {
-  if (!(await getAuthService().getCurrentUser())) redirect('/sign-in');
+  const viewer = await getViewer();
+  if (!viewer) redirect('/sign-in');
   if (String(data.get('confirm') ?? '').trim() !== DELETE_CONFIRMATION) {
     return {error: `Type ${DELETE_CONFIRMATION} to confirm.`};
   }
   try {
-    await getProfileRepository().deleteMyAccount();
+    await getProfileRepository().deleteMyAccount(viewer.id);
   } catch (error) {
     console.error(error);
     return {error: 'Could not delete your account. Please try again.'};

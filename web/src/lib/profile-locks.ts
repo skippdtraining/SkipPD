@@ -21,10 +21,10 @@ export function isFieldLocked(profile: Profile | null, field: LockableField): bo
   if (field === 'license') {
     return profile.role === 'trainer' && profile.licenseStatus === 'approved';
   }
-  if (field === 'fullName') {
-    return profile.role === 'trainer' && profile.certificationStatus === 'approved';
-  }
-  return profile.role === 'school' && profile.schoolStatus === 'approved';
+  // Names use "ever approved": re-uploading a certificate resets the review
+  // to pending but must not unlock the name.
+  if (field === 'fullName') return profile.role === 'trainer' && profile.wasEverApproved;
+  return profile.role === 'school' && profile.wasEverApproved;
 }
 
 /** Returns `input` with locked fields reset to their stored values. */

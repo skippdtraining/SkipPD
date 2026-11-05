@@ -259,4 +259,4 @@ Before launch:
 - Custom SMTP (needs a domain) and the token-hash email templates (HOW-TO "Accounts setup").
 - Fresh production Supabase project: combine all migrations into one starting file (e.g. `supabase/schema.sql`) used only for brand-new projects. Keep the numbered migrations as history; the test project is not changed.
 
-Not in Step 4: the "Not certified" / "Not licensed" labels next to listings arrives with listing CRUD (Step 6), when listings get an owner. Requests still live in the browser until Step 7. Saved is removed on `feature/remove-saved`.
+Not in Step 4: the "Not certified" / "Not licensed" labels next to listings arrives with listing CRUD (Step 6), when listings get an owner. Requests still live in the browser until Step 7. Saved was removed after Step 4.

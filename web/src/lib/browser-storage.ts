@@ -14,6 +14,10 @@
 import {createLocalStore, isArray} from './local-store';
 import type {BookingRequest, Course} from './types';
 
+// The Saved feature was removed; clear its old list from returning
+// browsers once. TEMPORARY: delete after a few weeks in production.
+if (typeof window !== 'undefined') window.localStorage.removeItem('skippd-saved');
+
 // ---------- Listings created in this browser ----------
 
 const listingStore = createLocalStore<Course>('skippd-courses', isArray);

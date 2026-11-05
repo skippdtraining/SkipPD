@@ -39,7 +39,7 @@ export function paramsToCourseQuery(params: URLSearchParams): CourseQuery {
   const maxPriceText = params.get('maxPrice');
   const maxPrice = maxPriceText === null ? NaN : Number(maxPriceText);
 
-  const query: CourseQuery = {
+  return {
     query: (params.get('q') ?? '').slice(0, MAX_QUERY_LENGTH),
     formats,
     grade,
@@ -47,5 +47,4 @@ export function paramsToCourseQuery(params: URLSearchParams): CourseQuery {
     maxPrice: Number.isFinite(maxPrice) ? maxPrice : null,
     sort,
   };
-  return query;
 }

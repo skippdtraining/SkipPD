@@ -51,7 +51,7 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Profile form fields | `web/src/components/ProfileForm.tsx` + `lib/profile-form.ts` (validation) + `lib/data/supabase-profile-repository.ts` (columns) | New column needs a migration: common fields in `profiles`, others in `trainer_profiles` or `school_profiles`. |
 | Form error behaviour (scroll + focus) | `web/src/components/FormError.tsx` | |
 | Review status wording ("Not certified"...) | `web/src/components/AccountStatus.tsx` | |
-| Who can save / book / list | `web/src/components/HomePage.tsx` → `withAccount`, `openListingForm` | Guest header items: `components/SiteHeader.tsx`. |
+| Who can book / list | `web/src/components/HomePage.tsx` → `withAccount`, `openListingForm` | Guest header items: `components/SiteHeader.tsx`. |
 | Sign-in vendor | `web/src/lib/auth/auth-service.ts` → `getAuthService()` | Same pattern as the database. |
 | Approve a certification or school | Supabase dashboard → `trainer_profiles` / `school_profiles` | See recipe below. |
 | Extra school email domains | Supabase dashboard → `school_email_domains` | See recipe below. |

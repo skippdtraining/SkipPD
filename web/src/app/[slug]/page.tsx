@@ -14,6 +14,7 @@
 import type {Metadata} from 'next';
 import Link from 'next/link';
 import {notFound} from 'next/navigation';
+import {PageHeader} from '@/components/PageHeader';
 import {SiteFooter} from '@/components/SiteFooter';
 import {FOOTER_COLUMNS, SITE_NAME, type FooterLink} from '@/config/site';
 
@@ -45,6 +46,7 @@ export default async function PlaceholderPage({params}: PageProps<'/[slug]'>) {
 
   return (
     <>
+      <PageHeader />
       <main className="placeholder-page">
         <div className="eyebrow">Coming soon</div>
         <h1>{link.label}</h1>

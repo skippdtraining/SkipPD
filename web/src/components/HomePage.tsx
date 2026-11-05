@@ -190,17 +190,37 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
     scrollToCatalog();
   }
 
+  // Header links on other pages come here as /?open=requests|listing
+  // (SiteHeader.tsx): open that dialog once, then drop the flag.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const open = url.searchParams.get('open');
+    if (open !== 'requests' && open !== 'listing') return;
+    url.searchParams.delete('open');
+    window.history.replaceState(null, '', url);
+    if (open === 'listing') {
+      openListingForm();
+    } else {
+      withAccount(() => {
+        setDialog({kind: 'requests'});
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <>
       <SiteHeader
-        savedOnly={filters.savedOnly}
-        savedCount={savedIds.length}
         viewer={viewer}
-        onShowSaved={() => {
-          // Toggle: a second click returns to all trainings.
-          withAccount(() => {
-            showCatalog(!filters.savedOnly);
-          });
+        saved={{
+          active: filters.savedOnly,
+          count: savedIds.length,
+          onToggle: () => {
+            // Toggle: a second click returns to all trainings.
+            withAccount(() => {
+              showCatalog(!filters.savedOnly);
+            });
+          },
         }}
         onShowRequests={() => {
           withAccount(() => {
@@ -208,12 +228,14 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
           });
         }}
         onListTraining={openListingForm}
-        showSearch={heroSearchHidden}
-        query={filters.query}
-        onQueryChange={(query) => {
-          updateFilters({query});
+        search={{
+          show: heroSearchHidden,
+          query: filters.query,
+          onQueryChange: (query) => {
+            updateFilters({query});
+          },
+          onSearch: scrollToCatalog,
         }}
-        onSearch={scrollToCatalog}
       />
 
       <Hero

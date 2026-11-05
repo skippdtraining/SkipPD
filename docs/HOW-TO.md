@@ -29,6 +29,7 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Header height / sticky behaviour | `web/src/app/globals.css` → `header { ... }` | Mobile override in the `@media (max-width: 730px)` block. |
 | Phone / tablet layout | `web/src/app/globals.css` → "Responsive" section at the end | Breakpoints: 1050px tablet, 730px phone, 480px small phone. |
 | Mobile filter toggle | `web/src/components/FilterSidebar.tsx` | Collapsed on phones only. |
+| Header on pages other than home | `web/src/components/PageHeader.tsx` | Add `<PageHeader />` at the top of every new page (pages using `AuthShell` already have it). |
 | Header search (look, animation) | `web/src/app/globals.css` → `.header-search`, `.search-compact` | When it appears: `HomePage.tsx` (`useIsOffscreen`). |
 | Search box text / placeholder | `web/src/components/SearchBox.tsx` | |
 | Hero headline and text | `web/src/components/Hero.tsx` | |
@@ -132,7 +133,7 @@ Users delete their own account on `/account` (type DELETE). The app removes thei
 3. Add a row to the quick-lookup table above.
 
 ### Add a new page
-1. Create `web/src/app/<route>/page.tsx` with a default export (Next.js requirement).
+1. Create `web/src/app/<route>/page.tsx` with a default export (Next.js requirement). Start it with `<PageHeader />` and end it with `<SiteFooter />`.
 2. Fetch data through a repository in `web/src/lib/data/`, never a database client directly.
 3. Add the file to `docs/CODEBASE.md`.
 

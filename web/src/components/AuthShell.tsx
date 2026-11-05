@@ -1,10 +1,9 @@
 /**
  * @fileoverview Page frame for the account pages (sign-in, sign-up,
- * onboarding, account): brand link, a centred card and the footer.
+ * onboarding, account): the site header, a centred card and the footer.
  */
 
-import Link from 'next/link';
-import {SITE, SITE_NAME} from '@/config/site';
+import {PageHeader} from './PageHeader';
 import {SiteFooter} from './SiteFooter';
 
 interface AuthShellProps {
@@ -18,14 +17,8 @@ interface AuthShellProps {
 export function AuthShell({title, intro, children}: AuthShellProps) {
   return (
     <>
+      <PageHeader />
       <main className="auth-page">
-        <Link className="brand" href="/" aria-label={`${SITE_NAME} home`}>
-          <span className="logo">✧</span>
-          <span className="brand-name">
-            {SITE.nameStart}
-            <b>{SITE.nameEnd}</b>
-          </span>
-        </Link>
         <section className="auth-card">
           <h1>{title}</h1>
           {intro && <p className="auth-intro">{intro}</p>}

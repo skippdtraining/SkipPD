@@ -10,7 +10,7 @@
 import type {Profile, ProfileInput} from './types';
 
 /** Note shown next to locked fields. */
-export const LOCKED_FIELD_NOTE = 'Locked after approval. Contact us to change it.';
+export const LOCKED_FIELD_NOTE = 'This cannot be changed. Contact us to change it.';
 
 /** Profile fields that can be locked. */
 export type LockableField = 'fullName' | 'schoolName' | 'license';
@@ -21,10 +21,10 @@ export function isFieldLocked(profile: Profile | null, field: LockableField): bo
   if (field === 'license') {
     return profile.role === 'trainer' && profile.licenseStatus === 'approved';
   }
-  // Names use "ever approved": re-uploading a certificate resets the review
-  // to pending but must not unlock the name.
-  if (field === 'fullName') return profile.role === 'trainer' && profile.wasEverApproved;
-  return profile.role === 'school' && profile.wasEverApproved;
+  // Names are fixed as soon as the profile exists (migration 0008), so
+  // nobody can rename themselves into another trainer or school.
+  if (field === 'fullName') return profile.role === 'trainer';
+  return profile.role === 'school';
 }
 
 /** Returns `input` with locked fields reset to their stored values. */

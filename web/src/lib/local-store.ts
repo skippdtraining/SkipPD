@@ -2,8 +2,8 @@
  * @fileoverview Generic helper that keeps a list in the browser's
  * localStorage and lets React components re-render when it changes.
  *
- * Why this exists: until the database arrives, the POC behaviour (saved
- * courses, own listings, booking requests that survive a page reload) needs
+ * Why this exists: until the database arrives, the POC behaviour (own
+ * listings and booking requests that survive a page reload) needs
  * somewhere to live. Each list is a "store" created with
  * {@link createLocalStore}; see `browser-storage.ts` for the actual stores.
  *

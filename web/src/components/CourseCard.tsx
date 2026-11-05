@@ -1,6 +1,6 @@
 /**
  * @fileoverview One course tile in the catalog grid: cover, title, trainer,
- * duration, grades, tags, price and a save (heart) button.
+ * duration, grades, tags and price.
  */
 
 import {formatPrice, gradeLabel, initials} from '@/lib/format';
@@ -9,16 +9,12 @@ import {CourseIllustration} from './CourseIllustration';
 
 interface CourseCardProps {
   course: Course;
-  /** Whether the heart is filled. */
-  saved: boolean;
   /** Opens the course detail dialog. */
   onOpen: () => void;
-  /** Omitted for guests: the heart is then hidden. */
-  onToggleSave?: () => void;
 }
 
 /** Catalog tile for a single course. */
-export function CourseCard({course, saved, onOpen, onToggleSave}: CourseCardProps) {
+export function CourseCard({course, onOpen}: CourseCardProps) {
   return (
     <article className="course">
       {/* The cover is clickable; role + tabIndex + Enter make it keyboard-accessible. */}
@@ -45,20 +41,6 @@ export function CourseCard({course, saved, onOpen, onToggleSave}: CourseCardProp
           />
         )}
         <span className="badge">◷ {course.format}</span>
-        {onToggleSave && (
-          <button
-            className={`bookmark ${saved ? 'on' : ''}`}
-            onClick={(event) => {
-              // Stop the click from also opening the course via the cover.
-              event.stopPropagation();
-              onToggleSave();
-            }}
-            aria-label={`${saved ? 'Unsave' : 'Save'} ${course.title}`}
-            aria-pressed={saved}
-          >
-            {saved ? '♥' : '♡'}
-          </button>
-        )}
       </div>
 
       <div className="body">

@@ -41,13 +41,13 @@ Each `.ts` / `.tsx` file opens with a `@fileoverview` comment that answers:
 
 | Thing | Style | Example |
 |---|---|---|
-| Variables, functions | `lowerCamelCase` | `filterCourses`, `savedIds` |
+| Variables, functions | `lowerCamelCase` | `filterCourses`, `ownListings` |
 | Components, types, interfaces | `UpperCamelCase` | `CourseCard`, `BookingRequest` |
 | Module-level constants | `CONSTANT_CASE` | `MAX_IMAGE_BYTES`, `DEFAULT_FILTERS` |
 | Component files | `UpperCamelCase.tsx` | `CourseCard.tsx` |
 | Other files | `kebab-case.ts` | `filter-courses.ts` |
 | Props interface | `<Component>Props` | `CourseCardProps` |
-| React hooks | `useSomething` | `useSavedIds`, `useToast` |
+| React hooks | `useSomething` | `useOwnListings`, `useToast` |
 
 - Use full words. Write `course`, not `c`, and `event`, not `e`. The one exception is the SVG colour shorthands `a`/`b`, which are documented in `CourseIllustration.tsx`.
 - Units go in the name when there is no type for them: `TOAST_DURATION_MS`, `MAX_IMAGE_BYTES`.

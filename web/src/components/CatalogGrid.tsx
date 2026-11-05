@@ -16,37 +16,27 @@ import {CourseCard} from './CourseCard';
 interface CatalogGridProps {
   /** Courses already filtered and sorted. */
   courses: Course[];
-  savedIds: number[];
   sort: CatalogFilters['sort'];
-  savedOnly: boolean;
   onSortChange: (sort: CatalogFilters['sort']) => void;
   onOpenCourse: (course: Course) => void;
-  /** Omitted for guests: hearts are hidden. */
-  onToggleSave?: (courseId: number) => void;
   onClearFilters: () => void;
   /** Current page, starting at 1. */
   page: number;
   onPageChange: (page: number) => void;
-  /** Leaves the Saved view. */
-  onShowAll: () => void;
 }
 
 /** Result count + sort menu + course cards. */
 export function CatalogGrid({
   courses,
-  savedIds,
   sort,
-  savedOnly,
   onSortChange,
   onOpenCourse,
-  onToggleSave,
   onClearFilters,
   page,
   onPageChange,
-  onShowAll,
 }: CatalogGridProps) {
   const pageCount = Math.max(1, Math.ceil(courses.length / COURSES_PER_PAGE));
-  // Clamp in case the list shrank (e.g. a course was unsaved on the last page).
+  // Clamp in case the list shrank (e.g. a filter left fewer pages).
   const currentPage = Math.min(page, pageCount);
   const pageCourses = courses.slice(
     (currentPage - 1) * COURSES_PER_PAGE,
@@ -59,12 +49,6 @@ export function CatalogGrid({
       <div className="catalog-top">
         <span>
           {courses.length} training {noun}
-          {savedOnly ? ' saved' : ''}
-          {savedOnly && (
-            <button className="link-button" onClick={onShowAll}>
-              Show all trainings
-            </button>
-          )}
         </span>
         <label>
           Sort by{' '}
@@ -89,16 +73,9 @@ export function CatalogGrid({
             <CourseCard
               key={course.id}
               course={course}
-              saved={savedIds.includes(course.id)}
               onOpen={() => {
                 onOpenCourse(course);
               }}
-              onToggleSave={
-                onToggleSave &&
-                (() => {
-                  onToggleSave(course.id);
-                })
-              }
             />
           ))
         ) : (

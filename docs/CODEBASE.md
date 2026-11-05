@@ -34,7 +34,7 @@ Email links and Google return to /auth/callback.
 ```
 
 - **Server vs. browser:** files in `app/` run on the server by default. That is where database reads happen. Files marked `'use client'` also run in the browser, because they react to clicks and typing.
-- **Temporary parts:** browser storage reproduces the POC behaviour. The database replaces it step by step: courses in Step 3 (done), listings in Step 6 and requests in Step 7. Saved courses are being removed (`feature/remove-saved`).
+- **Temporary parts:** browser storage reproduces the POC behaviour. The database replaces it step by step: courses in Step 3 (done), listings in Step 6 and requests in Step 7.
 
 ---
 
@@ -98,7 +98,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `auth/callback/route.ts` | Where email links (`token_hash`) and Google sign-in (`code`) return: creates the session, then opens `next` or `/onboarding`. An already-used confirmation link asks the user to sign in. |
 | `actions/auth.ts` | Server actions: sign in, sign up, Google, forgot/reset password, sign out. |
 | `actions/profile.ts` | Server action: validate and save the profile form, upload the certification. New profiles go to the home page (welcome message); edits return to the account summary. Also `deleteAccountAction`. |
-| `api/courses/route.ts` | `GET /api/courses?q=&format=&grade=&duration=&maxPrice=&sort=&ids=`: catalog search for the browser. Returns `{courses}`. |
+| `api/courses/route.ts` | `GET /api/courses?q=&format=&grade=&duration=&maxPrice=&sort=`: catalog search for the browser. Returns `{courses}`. |
 | `globals.css` | All styles, ported from the POC and grouped by page area. Colours are CSS variables in `:root`. The header is sticky and 64px tall. The "Responsive" section at the end adapts the layout for tablets and phones. |
 | `[slug]/page.tsx` | **Temporary.** "Coming soon" page for each footer link (`/about`, `/terms`...), generated from `FOOTER_COLUMNS`. Real pages get their own folder later. |
 | `../proxy.ts` (`src/proxy.ts`) | Next.js proxy (formerly middleware): refreshes the sign-in session cookie before each page. Does not block pages; each page checks the user itself. |
@@ -109,7 +109,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | File | What / why |
 |---|---|
 | `HomePage.tsx` | **The conductor.** Owns page state (filters, which dialog is open, toast message), fetches server results when filters change, merges in browser listings, and wires all the sections together. Start reading here. |
-| `SiteHeader.tsx` | Sticky top bar on every page: logo, Saved / My requests, Sign in or Account, and "List your training" (behind a ☰ menu on phones). Home only: compact search and Saved; elsewhere My requests / List your training link to `/?open=...`. |
+| `SiteHeader.tsx` | Sticky top bar on every page: logo, My requests, Sign in or Account, and "List your training" (behind a ☰ menu on phones). Home only: compact search; elsewhere My requests / List your training link to `/?open=...`. |
 | `PageHeader.tsx` | `SiteHeader` for all pages except home (no search). Looks up the visitor itself; used by `AuthShell` and placeholder pages. |
 | `AuthShell.tsx` | Page frame for the account pages: site header, centred card, footer (hidden on phones, where text is larger). |
 | `AuthForm.tsx` | Generic form for sign-in/up and password pages: runs a server action, shows its error or success note. |
@@ -123,7 +123,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `Hero.tsx` | Headline, search box and artwork. |
 | `FilterSidebar.tsx` | Format, grade, duration and price filters; collapsed behind a "Filters" button on phones. Only reports changes; filtering runs on the server. |
 | `CatalogGrid.tsx` | Result count, sort menu, one page of `CourseCard`s (max `COURSES_PER_PAGE`), page arrows/numbers, and the "no results" message. |
-| `CourseCard.tsx` | One course tile: cover, title, trainer, hours, grades, tags, price, heart button. |
+| `CourseCard.tsx` | One course tile: cover, title, trainer, hours, grades, tags, price. |
 | `CourseIllustration.tsx` | Built-in SVG cover art for courses without an image, with one drawing per topic type. Copied from the POC. |
 | `Modal.tsx` | Reusable pop-up built on the native `<dialog>` element. Closes on Esc, the × button, or a click outside. |
 | `CourseDetail.tsx` | Dialog content: the full course description and the "Request a session" button. |
@@ -176,9 +176,9 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `request-origin.ts` | Site address for email and Google return links: the request's address if on the allow-list, else production. Stops forged headers from redirecting reset links. |
 | `password-reset-pass.ts` | Short-lived httpOnly cookie granted by a valid reset link; `/reset-password` requires it. |
 | `course-query-params.ts` | Encodes a `CourseQuery` into URL params (browser) and decodes + validates them (`/api/courses`). |
-| `catalog-api.ts` | Browser helper: `fetchCourses()` calls `/api/courses`; `toCourseQuery()` turns filters + saved ids into a server query. |
+| `catalog-api.ts` | Browser helper: `fetchCourses()` calls `/api/courses`. |
 | `local-store.ts` | Generic helper that keeps a list in `localStorage` and re-renders React when it changes, using `useSyncExternalStore`. |
-| `browser-storage.ts` | **Temporary.** The three browser lists: saved ids, own listings, and requests. Components only call these functions, so switching to the DB later touches one place. |
+| `browser-storage.ts` | **Temporary.** The two browser lists: own listings and requests. Components only call these functions, so switching to the DB later touches one place. |
 | `format.ts` | Display helpers: `initials`, `gradeLabel`, `formatPrice`. |
 | `form-helpers.ts` | Reads text and numbers out of submitted forms, and reads image files. |
 | `use-is-offscreen.ts` | Hook: tells whether an element scrolled out of view (IntersectionObserver). Drives the header search. |
@@ -188,6 +188,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 ---
 
 ## Changelog of this map
+- **Saved removed:** heart buttons, Saved header button and view, saved-ids browser store, `ids` search parameter and `toCourseQuery()`. `CourseQuery` is now the same as `CatalogFilters`.
 - **Shared header:** `PageHeader.tsx` puts the site header (without search) on every page; `HomePage` opens dialogs from `/?open=requests|listing`.
 - **Step 4 name lock:** trainer and school names fixed from sign-up (migration 0008); sign-up form warns that they cannot change later. Pre-launch plan: combined `supabase/schema.sql` for a fresh production project.
 - **Step 4 review fixes:** migration 0007, `password-reset-pass.ts`, `account/password` page, origin allow-list, safer `safeNextPath`, repositories take the user id (one session lookup per request via cached `getViewer`).

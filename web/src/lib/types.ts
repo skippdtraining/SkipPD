@@ -98,19 +98,10 @@ export interface CatalogFilters {
   /** Show only courses priced below this value; null means "any price". */
   maxPrice: number | null;
   sort: 'recommended' | 'low' | 'high' | 'duration';
-  /** True when the "Saved" tab is active. */
-  savedOnly: boolean;
 }
 
-/**
- * What the catalog asks the course repository for. Same as
- * {@link CatalogFilters}, except the browser-only "Saved" tab becomes a list
- * of course ids, because the server cannot see the browser's saved list.
- */
-export interface CourseQuery extends Omit<CatalogFilters, 'savedOnly'> {
-  /** When set, only these course ids are returned (used by the Saved tab). */
-  ids?: number[];
-}
+/** What the catalog asks the course repository for: the catalog filters. */
+export type CourseQuery = CatalogFilters;
 
 /** Filter state when the page first loads or after "Clear all". */
 export const DEFAULT_FILTERS: CatalogFilters = {
@@ -120,7 +111,6 @@ export const DEFAULT_FILTERS: CatalogFilters = {
   duration: '',
   maxPrice: null,
   sort: 'recommended',
-  savedOnly: false,
 };
 
 /** Account type, chosen once at sign-up. Trainers can also book PD. */

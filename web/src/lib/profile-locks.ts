@@ -12,6 +12,10 @@ import type {Profile, ProfileInput} from './types';
 /** Note shown next to locked fields. */
 export const LOCKED_FIELD_NOTE = 'This cannot be changed. Contact us to change it.';
 
+/** Warning shown under name fields on a new profile, before they lock. */
+export const NAME_FINAL_NOTE =
+  'Check carefully: this cannot be changed after you save your profile.';
+
 /** Profile fields that can be locked. */
 export type LockableField = 'fullName' | 'schoolName' | 'license';
 

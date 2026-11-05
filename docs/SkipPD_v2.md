@@ -255,6 +255,8 @@ Prerequisite (owner): run `supabase/migrations/0002_accounts.sql`, `0003_split_p
 6. The admin approves certifications and schools in the Supabase dashboard (HOW-TO "Approve a certification or school").
 **Checkpoint:** a Trainer and a School account can be created on the Vercel preview; changing `certification_status` / `school_status` in the dashboard changes the account page.
 
-Before launch: custom SMTP (needs a domain) and the token-hash email templates (HOW-TO "Accounts setup").
+Before launch:
+- Custom SMTP (needs a domain) and the token-hash email templates (HOW-TO "Accounts setup").
+- Fresh production Supabase project: combine all migrations into one starting file (e.g. `supabase/schema.sql`) used only for brand-new projects. Keep the numbered migrations as history; the test project is not changed.
 
 Not in Step 4: the "Not certified" / "Not licensed" labels next to listings arrives with listing CRUD (Step 6), when listings get an owner. Requests still live in the browser until Step 7. Saved is removed on `feature/remove-saved`.

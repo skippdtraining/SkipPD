@@ -16,7 +16,7 @@ import {
   PROFILE_LIMITS,
   US_STATES,
 } from '@/config/accounts';
-import {isFieldLocked, LOCKED_FIELD_NOTE} from '@/lib/profile-locks';
+import {isFieldLocked, LOCKED_FIELD_NOTE, NAME_FINAL_NOTE} from '@/lib/profile-locks';
 import {ACCOUNT_ROLES, type AccountRole, type Profile} from '@/lib/types';
 import {FormError} from './FormError';
 
@@ -83,6 +83,8 @@ export function ProfileForm({profile, submitLabel, onSaved, onCancel}: ProfileFo
             required
           />
           {isFieldLocked(profile, 'fullName') && <small>{LOCKED_FIELD_NOTE}</small>}
+          {/* Schools can change the contact name; only trainers' names lock. */}
+          {!profile && role === 'trainer' && <small>{NAME_FINAL_NOTE}</small>}
         </label>
       )}
 
@@ -98,6 +100,7 @@ export function ProfileForm({profile, submitLabel, onSaved, onCancel}: ProfileFo
               required
             />
             {isFieldLocked(profile, 'schoolName') && <small>{LOCKED_FIELD_NOTE}</small>}
+            {!profile && <small>{NAME_FINAL_NOTE}</small>}
           </label>
           <label className="field">
             Your position

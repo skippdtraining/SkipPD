@@ -17,7 +17,6 @@ import {connection} from 'next/server';
 import {Suspense} from 'react';
 import {HomePage} from '@/components/HomePage';
 import {getCourseRepository} from '@/lib/data/course-repository';
-import {toCourseQuery} from '@/lib/catalog-api';
 import {DEFAULT_FILTERS} from '@/lib/types';
 import {getViewer} from '@/lib/viewer';
 
@@ -27,7 +26,7 @@ async function HomeWithData() {
   await connection();
   const repository = getCourseRepository();
   const [initialCourses, categories, viewer] = await Promise.all([
-    repository.searchCourses(toCourseQuery(DEFAULT_FILTERS, [])),
+    repository.searchCourses(DEFAULT_FILTERS),
     repository.listCategories(),
     getViewer(),
   ]);

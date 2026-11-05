@@ -69,14 +69,10 @@ function toCourse(row: ListingRow): Course {
 export function createSupabaseCourseRepository(): CourseRepository {
   return {
     async searchCourses(query) {
-      // The Saved tab with nothing saved: skip the round trip.
-      if (query.ids && query.ids.length === 0) return [];
-
       let request = getPublicClient().from('listings').select(LISTING_COLUMNS);
 
       const text = query.query.toLowerCase().trim();
       if (text !== '') request = request.ilike('search_text', `%${escapeLike(text)}%`);
-      if (query.ids) request = request.in('id', query.ids);
       if (query.formats.length > 0) request = request.in('format', query.formats);
       if (query.grade !== '') request = request.contains('grades', [query.grade]);
       if (query.duration === 'short')

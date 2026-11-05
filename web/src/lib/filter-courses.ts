@@ -18,25 +18,14 @@ import type {CatalogFilters, Course} from './types';
  *
  * @param courses All courses that could be shown.
  * @param filters Current state of the catalog controls.
- * @param savedIds Ids the user bookmarked; used only when `savedOnly` is on.
  */
-export function filterCourses(
-  courses: Course[],
-  filters: CatalogFilters,
-  savedIds: number[],
-): Course[] {
-  const matching = courses.filter((course) => matchesFilters(course, filters, savedIds));
+export function filterCourses(courses: Course[], filters: CatalogFilters): Course[] {
+  const matching = courses.filter((course) => matchesFilters(course, filters));
   return sortCourses(matching, filters.sort);
 }
 
 /** True when a single course passes every active filter. */
-function matchesFilters(
-  course: Course,
-  filters: CatalogFilters,
-  savedIds: number[],
-): boolean {
-  if (filters.savedOnly && !savedIds.includes(course.id)) return false;
-
+function matchesFilters(course: Course, filters: CatalogFilters): boolean {
   const query = filters.query.toLowerCase().trim();
   if (query !== '') {
     const searchableText = [course.title, course.category, course.trainer, ...course.tags]

@@ -74,7 +74,7 @@ Optional later improvements: attendance check-in via QR code / link at the sessi
 | Topics | Suggested list plus "Other" with free text; no topic filter (search covers topics) |
 | Footer | About Us, How it works, Contact Us (page), FAQ, Terms of Service, Privacy Policy; "Coming soon" pages until content exists |
 | Logged-in experience | Separate teacher and school experiences; profile pages (see 1.4) |
-| Saved feature | Removed (branch `feature/remove-saved`, right after Step 4). The old "Saved listings" step is dropped; later steps shifted down by one |
+| Saved feature | Removed right after Step 4 (`feature/remove-saved`). The old "Saved listings" step is dropped; later steps shifted down by one |
 | My learning (Step 12) | Full page replacing "My requests": upcoming + completed courses and learner certificates, for the account holder only. Last step because it needs bookings (Step 7) and completion (Step 10) |
 | Account deletion (Step 4) | Users can delete their account from `/account` (type DELETE); profile and files are removed |
 | Ratings | Trainer ratings shown next to listings; planned for the "Later" step |
@@ -250,7 +250,7 @@ Prerequisite (owner): run `supabase/migrations/0002_accounts.sql`, `0003_split_p
    - Trainer: full name, credentials line, currently employed (yes/no) + place of employment, about text, optional PD certification file (PDF/JPG/PNG, max 4 MB, private storage).
    - School: contact name, school or district, contact's position. The email is flagged automatically when it looks like a school address.
 3. `/account` shows the review status ("Not certified" / "Certified", school verified or not), lets users edit their profile and change their password.
-4. Guests can browse; their header shows only Sign in and List your training, and cards have no save heart. Booking and listing send them to sign-in. Only trainers can open the listing form.
+4. Guests can browse; their header shows only Sign in and List your training, and cards have no save heart (Saved was later removed for everyone). Booking and listing send them to sign-in. Only trainers can open the listing form.
 5. Users can delete their account on `/account`; errors on all account forms scroll into view.
 6. The admin approves certifications and schools in the Supabase dashboard (HOW-TO "Approve a certification or school").
 **Checkpoint:** a Trainer and a School account can be created on the Vercel preview; changing `certification_status` / `school_status` in the dashboard changes the account page.
@@ -259,4 +259,4 @@ Before launch:
 - Custom SMTP (needs a domain) and the token-hash email templates (HOW-TO "Accounts setup").
 - Fresh production Supabase project: combine all migrations into one starting file (e.g. `supabase/schema.sql`) used only for brand-new projects. Keep the numbered migrations as history; the test project is not changed.
 
-Not in Step 4: the "Not certified" / "Not licensed" labels next to listings arrives with listing CRUD (Step 6), when listings get an owner. Requests still live in the browser until Step 7. Saved is removed on `feature/remove-saved`.
+Not in Step 4: the "Not certified" / "Not licensed" labels next to listings arrives with listing CRUD (Step 6), when listings get an owner. Requests still live in the browser until Step 7. Saved was removed after Step 4.

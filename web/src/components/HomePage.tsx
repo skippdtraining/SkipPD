@@ -15,8 +15,8 @@
 
 import {useRouter} from 'next/navigation';
 import {useEffect, useMemo, useRef, useState} from 'react';
-import {toggleSaved, useOwnListings, useSavedIds} from '@/lib/browser-storage';
-import {fetchCourses, toCourseQuery} from '@/lib/catalog-api';
+import {useOwnListings} from '@/lib/browser-storage';
+import {fetchCourses} from '@/lib/catalog-api';
 import {courseQueryToParams} from '@/lib/course-query-params';
 import {filterCourses, sortCourses} from '@/lib/filter-courses';
 import {
@@ -69,8 +69,8 @@ interface HomePageProps {
 }
 
 /** Identifies a server query, so the same search is never sent twice in a row. */
-function queryKey(filters: CatalogFilters, savedIds: number[]): string {
-  return courseQueryToParams(toCourseQuery(filters, savedIds)).toString();
+function queryKey(filters: CatalogFilters): string {
+  return courseQueryToParams(filters).toString();
 }
 
 /** Home page: header, hero, catalog, banner, footer and dialogs. */
@@ -102,22 +102,19 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
   const catalogStartRef = useRef<HTMLDivElement>(null);
   const heroSearchRef = useRef<HTMLDivElement>(null);
   const heroSearchHidden = useIsOffscreen(heroSearchRef, HEADER_HEIGHT_PX);
-  const savedIds = useSavedIds();
   const ownListings = useOwnListings();
 
   const [serverCourses, setServerCourses] = useState(initialCourses);
   // The server already answered the default query; start from that.
-  const lastQueryKey = useRef(queryKey(DEFAULT_FILTERS, []));
+  const lastQueryKey = useRef(queryKey(DEFAULT_FILTERS));
 
-  // Ask the server again when the query changes. Saved ids only matter on
-  // the Saved tab, so saving a course elsewhere does not trigger a search.
-  const savedIdsForQuery = filters.savedOnly ? savedIds : [];
-  const currentQueryKey = queryKey(filters, savedIdsForQuery);
+  // Ask the server again when the query changes.
+  const currentQueryKey = queryKey(filters);
   useEffect(() => {
     if (currentQueryKey === lastQueryKey.current) return;
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      fetchCourses(toCourseQuery(filters, savedIdsForQuery), controller.signal)
+      fetchCourses(filters, controller.signal)
         .then((courses) => {
           lastQueryKey.current = currentQueryKey;
           setServerCourses(courses);
@@ -133,8 +130,8 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
       clearTimeout(timer);
       controller.abort();
     };
-    // Only the key decides whether to search; `filters` and the ids are
-    // fully described by it.
+    // Only the key decides whether to search; `filters` is fully described
+    // by it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentQueryKey]);
 
@@ -145,10 +142,10 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
   const visibleCourses = useMemo(
     () =>
       sortCourses(
-        [...filterCourses(ownListings, filters, savedIds), ...serverCourses],
+        [...filterCourses(ownListings, filters), ...serverCourses],
         filters.sort,
       ),
-    [ownListings, filters, savedIds, serverCourses],
+    [ownListings, filters, serverCourses],
   );
 
   // Any filter change goes back to page 1, so results never start on an
@@ -185,11 +182,6 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
     catalogTitleRef.current?.scrollIntoView({behavior: 'smooth', block: 'center'});
   }
 
-  function showCatalog(savedOnly: boolean) {
-    updateFilters({savedOnly});
-    scrollToCatalog();
-  }
-
   // Header links on other pages come here as /?open=requests|listing
   // (SiteHeader.tsx): open that dialog once, then drop the flag.
   useEffect(() => {
@@ -212,16 +204,6 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
     <>
       <SiteHeader
         viewer={viewer}
-        saved={{
-          active: filters.savedOnly,
-          count: savedIds.length,
-          onToggle: () => {
-            // Toggle: a second click returns to all trainings.
-            withAccount(() => {
-              showCatalog(!filters.savedOnly);
-            });
-          },
-        }}
         onShowRequests={() => {
           withAccount(() => {
             setDialog({kind: 'requests'});
@@ -254,11 +236,7 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
       <main className="main">
         <div className="title-row">
           <div>
-            <h2 ref={catalogTitleRef}>
-              {filters.savedOnly
-                ? 'Your saved training'
-                : 'Find your next lightbulb moment'}
-            </h2>
+            <h2 ref={catalogTitleRef}>Find your next lightbulb moment</h2>
             <p>
               Explore workshops, courses, and coaching for every stage of your teaching
               journey.
@@ -271,15 +249,12 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
             filters={filters}
             onChange={updateFilters}
             onClearAll={() => {
-              // Keep the Saved tab active; only reset the filters.
-              resetFilters({...DEFAULT_FILTERS, savedOnly: filters.savedOnly});
+              resetFilters(DEFAULT_FILTERS);
             }}
           />
           <CatalogGrid
             courses={visibleCourses}
-            savedIds={savedIds}
             sort={filters.sort}
-            savedOnly={filters.savedOnly}
             onSortChange={(sort) => {
               updateFilters({sort});
             }}
@@ -290,21 +265,9 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
                 scrollBelowHeader(catalogStartRef.current);
               }
             }}
-            onShowAll={() => {
-              updateFilters({savedOnly: false});
-            }}
             onOpenCourse={(course) => {
               setDialog({kind: 'detail', course});
             }}
-            onToggleSave={
-              viewer
-                ? (courseId) => {
-                    withAccount(() => {
-                      toggleSaved(courseId);
-                    });
-                  }
-                : undefined
-            }
             onClearFilters={() => {
               resetFilters(DEFAULT_FILTERS);
             }}

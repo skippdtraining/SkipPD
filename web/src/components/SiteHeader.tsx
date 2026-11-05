@@ -35,14 +35,6 @@ interface HeaderSearch {
   onSearch: () => void;
 }
 
-/** "Saved" button settings (home page only). */
-interface HeaderSaved {
-  /** True when the Saved view is active; clicking again returns to all trainings. */
-  active: boolean;
-  count: number;
-  onToggle: () => void;
-}
-
 interface SiteHeaderProps {
   /**
    * The signed-in visitor, null for guests, or undefined while still
@@ -51,8 +43,6 @@ interface SiteHeaderProps {
   viewer: Viewer | null | undefined;
   /** Omitted on pages other than home: no search box. */
   search?: HeaderSearch;
-  /** Omitted on pages other than home: no Saved button. */
-  saved?: HeaderSaved;
   /** Omitted on other pages: "My requests" becomes a link to home. */
   onShowRequests?: () => void;
   /** Omitted on other pages: "List your training" becomes a link to home. */
@@ -63,7 +53,6 @@ interface SiteHeaderProps {
 export function SiteHeader({
   viewer,
   search,
-  saved,
   onShowRequests,
   onListTraining,
 }: SiteHeaderProps) {
@@ -122,15 +111,6 @@ export function SiteHeader({
         {/* Guests only see Sign in and List your training. */}
         {viewer && (
           <>
-            {saved && (
-              <button
-                className={saved.active ? 'nav-active' : ''}
-                aria-pressed={saved.active}
-                onClick={choose(saved.onToggle)}
-              >
-                Saved <span className="saved-count">{saved.count}</span>
-              </button>
-            )}
             {onShowRequests ? (
               <button onClick={choose(onShowRequests)}>My requests</button>
             ) : (

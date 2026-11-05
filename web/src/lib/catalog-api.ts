@@ -26,11 +26,3 @@ export async function fetchCourses(
   const body = (await response.json()) as {courses: Course[]};
   return body.courses;
 }
-
-/** Turns catalog filters + the browser's saved ids into a server query. */
-export function toCourseQuery(
-  {savedOnly, ...filters}: {savedOnly: boolean} & Omit<CourseQuery, 'ids'>,
-  savedIds: number[],
-): CourseQuery {
-  return savedOnly ? {...filters, ids: savedIds} : filters;
-}

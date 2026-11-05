@@ -14,9 +14,6 @@ import {FORMATS, GRADES, type CatalogFilters, type CourseQuery} from './types';
 /** Longest search text accepted; longer input is cut. */
 const MAX_QUERY_LENGTH = 100;
 
-/** Most ids accepted for the Saved tab in one request. */
-const MAX_IDS = 200;
-
 const SORTS: CatalogFilters['sort'][] = ['recommended', 'low', 'high', 'duration'];
 const DURATIONS: CatalogFilters['duration'][] = ['', 'short', 'long'];
 
@@ -29,7 +26,6 @@ export function courseQueryToParams(query: CourseQuery): URLSearchParams {
   if (query.duration !== '') params.set('duration', query.duration);
   if (query.maxPrice !== null) params.set('maxPrice', String(query.maxPrice));
   if (query.sort !== 'recommended') params.set('sort', query.sort);
-  if (query.ids) params.set('ids', query.ids.join(','));
   return params;
 }
 
@@ -43,7 +39,7 @@ export function paramsToCourseQuery(params: URLSearchParams): CourseQuery {
   const maxPriceText = params.get('maxPrice');
   const maxPrice = maxPriceText === null ? NaN : Number(maxPriceText);
 
-  const query: CourseQuery = {
+  return {
     query: (params.get('q') ?? '').slice(0, MAX_QUERY_LENGTH),
     formats,
     grade,
@@ -51,15 +47,4 @@ export function paramsToCourseQuery(params: URLSearchParams): CourseQuery {
     maxPrice: Number.isFinite(maxPrice) ? maxPrice : null,
     sort,
   };
-
-  const idsText = params.get('ids');
-  if (idsText !== null) {
-    query.ids = idsText
-      .split(',')
-      .filter((part) => part !== '')
-      .map((part) => Number(part))
-      .filter((id) => Number.isSafeInteger(id))
-      .slice(0, MAX_IDS);
-  }
-  return query;
 }

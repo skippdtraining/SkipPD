@@ -23,3 +23,11 @@ export function gradeLabel(grades: Grade[]): string {
 export function formatPrice(amountUsd: number): string {
   return `$${amountUsd}`;
 }
+
+/** Formats an ISO date-time for lists, e.g. "Nov 10, 2026, 10:35 AM". */
+export function formatDateTime(isoDate: string): string {
+  return new Date(isoDate).toLocaleString('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
+}

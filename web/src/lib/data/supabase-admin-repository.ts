@@ -95,11 +95,14 @@ export function createSupabaseAdminRepository(): AdminRepository {
     async isAdmin(userId) {
       const supabase = await getRequestClient();
       // Users can only see their own row, so this answers for them only.
-      const {data} = await supabase
+      const {data, error} = await supabase
         .from('admins')
         .select('id')
         .eq('id', userId)
         .maybeSingle();
+      // Log instead of failing: a broken check must not break every page,
+      // but it should be visible when an admin is treated as a normal user.
+      if (error) console.error(`Admin check failed: ${error.message}`);
       return data !== null;
     },
 

@@ -264,7 +264,9 @@ Not in Step 4: the "Not certified" / "Not licensed" labels next to listings arri
 ### Step 5 - Admin review (current)
 Prerequisite (owner): run `supabase/migrations/0009_admin.sql`, then create the admin account (HOW-TO "Create the admin account").
 1. Admin is a separate account, flagged in the `admins` table from the SQL Editor only. Signing in with it opens `/admin`; it cannot book, list or create a profile.
-2. `/admin` lists schools to verify, certificates to review (with a 10-minute link to the file) and teaching licenses to check.
+2. `/admin` has tabs for schools to verify, certificates to review (with a 10-minute link to the file) and teaching licenses to check. Each tab shows 10 items per page, as a table (default) or tiles. Table layout reference:
+
+   ![Admin table reference](assets/admin-table-reference.jpeg)
 3. Approve, or reject with a reason; the user sees the status and reason on `/account`. A new upload or license change sends the item back to the queue.
 **Checkpoint:** the admin approves a certificate and rejects a school with a reason from the site; both users see the result on `/account`.
 

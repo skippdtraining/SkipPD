@@ -51,7 +51,7 @@ Email links and Google return to /auth/callback.
 | `docs/CODEBASE.md` | This file. |
 | `docs/HOW-TO.md` | Task-based lookup: which file to edit for common changes, plus recipes. |
 | `docs/CONVENTIONS.md` | Code style, documentation and modularity rules. |
-| `docs/assets/` | Images used by the docs (e.g. `jobs-page-reference.jpeg`). |
+| `docs/assets/` | Images used by the docs (e.g. `jobs-page-reference.jpeg`, `admin-table-reference.jpeg`). |
 | `supabase/migrations/` | SQL that creates the database tables, run in order in the Supabase SQL Editor. `0001_catalog.sql`: `categories`, `listings`, Row Level Security (public read of published listings). |
 | `supabase/migrations/0002_accounts.sql` | `profiles` (trainer/school details, review statuses), `school_email_domains`, `is_likely_school_email()`, the private `certifications` storage bucket, and the rules that stop users changing review statuses. |
 | `supabase/migrations/0003_split_profiles.sql` | Moves trainer-only fields to `trainer_profiles` and school-only fields to `school_profiles`; `profiles` keeps role, name, email. Copies existing data. |
@@ -96,7 +96,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `account/password/page.tsx` | Change password while signed in; asks for the current password. |
 | `onboarding/page.tsx` | First-time profile form: account type plus trainer or school details. |
 | `account/page.tsx` | Review status, profile summary with Edit button, back to trainings, change password, sign out, delete account. |
-| `admin/page.tsx` | Admin review queue: schools, certificates, licenses waiting for review. 404 for non-admins. |
+| `admin/page.tsx` | Admin review queue (loaded on the server; display in `AdminQueue`). 404 for non-admins. |
 | `actions/admin.ts` | Server actions: approve/reject (`reviewAction`) and open a certificate file (`openCertificationAction`). Re-check the admin flag. |
 | `auth/callback/route.ts` | Where email links (`token_hash`) and Google sign-in (`code`) return: creates the session, then opens `next` or `/onboarding`. An already-used confirmation link asks the user to sign in. |
 | `actions/auth.ts` | Server actions: sign in, sign up, Google, forgot/reset password, sign out. |
@@ -123,7 +123,12 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `AccountProfile.tsx` | Account page: read-only profile summary; "Edit profile" swaps in `ProfileForm`, saving returns to the summary. |
 | `FormError.tsx` | Form error message that scrolls into view and takes focus after each failed submit. Used by all account forms. |
 | `DeleteAccount.tsx` | Account page "Delete account": typed DELETE confirmation, then permanent deletion. |
-| `ReviewCard.tsx` | One admin queue entry: details, "View certificate file", reason, Approve / Reject. |
+| `AdminQueue.tsx` | Admin page UI: tabs (Schools / Certificates / Licenses), table or tiles switch, pages of `ADMIN_REVIEWS_PER_PAGE`. |
+| `ReviewTable.tsx` | Admin queue as a table (date, name, details, actions). |
+| `ReviewCard.tsx` | Admin queue as tiles: one card per item. |
+| `ReviewActions.tsx` | Shared Approve / Reject form (with reason) and "View file" button, used by table and tiles. |
+| `SchoolEmailHint.tsx` | "School email" / "Not a known school email" label for the admin. |
+| `Pagination.tsx` | Shared ← 1 2 3 → page navigation (catalog and admin queue). |
 | `AccountStatus.tsx` | Account page status: certificate ("Certified") and teaching license ("Licensed") for trainers, verification for schools; shows the admin's reason after a rejection. |
 | `SearchBox.tsx` | Search form used twice: large in the hero, compact in the header. Both share one query. |
 | `Hero.tsx` | Headline, search box and artwork. |
@@ -197,7 +202,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 ---
 
 ## Changelog of this map
-- **Step 5:** admin role (migration 0009), `/admin` review queue, `ReviewCard`, admin repository and actions, rejection reasons on the account page; `getViewer()` adds `isAdmin`, `homeFor()` routes admins to `/admin`.
+- **Step 5:** admin queue tabs, table/tiles switch and pagination (`AdminQueue`, `ReviewTable`, `ReviewActions`, `SchoolEmailHint`, shared `Pagination`); admin role (migration 0009), `/admin` review queue, `ReviewCard`, admin repository and actions, rejection reasons on the account page; `getViewer()` adds `isAdmin`, `homeFor()` routes admins to `/admin`.
 - **Saved removed:** heart buttons, Saved header button and view, saved-ids browser store, `ids` search parameter and `toCourseQuery()`. `CourseQuery` is now the same as `CatalogFilters`.
 - **Shared header:** `PageHeader.tsx` puts the site header (without search) on every page; `HomePage` opens dialogs from `/?open=requests|listing`.
 - **Step 4 name lock:** trainer and school names fixed from sign-up (migration 0008); sign-up form warns that they cannot change later. Pre-launch plan: combined `supabase/schema.sql` for a fresh production project.

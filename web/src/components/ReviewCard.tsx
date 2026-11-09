@@ -1,22 +1,12 @@
 /**
- * @fileoverview One entry in the admin review queue: who, what to check,
- * and Approve / Reject buttons with an optional reason.
+ * @fileoverview One entry in the admin review queue, tile view: who, what
+ * to check, and the shared Approve / Reject controls.
  */
 
-'use client';
-
-import {useActionState} from 'react';
-import {openCertificationAction, reviewAction} from '@/app/actions/admin';
-import {MAX_REVIEW_REASON_LENGTH} from '@/config/accounts';
+import {formatDateTime} from '@/lib/format';
 import type {ReviewItem, ReviewRequest} from '@/lib/types';
-import {FormError} from './FormError';
-
-/** Card title per review item. */
-const ITEM_LABELS: Record<ReviewItem, string> = {
-  certification: 'PD-trainer certificate',
-  license: 'Teaching license',
-  school: 'School account',
-};
+import {ReviewActions} from './ReviewActions';
+import {SchoolEmailHint} from './SchoolEmailHint';
 
 /** What the admin should check, per item. */
 const ITEM_HINTS: Record<ReviewItem, string> = {
@@ -29,18 +19,14 @@ interface ReviewCardProps {
   request: ReviewRequest;
 }
 
-/** Review card with its own form state. */
+/** Review tile. */
 export function ReviewCard({request}: ReviewCardProps) {
-  const [state, formAction, pending] = useActionState(reviewAction, {});
-
   return (
     <article className="review-card">
       <div className="review-card-top">
-        <span className="review-item">{ITEM_LABELS[request.item]}</span>
+        <span className="review-date">{formatDateTime(request.updatedAt)}</span>
         {request.item === 'school' && (
-          <span className={request.isLikelySchoolEmail ? 'hint-good' : 'hint-warn'}>
-            {request.isLikelySchoolEmail ? 'School email' : 'Not a known school email'}
-          </span>
+          <SchoolEmailHint likely={request.isLikelySchoolEmail} />
         )}
       </div>
       <h3>{request.fullName}</h3>
@@ -52,37 +38,7 @@ export function ReviewCard({request}: ReviewCardProps) {
         </p>
       ))}
       <p className="review-hint">{ITEM_HINTS[request.item]}</p>
-
-      {request.item === 'certification' && (
-        // Separate form: opens a 10-minute link to the private file.
-        <form action={openCertificationAction} target="_blank">
-          <input type="hidden" name="userId" value={request.userId} />
-          <button className="btn light small">View certificate file</button>
-        </form>
-      )}
-
-      <form action={formAction} className="review-form">
-        <FormError message={state.error} trigger={state} />
-        <input type="hidden" name="userId" value={request.userId} />
-        <input type="hidden" name="item" value={request.item} />
-        <label className="field">
-          Reason (shown to the user if rejected)
-          <textarea name="reason" maxLength={MAX_REVIEW_REASON_LENGTH} rows={2} />
-        </label>
-        <div className="review-actions">
-          <button className="btn" name="decision" value="approved" disabled={pending}>
-            Approve
-          </button>
-          <button
-            className="btn danger"
-            name="decision"
-            value="rejected"
-            disabled={pending}
-          >
-            Reject
-          </button>
-        </div>
-      </form>
+      <ReviewActions request={request} />
     </article>
   );
 }

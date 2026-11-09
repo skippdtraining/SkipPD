@@ -1079,12 +1079,101 @@ header.with-search .header-search {
   color: var(--muted);
   margin: 0;
 }
-.admin-section {
-  margin-top: 36px;
+.admin-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 28px;
 }
-.admin-section h2 {
-  font: 800 19px var(--head-font);
-  margin: 0 0 14px;
+.admin-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.admin-tab {
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 600;
+}
+.admin-tab.active {
+  border-color: var(--purple);
+  color: var(--purple);
+  background: #f5f2fd;
+}
+.view-switch {
+  display: flex;
+  gap: 6px;
+}
+.view-switch button {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: white;
+  font-size: 16px;
+}
+.view-switch button.active {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: white;
+}
+.admin-showing {
+  color: var(--muted);
+  margin: 16px 0 12px;
+}
+.review-table-wrap {
+  overflow-x: auto;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.review-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.review-table th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  background: #f7f6fb;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.review-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.review-table tr:last-child td {
+  border-bottom: 0;
+}
+.review-actions-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 220px;
+}
+.review-actions-compact .review-form {
+  margin: 0;
+}
+.review-reason-input {
+  width: 100%;
+  border: 1px solid #ded9e7;
+  border-radius: 7px;
+  padding: 7px 9px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+.review-date {
+  color: var(--muted);
+  white-space: nowrap;
 }
 .admin-count {
   background: #f1eefc;
@@ -1118,9 +1207,6 @@ header.with-search .header-search {
   gap: 8px;
   font-size: 11px;
   font-weight: 700;
-}
-.review-item {
-  color: var(--purple);
 }
 .hint-good {
   color: #3f6b47;

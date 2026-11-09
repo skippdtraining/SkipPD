@@ -22,6 +22,7 @@ export const metadata: Metadata = {title: `Your account | ${SITE_NAME}`};
 async function AccountContent({searchParams}: PageProps<'/account'>) {
   const viewer = await getViewer();
   if (!viewer) redirect('/sign-in?next=/account');
+  if (viewer.isAdmin) redirect('/admin');
   if (!viewer.profile) redirect('/onboarding');
   return (
     <>

@@ -27,6 +27,8 @@ interface TrainerRow {
   license_state: string;
   license_number: string;
   license_status: string;
+  certification_reason: string;
+  license_reason: string;
 }
 
 /** School-only columns (`public.school_profiles`). */
@@ -36,6 +38,7 @@ interface SchoolRow {
   is_likely_school_email: boolean;
   school_status: string;
   ever_approved: boolean;
+  school_reason: string;
 }
 
 /** A `profiles` row with its one-to-one detail row embedded (null if none). */
@@ -50,8 +53,8 @@ interface ProfileRow {
 const PROFILE_COLUMNS =
   'role, full_name, email, ' +
   'trainer_profiles(credentials, is_employed, employer, bio, certification_path, ' +
-  'certification_status, ever_approved, license_state, license_number, license_status), ' +
-  'school_profiles(school_name, contact_position, is_likely_school_email, school_status, ever_approved)';
+  'certification_status, ever_approved, license_state, license_number, license_status, certification_reason, license_reason), ' +
+  'school_profiles(school_name, contact_position, is_likely_school_email, school_status, ever_approved, school_reason)';
 
 const CERTIFICATION_BUCKET = 'certifications';
 
@@ -78,6 +81,9 @@ function toProfile(row: ProfileRow): Profile {
     contactPosition: school?.contact_position ?? '',
     isLikelySchoolEmail: school?.is_likely_school_email ?? false,
     wasEverApproved: Boolean(trainer?.ever_approved || school?.ever_approved),
+    certificationReason: trainer?.certification_reason ?? '',
+    licenseReason: trainer?.license_reason ?? '',
+    schoolReason: school?.school_reason ?? '',
   };
 }
 

@@ -166,6 +166,7 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
    */
   function withAccount(action: () => void) {
     if (!viewer) router.push('/sign-in?next=/');
+    else if (viewer.isAdmin) showToast('Admin accounts cannot book or list training.');
     else if (!viewer.profile) router.push('/onboarding');
     else action();
   }

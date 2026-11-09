@@ -168,6 +168,12 @@ export interface Profile extends ProfileInput {
    * name for good, even if a new certificate sends the review back to pending.
    */
   wasEverApproved: boolean;
+  /** Admin's note when the certificate was rejected; empty otherwise. */
+  certificationReason: string;
+  /** Admin's note when the license was rejected; empty otherwise. */
+  licenseReason: string;
+  /** Admin's note when the school was rejected; empty otherwise. */
+  schoolReason: string;
 }
 
 /** The signed-in visitor, or null for guests. */
@@ -175,6 +181,30 @@ export interface Viewer {
   /** Account id (from the auth service). */
   id: string;
   email: string;
-  /** Null until the user finished the profile form (/onboarding). */
+  /** Null until the user finished the profile form (/onboarding); always null for admins. */
   profile: Profile | null;
+  /** Admin accounts review profiles at /admin and never get a profile. */
+  isAdmin: boolean;
+}
+
+/** What an admin reviews: a trainer's certificate or license, or a school. */
+export type ReviewItem = 'certification' | 'license' | 'school';
+
+/** An admin's decision on a review item. */
+export type ReviewDecision = 'approved' | 'rejected';
+
+/** One entry in the admin review queue. */
+export interface ReviewRequest {
+  userId: string;
+  item: ReviewItem;
+  fullName: string;
+  email: string;
+  /** Trainer credentials line, or the school's name. */
+  headline: string;
+  /** Extra lines for the admin, e.g. employer, license, position. */
+  details: string[];
+  /** School only: email looks like a school address. */
+  isLikelySchoolEmail: boolean;
+  /** When the profile was last changed (ISO date-time), for ordering. */
+  updatedAt: string;
 }

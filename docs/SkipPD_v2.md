@@ -86,7 +86,7 @@ Optional later improvements: attendance check-in via QR code / link at the sessi
 | School verification (Step 4) | Schools should use a school email. Emails on .edu, .k12.xx.us or the admin's domain list are flagged as "likely school"; every school is still approved manually |
 | Locked fields (Step 4) | Trainer name and school name locked from sign-up (migration 0008); the sign-up form warns about it. School contact name and position stay editable. Other trainer fields (credentials, employment, about, certification stay editable; a new file needs re-review). Approved school: school name locked (contact name, position editable). Admin can still edit in the dashboard |
 | Teaching license (Step 4) | Separate from the PD-trainer certificate (PDF, kept). Optional state + license number, checked by the admin on the state's public lookup; trainers show "Licensed" / "Not licensed" and "Certified" / "Not certified" independently. Unlicensed trainers can still list. Locked once approved |
-| Admin (Step 4-5) | Approvals happen in the Supabase dashboard in Step 4; Step 5 adds an admin role and admin page |
+| Admin (Step 5) | Separate admin account (not a trainer/school), set only in the SQL Editor. `/admin` review queue with Approve / Reject and a rejection reason the user sees. Email notifications wait for custom SMTP (domain `skip-pd.com` now exists) |
 
 ---
 
@@ -184,7 +184,7 @@ requested -> negotiating <-> negotiating -> accepted -> paid -> delivered -> com
 | 1 ✅ | Repo + Next.js skeleton, port POC UI as static pages, deploy to Vercel | POC look-alike live on a Vercel URL |
 | 2 ✅ | UI changes: frontend design revisions agreed after the Step 1 review (header, layout, styling); no backend work | Revised design live on a Vercel preview and approved by the owner |
 | 3 ✅ | Supabase project, initial schema, seed the 6 sample courses; catalog/search/filters/sort read from DB | Live site shows DB data; adding a row in Supabase shows on site |
-| 4 | Auth: email/password (with email confirmation) and Google sign-in; Trainer or School profile; trainer PD certification upload; school email hint; account page | Can create Trainer and School accounts; certification and school approval visible on the account page |
+| 4 ✅ | Auth: email/password (with email confirmation) and Google sign-in; Trainer or School profile; trainer PD certification upload; school email hint; account page | Can create Trainer and School accounts; certification and school approval visible on the account page |
 | 5 | Admin role: `admin` flag on accounts, admin page to review certifications and verify schools (replaces approving in the Supabase dashboard) | Admin approves a certification and a school from the site |
 | 6 | Listing CRUD for teachers + image upload; RLS policies | Teacher creates/edits/deletes own listing; school cannot list |
 | 7 | Booking requests; simple "My requests" list (requester) and "Jobs" page (trainer) | Request appears on trainer's Jobs page |
@@ -210,15 +210,15 @@ Rule: do not start step N+1 until step N is deployed and manually tested.
 4. **Auto-confirm window** - 7 days OK? (step 10)
 5. ~~**Trainer vetting**~~ - decided in Step 4: anyone can list; optional certification, manually approved.
 6. **In-person travel costs** - part of the price, or negotiated separately? (step 8)
-7. **Who is admin** - you only, or a team? (step 10)
+7. ~~**Who is admin**~~ - decided in Step 5: the owner only, as a separate admin account; more can be added the same way.
 8. ~~**Product name**~~ - decided: **SkipPD**.
 9. **Privacy** - will any student data ever be stored (e.g. in evidence photos)? If yes, FERPA/COPPA considerations apply. Recommendation: forbid student-identifiable data in uploads.
 
 ---
 
-## 8. Current step - Step 4: Accounts
+## 8. Current step - Step 5: Admin review
 
-**Status:** Step 3 merged into `dev`. Step 4 in progress on branch `feature/step-4-accounts`.
+**Status:** Step 4, the Saved removal, the shared header and the Support Center are merged into `dev`. Step 5 in progress on branch `feature/step-5-admin`.
 
 ### Step 1 - Skeleton + deploy (done)
 Next.js app in `web/`, POC UI ported into documented components, sample data in a local file, Vercel connected (Root Directory `web`).
@@ -243,7 +243,7 @@ Decisions taken in Step 3:
 - The home page reads the database on every request (no cache), so dashboard edits show on the next page load.
 - Pagination stays in the browser while trainer-created listings still live in localStorage; it can move to the server once listings are in the database.
 
-### Step 4 - Accounts (current)
+### Step 4 - Accounts (done)
 Prerequisite (owner): run `supabase/migrations/0002_accounts.sql`, `0003_split_profiles.sql`, `0004_lock_approved_profiles.sql`, `0005_trainer_license.sql`, `0006_delete_account.sql`, `0007_hardening.sql` and `0008_lock_names_always.sql`; configure Supabase Auth (Site URL, Redirect URLs, Google provider), see HOW-TO "Accounts setup".
 1. Sign-up / sign-in with email + password (confirmation email) or Google; forgot / reset password; sign-out.
 2. After the first sign-in, `/onboarding` asks for the account type and profile:
@@ -260,3 +260,12 @@ Before launch:
 - Fresh production Supabase project: combine all migrations into one starting file (e.g. `supabase/schema.sql`) used only for brand-new projects. Keep the numbered migrations as history; the test project is not changed.
 
 Not in Step 4: the "Not certified" / "Not licensed" labels next to listings arrives with listing CRUD (Step 6), when listings get an owner. Requests still live in the browser until Step 7. Saved was removed after Step 4.
+
+### Step 5 - Admin review (current)
+Prerequisite (owner): run `supabase/migrations/0009_admin.sql`, then create the admin account (HOW-TO "Create the admin account").
+1. Admin is a separate account, flagged in the `admins` table from the SQL Editor only. Signing in with it opens `/admin`; it cannot book, list or create a profile.
+2. `/admin` lists schools to verify, certificates to review (with a 10-minute link to the file) and teaching licenses to check.
+3. Approve, or reject with a reason; the user sees the status and reason on `/account`. A new upload or license change sends the item back to the queue.
+**Checkpoint:** the admin approves a certificate and rejects a school with a reason from the site; both users see the result on `/account`.
+
+Next (not in Step 5): approval/rejection emails, together with custom SMTP on `skip-pd.com` (also fixes the email templates and the hourly email limit).

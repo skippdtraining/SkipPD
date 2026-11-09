@@ -14,7 +14,7 @@ import {getAuthService} from '@/lib/auth/auth-service';
 import {consumeResetPass, hasResetPass} from '@/lib/password-reset-pass';
 import {readText} from '@/lib/form-helpers';
 import {getRequestOrigin} from '@/lib/request-origin';
-import {getViewer, safeNextPath} from '@/lib/viewer';
+import {getViewer, homeFor, safeNextPath} from '@/lib/viewer';
 
 /** What an auth form shows after submitting: an error or a success note. */
 export interface AuthFormState {
@@ -39,11 +39,8 @@ export async function signInAction(
   if (!result.ok) return {error: result.message};
 
   const viewer = await getViewer();
-  redirect(
-    viewer?.profile
-      ? safeNextPath(readText(data, 'next'), AFTER_SIGN_IN_PATH)
-      : '/onboarding',
-  );
+  const next = safeNextPath(readText(data, 'next'), AFTER_SIGN_IN_PATH);
+  redirect(viewer ? homeFor(viewer, next) : '/sign-in');
 }
 
 /** Creates an account; the user must click the emailed link to continue. */

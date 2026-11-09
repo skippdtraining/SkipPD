@@ -1057,6 +1057,102 @@ header.with-search .header-search {
   font-weight: 600;
 }
 
+/* Admin page */
+.admin-page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 36px 5% 72px;
+}
+.admin-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.admin-top h1 {
+  font: 800 30px var(--head-font);
+  margin: 0 0 6px;
+}
+.admin-top p,
+.admin-empty {
+  color: var(--muted);
+  margin: 0;
+}
+.admin-section {
+  margin-top: 36px;
+}
+.admin-section h2 {
+  font: 800 19px var(--head-font);
+  margin: 0 0 14px;
+}
+.admin-count {
+  background: #f1eefc;
+  color: var(--purple);
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 13px;
+}
+.review-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+.review-card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  font-size: 13px;
+}
+.review-card h3 {
+  font: 700 16px var(--head-font);
+  margin: 8px 0 2px;
+}
+.review-card p {
+  margin: 4px 0;
+}
+.review-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.review-item {
+  color: var(--purple);
+}
+.hint-good {
+  color: #3f6b47;
+}
+.hint-warn {
+  color: #a2463f;
+}
+.review-email,
+.review-detail,
+.review-hint {
+  color: var(--muted);
+}
+.review-card .review-hint {
+  font-style: italic;
+  margin-bottom: 10px;
+}
+.review-form {
+  margin-top: 12px;
+}
+.review-actions {
+  display: flex;
+  gap: 8px;
+}
+.review-actions .btn {
+  flex: 1;
+}
+.status-reason {
+  display: block;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
 /* Modal */
 dialog {
   border: 0;

@@ -77,7 +77,7 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 5. Never use the secret (service role) key in this app. It bypasses Row Level Security.
 
 ### Accounts setup (Supabase Auth, once per project)
-1. SQL Editor: run every file in `supabase/migrations/` in number order, one at a time: `0001_catalog.sql` through `0009_admin.sql` (and any newer ones). Each file runs once per project.
+1. SQL Editor: run every file in `supabase/migrations/` in number order, one at a time: `0001_catalog.sql` through `0010_admin_hardening.sql` (and any newer ones). Each file runs once per project.
 2. Authentication → Sign In / Providers → Email: keep **Confirm email** on. Set minimum password length to 8 (`MIN_PASSWORD_LENGTH`).
 3. Authentication → URL Configuration (where Supabase may send users back to):
    - **Site URL**: the production address, e.g. `https://<your-site>.vercel.app`.
@@ -96,16 +96,16 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 6. Emails: Supabase's built-in sender allows only a few emails per hour, for testing. Before launch, set up custom SMTP (Authentication → Emails → SMTP), e.g. Resend or SendGrid.
 
 ### Create the admin account (once)
-1. SQL Editor: run `supabase/migrations/0009_admin.sql` if not done.
+1. SQL Editor: run `supabase/migrations/0009_admin.sql` and `0010_admin_hardening.sql` if not done.
 2. Authentication → Users → **Add user** → **Create new user**: email (e.g. `info@skip-pd.com`), a strong password, tick **Auto Confirm User**. Use an email that has no trainer/school account.
 3. SQL Editor: `insert into public.admins (id) select id from auth.users where email = 'info@skip-pd.com';`
 4. Sign in on the site with that account: it opens `/admin`. Remove an admin with `delete from public.admins where id = '<user id>';`.
 
 ### Approve a certification, license or school
 1. Sign in with the admin account and open **Admin** in the header (`/admin`).
-2. Pick a tab (Schools, Certificates, Licenses) and table or tiles view (buttons on the right). Each item shows what to check. Certificates: **View certificate file** (link works 10 minutes). Licenses: check the state's public lookup. Schools: the card says whether the email looks like a school email.
+2. Pick a tab (Schools, Certificates, Licenses) and table or tiles view (buttons on the right). Each item shows what to check. Certificates: **View file** (link works 10 minutes, opens in a new tab). Licenses: check the state's public lookup. Schools: the card says whether the email looks like a school email.
 3. Click **Approve**, or write a reason and click **Reject**. The user sees the status (and the reason) on `/account` at once.
-4. A new certificate or license change sends the item back to the queue and clears the old reason.
+4. A new certificate or license change sends the item back to the queue and clears the old reason. If the item changed while the page was open (or was already decided), the form says so; reload. A rejected school that edits its details goes back to review automatically.
 5. The Supabase dashboard still works as a fallback (`trainer_profiles` / `school_profiles` status columns).
 
 ### Verify a trainer's teaching license

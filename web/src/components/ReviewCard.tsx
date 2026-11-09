@@ -24,7 +24,7 @@ export function ReviewCard({request}: ReviewCardProps) {
   return (
     <article className="review-card">
       <div className="review-card-top">
-        <span className="review-date">{formatDateTime(request.updatedAt)}</span>
+        <span className="review-date">{formatDateTime(request.submittedAt)}</span>
         {request.item === 'school' && (
           <SchoolEmailHint likely={request.isLikelySchoolEmail} />
         )}

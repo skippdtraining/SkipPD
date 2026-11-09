@@ -7,7 +7,7 @@
 'use client';
 
 import {useActionState} from 'react';
-import {openCertificationAction, reviewAction} from '@/app/actions/admin';
+import {reviewAction} from '@/app/actions/admin';
 import {MAX_REVIEW_REASON_LENGTH} from '@/config/accounts';
 import type {ReviewRequest} from '@/lib/types';
 import {FormError} from './FormError';
@@ -25,17 +25,29 @@ export function ReviewActions({request, compact = false}: ReviewActionsProps) {
   return (
     <div className={compact ? 'review-actions-compact' : undefined}>
       {request.item === 'certification' && (
-        // Separate form (forms cannot be nested): opens a 10-minute link to
-        // the private file in a new tab.
-        <form action={openCertificationAction} target="_blank">
-          <input type="hidden" name="userId" value={request.userId} />
-          <button className="btn light small">View file</button>
-        </form>
+        // Opens a 10-minute signed link in a new tab; the server re-checks
+        // the admin flag. rel=noopener so the new tab cannot touch us.
+        <a
+          className="btn light small"
+          href={`/admin/file/${request.userId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View file
+        </a>
       )}
       <form action={formAction} className="review-form">
         <FormError message={state.error} trigger={state} />
+        {state.success && <p className="review-success">{state.success}</p>}
         <input type="hidden" name="userId" value={request.userId} />
         <input type="hidden" name="item" value={request.item} />
+        {request.item === 'certification' && (
+          <input
+            type="hidden"
+            name="certificationPath"
+            value={request.certificationPath ?? ''}
+          />
+        )}
         {compact ? (
           <input
             name="reason"

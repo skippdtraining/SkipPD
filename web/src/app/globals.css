@@ -1216,6 +1216,11 @@ header.with-search .header-search {
 }
 .review-email,
 .review-detail,
+.review-success {
+  color: var(--green, #1a7f37);
+  font-weight: 600;
+  margin: 0 0 6px;
+}
 .review-hint {
   color: var(--muted);
 }

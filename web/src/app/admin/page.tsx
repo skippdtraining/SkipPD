@@ -36,8 +36,8 @@ async function AdminContent({searchParams}: PageProps<'/admin'>) {
         <div>
           <h1>Review queue</h1>
           <p>
-            Signed in as {viewer.email}. {requests.length} item
-            {requests.length === 1 ? '' : 's'} waiting.
+            Signed in as {viewer.email}. {requests.length} request
+            {requests.length === 1 ? '' : 's'} pending.
           </p>
         </div>
         <form action={signOutAction}>

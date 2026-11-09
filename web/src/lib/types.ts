@@ -205,6 +205,11 @@ export interface ReviewRequest {
   details: string[];
   /** School only: email looks like a school address. */
   isLikelySchoolEmail: boolean;
-  /** When the profile was last changed (ISO date-time), for ordering. */
-  updatedAt: string;
+  /** When this item entered review (ISO date-time); oldest first. */
+  submittedAt: string;
+  /**
+   * Certificates only: the file the admin sees. Sent back with the decision,
+   * so a newer upload is never approved unseen.
+   */
+  certificationPath: string | null;
 }

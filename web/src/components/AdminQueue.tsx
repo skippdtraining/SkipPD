@@ -48,14 +48,13 @@ export function AdminQueue({requests}: AdminQueueProps) {
   return (
     <>
       <div className="admin-toolbar">
-        <div className="admin-tabs" role="tablist" aria-label="Review categories">
+        <div className="admin-tabs" role="group" aria-label="Review categories">
           {TABS.map(({item, label}) => {
             const count = requests.filter((request) => request.item === item).length;
             return (
               <button
                 key={item}
-                role="tab"
-                aria-selected={tab === item}
+                aria-pressed={tab === item}
                 className={`admin-tab ${tab === item ? 'active' : ''}`}
                 onClick={() => {
                   setTab(item);
@@ -85,12 +84,14 @@ export function AdminQueue({requests}: AdminQueueProps) {
         </div>
       </div>
 
-      <p className="admin-showing">
-        Showing page <b>{currentPage}</b> of <b>{pageCount}</b> · Total:{' '}
-        <b>{inTab.length}</b>
-      </p>
+      {inTab.length > 0 && (
+        <p className="admin-showing">
+          Showing page <b>{currentPage}</b> of <b>{pageCount}</b> · Total:{' '}
+          <b>{inTab.length}</b>
+        </p>
+      )}
 
-      <div role="tabpanel">
+      <div>
         {inTab.length === 0 ? (
           <p className="admin-empty">Nothing waiting.</p>
         ) : view === 'table' ? (

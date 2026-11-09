@@ -30,7 +30,7 @@ export function ReviewTable({requests}: ReviewTableProps) {
         <tbody>
           {requests.map((request) => (
             <tr key={`${request.item}-${request.userId}`}>
-              <td className="review-date">{formatDateTime(request.updatedAt)}</td>
+              <td className="review-date">{formatDateTime(request.submittedAt)}</td>
               <td>
                 <b>{request.fullName}</b>
                 <div className="review-email">{request.email}</div>

@@ -1,6 +1,6 @@
 /**
  * @fileoverview Server actions for the admin page: approve or reject a
- * review item, and open a certification file.
+ * review item. (Certificate files open through GET /admin/file/[userId].)
  *
  * Every action re-checks the admin flag (server actions can be called
  * directly); the database checks it again in `review_profile()`.
@@ -11,7 +11,7 @@
 import {revalidatePath} from 'next/cache';
 import {notFound, redirect} from 'next/navigation';
 import {MAX_REVIEW_REASON_LENGTH} from '@/config/accounts';
-import {getAdminRepository} from '@/lib/data/admin-repository';
+import {getAdminRepository, ReviewConflictError} from '@/lib/data/admin-repository';
 import {readText} from '@/lib/form-helpers';
 import type {ReviewDecision, ReviewItem} from '@/lib/types';
 import {getViewer} from '@/lib/viewer';
@@ -21,6 +21,7 @@ const REVIEW_ITEMS: ReviewItem[] = ['certification', 'license', 'school'];
 /** What a review card shows after submitting. */
 export interface ReviewFormState {
   error?: string;
+  success?: string;
 }
 
 /** Stops non-admins; returns nothing for admins. */
@@ -50,20 +51,26 @@ export async function reviewAction(
     return {error: `Keep the reason under ${MAX_REVIEW_REASON_LENGTH} characters.`};
   }
 
+  // Certificates carry the file the admin saw; the database refuses the
+  // decision if a newer upload replaced it.
+  const expectedPath =
+    item === 'certification' ? readText(data, 'certificationPath') : null;
+
   try {
-    await getAdminRepository().review(readText(data, 'userId'), item, decision, reason);
+    await getAdminRepository().review(
+      readText(data, 'userId'),
+      item,
+      decision,
+      reason,
+      expectedPath === '' ? null : expectedPath,
+    );
   } catch (error) {
+    if (error instanceof ReviewConflictError) {
+      return {error: 'This request changed or was already reviewed. Reload the page.'};
+    }
     console.error(error);
     return {error: 'Could not save the review. Reload the page and try again.'};
   }
   revalidatePath('/admin');
-  return {};
-}
-
-/** Opens a trainer's certification file in a short-lived link. */
-export async function openCertificationAction(data: FormData): Promise<void> {
-  await requireAdmin();
-  const url = await getAdminRepository().getCertificationUrl(readText(data, 'userId'));
-  if (!url) redirect('/admin?file=missing');
-  redirect(url);
+  return {success: 'Saved.'};
 }

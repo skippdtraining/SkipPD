@@ -25,13 +25,13 @@ const TABS: {item: ReviewItem; label: string}[] = [
 
 type ViewMode = 'table' | 'tiles';
 
-interface AdminQueueProps {
+interface ReviewQueueProps {
   /** Every pending item, oldest first. */
   requests: ReviewRequest[];
 }
 
 /** Tabs + view switch + one page of review items. */
-export function AdminQueue({requests}: AdminQueueProps) {
+export function ReviewQueue({requests}: ReviewQueueProps) {
   const [tab, setTab] = useState<ReviewItem>('school');
   const [view, setView] = useState<ViewMode>('table');
   const [page, setPage] = useState(1);

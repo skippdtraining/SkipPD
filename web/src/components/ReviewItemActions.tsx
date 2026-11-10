@@ -12,14 +12,14 @@ import {MAX_REVIEW_REASON_LENGTH} from '@/config/accounts';
 import type {ReviewRequest} from '@/lib/types';
 import {FormError} from './FormError';
 
-interface ReviewActionsProps {
+interface ReviewItemActionsProps {
   request: ReviewRequest;
   /** Table rows use a one-line reason field and smaller buttons. */
   compact?: boolean;
 }
 
 /** View-file button (certificates only) and the decision form. */
-export function ReviewActions({request, compact = false}: ReviewActionsProps) {
+export function ReviewItemActions({request, compact = false}: ReviewItemActionsProps) {
   const [state, formAction, pending] = useActionState(reviewAction, {});
 
   return (

@@ -97,7 +97,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `account/password/page.tsx` | Change password while signed in; asks for the current password. |
 | `onboarding/page.tsx` | First-time profile form: account type plus trainer or school details. |
 | `account/page.tsx` | Review status, profile summary with Edit button, back to trainings, change password, sign out, delete account. |
-| `admin/page.tsx` | Admin review queue (loaded on the server; display in `AdminQueue`). 404 for non-admins. |
+| `admin/page.tsx` | Admin review queue (loaded on the server; display in `ReviewQueue`). 404 for non-admins. |
 | `actions/admin.ts` | Server action: approve/reject (`reviewAction`). Re-checks the admin flag; shows a conflict message when the item changed. |
 | `admin/file/[userId]/route.ts` | Admin-only `GET` link to a trainer's certificate file: re-checks the admin flag, then redirects to a 10-minute signed URL (opens in a new tab). |
 | `auth/callback/route.ts` | Where email links (`token_hash`) and Google sign-in (`code`) return: creates the session, then opens `next` or `/onboarding`. An already-used confirmation link asks the user to sign in. |
@@ -125,10 +125,10 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `AccountProfile.tsx` | Account page: read-only profile summary; "Edit profile" swaps in `ProfileForm`, saving returns to the summary. |
 | `FormError.tsx` | Form error message that scrolls into view and takes focus after each failed submit. Used by all account forms. |
 | `DeleteAccount.tsx` | Account page "Delete account": typed DELETE confirmation, then permanent deletion. |
-| `AdminQueue.tsx` | Admin page UI: tabs (Schools / Certificates / Licenses), table or tiles switch, pages of `ADMIN_REVIEWS_PER_PAGE`. |
+| `ReviewQueue.tsx` | Admin page UI: tabs (Schools / Certificates / Licenses), table or tiles switch, pages of `ADMIN_REVIEWS_PER_PAGE`. |
 | `ReviewTable.tsx` | Admin queue as a table (date, name, details, actions). |
 | `ReviewCard.tsx` | Admin queue as tiles: one card per item. |
-| `ReviewActions.tsx` | Shared Approve / Reject form (with reason + the certificate path it saw) and "View file" link, used by table and tiles. |
+| `ReviewItemActions.tsx` | Shared Approve / Reject form (with reason + the certificate path it saw) and "View file" link, used by table and tiles. |
 | `SchoolEmailHint.tsx` | "School email" / "Not a known school email" label for the admin. |
 | `Pagination.tsx` | Shared ← 1 2 3 → page navigation (catalog and admin queue). |
 | `AccountStatus.tsx` | Account page status: certificate ("Certified") and teaching license ("Licensed") for trainers, verification for schools; shows the admin's reason after a rejection. |
@@ -204,7 +204,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 ---
 
 ## Changelog of this map
-- **Step 5:** admin queue tabs, table/tiles switch and pagination (`AdminQueue`, `ReviewTable`, `ReviewActions`, `SchoolEmailHint`, shared `Pagination`); admin role (migration 0009), `/admin` review queue, `ReviewCard`, admin repository and actions, rejection reasons on the account page; `getViewer()` adds `isAdmin`, `homeFor()` routes admins to `/admin`.
+- **Step 5:** admin queue tabs, table/tiles switch and pagination (`ReviewQueue`, `ReviewTable`, `ReviewItemActions`, `SchoolEmailHint`, shared `Pagination`); admin role (migration 0009), `/admin` review queue, `ReviewCard`, admin repository and actions, rejection reasons on the account page; `getViewer()` adds `isAdmin`, `homeFor()` routes admins to `/admin`.
 - **Saved removed:** heart buttons, Saved header button and view, saved-ids browser store, `ids` search parameter and `toCourseQuery()`. `CourseQuery` is now the same as `CatalogFilters`.
 - **Shared header:** `PageHeader.tsx` puts the site header (without search) on every page; `HomePage` opens dialogs from `/?open=requests|listing`.
 - **Step 4 name lock:** trainer and school names fixed from sign-up (migration 0008); sign-up form warns that they cannot change later. Pre-launch plan: combined `supabase/schema.sql` for a fresh production project.

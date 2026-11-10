@@ -6,7 +6,7 @@
 
 import {formatDateTime} from '@/lib/format';
 import type {ReviewRequest} from '@/lib/types';
-import {ReviewActions} from './ReviewActions';
+import {ReviewItemActions} from './ReviewItemActions';
 import {SchoolEmailHint} from './SchoolEmailHint';
 
 interface ReviewTableProps {
@@ -47,7 +47,7 @@ export function ReviewTable({requests}: ReviewTableProps) {
                 ))}
               </td>
               <td>
-                <ReviewActions request={request} compact />
+                <ReviewItemActions request={request} compact />
               </td>
             </tr>
           ))}

@@ -5,7 +5,7 @@
 
 import {formatDateTime} from '@/lib/format';
 import type {ReviewItem, ReviewRequest} from '@/lib/types';
-import {ReviewActions} from './ReviewActions';
+import {ReviewItemActions} from './ReviewItemActions';
 import {SchoolEmailHint} from './SchoolEmailHint';
 
 /** What the admin should check, per item. */
@@ -38,7 +38,7 @@ export function ReviewCard({request}: ReviewCardProps) {
         </p>
       ))}
       <p className="review-hint">{ITEM_HINTS[request.item]}</p>
-      <ReviewActions request={request} />
+      <ReviewItemActions request={request} />
     </article>
   );
 }

@@ -2,7 +2,7 @@
  * @fileoverview Route for "/admin": the review queue. Admins approve or
  * reject trainer certificates, teaching licenses and school accounts.
  * Loads the queue on the server; tabs, table/tiles and pages are in
- * components/AdminQueue.tsx.
+ * components/ReviewQueue.tsx.
  *
  * Non-admins get a 404, so the page's existence is not advertised. Admin
  * accounts are created in the SQL Editor (docs/HOW-TO.md, "Create the admin
@@ -14,7 +14,7 @@ import {notFound, redirect} from 'next/navigation';
 import {Suspense} from 'react';
 import {signOutAction} from '@/app/actions/auth';
 import {PageHeader} from '@/components/PageHeader';
-import {AdminQueue} from '@/components/AdminQueue';
+import {ReviewQueue} from '@/components/ReviewQueue';
 import {SiteFooter} from '@/components/SiteFooter';
 import {SITE_NAME} from '@/config/site';
 import {getAdminRepository} from '@/lib/data/admin-repository';
@@ -49,7 +49,7 @@ async function AdminContent({searchParams}: PageProps<'/admin'>) {
           That user has no certificate file anymore. Reload the page.
         </p>
       )}
-      <AdminQueue requests={requests} />
+      <ReviewQueue requests={requests} />
     </>
   );
 }

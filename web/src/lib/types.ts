@@ -36,14 +36,14 @@ export type CoverType =
 
 /** A training listing shown in the catalog. */
 export interface Course {
-  /** Unique id. Database listings use small numbers; browser-created listings use a timestamp. */
+  /** Unique id (database id). */
   id: number;
   title: string;
   /** Topic: a suggested category or a custom one typed by the trainer. */
   category: string;
-  /** Trainer display name. Becomes a link to the trainer's profile in Step 4. */
+  /** Trainer display name, copied from the owner's profile when the listing is saved. */
   trainer: string;
-  /** Trainer credentials line; comes from the trainer's profile from Step 4. Empty if unknown. */
+  /** Trainer credentials line, copied from the owner's profile. Empty if unknown. */
   role: string;
   format: Format;
   /** Session length in hours. */
@@ -61,8 +61,34 @@ export interface Course {
   /** Cover accent colour (hex), used by the illustration. */
   accent: string;
   type: CoverType;
-  /** Optional uploaded cover image as a data URL. Moves to file storage in Step 6. */
+  /** Uploaded cover image (public storage URL). Undefined uses the illustration. */
   image?: string;
+  /** Account id of the trainer who owns the listing; null for seed samples. */
+  ownerId: string | null;
+  /** False when the trainer hid the listing from the catalog. */
+  isPublished: boolean;
+  /** Owner's PD certificate review state. Badges are hidden for seed rows. */
+  certificationStatus: ReviewStatus;
+  /** Owner's teaching license review state. Badges are hidden for seed rows. */
+  licenseStatus: ReviewStatus;
+}
+
+/**
+ * Fields a trainer writes when creating or editing a listing.
+ * The trainer name and credentials are copied from the profile instead.
+ */
+export interface ListingInput {
+  title: string;
+  /** Suggested topic, or a free-text topic when "Other" was chosen. */
+  category: string;
+  format: Format;
+  hours: number;
+  price: number;
+  grades: Grade[];
+  description: string;
+  outcomes: string[];
+  /** Unchecked hides the listing from the catalog without deleting it. */
+  isPublished: boolean;
 }
 
 /** A booking request a teacher or school sends for a course. */

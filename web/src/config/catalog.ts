@@ -22,6 +22,23 @@ export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 /** Longest custom topic a trainer can type when choosing "Other". */
 export const MAX_CUSTOM_TOPIC_LENGTH = 40;
 
+/**
+ * Listing form limits. Enforced twice: by the form inputs (maxLength, min,
+ * max) and again on the server in `lib/listing-form.ts`.
+ */
+export const LISTING_LIMITS = {
+  /** Longest course title, in characters. */
+  title: 100,
+  /** Longest course description, in characters. */
+  description: 1500,
+  /** Shortest session length, in hours. */
+  minHours: 0.25,
+  /** Longest session length, in hours. */
+  maxHours: 500,
+  /** Highest price per participant, in USD. */
+  maxPrice: 99999,
+} as const;
+
 /** Course cards shown per catalog page; arrows move between pages. */
 export const COURSES_PER_PAGE = 6;
 

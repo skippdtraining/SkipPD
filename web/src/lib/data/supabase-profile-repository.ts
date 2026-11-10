@@ -2,6 +2,7 @@
  * @fileoverview {@link ProfileRepository} backed by Supabase: the
  * `profiles`, `trainer_profiles` and `school_profiles` tables and the
  * private `certifications` storage bucket (supabase/migrations/0002, 0003).
+ * Account deletion also empties the user's `listings` image folder (0011).
  *
  * The only file that knows profile column names. It joins the common row
  * with the trainer or school row into the app's single `Profile` type. Review columns
@@ -57,6 +58,9 @@ const PROFILE_COLUMNS =
   'school_profiles(school_name, contact_position, is_likely_school_email, school_status, ever_approved, school_reason)';
 
 const CERTIFICATION_BUCKET = 'certifications';
+
+/** Public bucket that holds listing cover images (migration 0011). */
+const LISTING_IMAGE_BUCKET = 'listings';
 
 /** Converts the joined rows into the app's flat {@link Profile} type. */
 function toProfile(row: ProfileRow): Profile {
@@ -149,7 +153,6 @@ export function createSupabaseProfileRepository(): ProfileRepository {
 
     async deleteMyAccount(userId) {
       const supabase = await getRequestClient();
-      const bucket = supabase.storage.from(CERTIFICATION_BUCKET);
 
       // Detach the file first, so a failure below never leaves the profile
       // pointing at a deleted file. (No-op for schools.)
@@ -160,16 +163,22 @@ export function createSupabaseProfileRepository(): ProfileRepository {
 
       // Files before the account: once the account is gone, the user can no
       // longer delete them. Removed files leave the list, so always read the
-      // first page until it is empty.
-      for (;;) {
-        const {data: files, error} = await bucket.list(userId, {limit: LIST_PAGE_SIZE});
-        if (error) throw new Error(`Could not list files: ${error.message}`);
-        if (files.length === 0) break;
-        const removal = await bucket.remove(
-          files.map((file) => `${userId}/${file.name}`),
-        );
-        if (removal.error) {
-          throw new Error(`Could not delete files: ${removal.error.message}`);
+      // first page until it is empty. Listing rows cascade with the account,
+      // so their images must be removed here too.
+      for (const bucketName of [CERTIFICATION_BUCKET, LISTING_IMAGE_BUCKET]) {
+        const bucket = supabase.storage.from(bucketName);
+        for (;;) {
+          const {data: files, error} = await bucket.list(userId, {
+            limit: LIST_PAGE_SIZE,
+          });
+          if (error) throw new Error(`Could not list files: ${error.message}`);
+          if (files.length === 0) break;
+          const removal = await bucket.remove(
+            files.map((file) => `${userId}/${file.name}`),
+          );
+          if (removal.error) {
+            throw new Error(`Could not delete files: ${removal.error.message}`);
+          }
         }
       }
 

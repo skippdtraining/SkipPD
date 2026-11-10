@@ -5,6 +5,7 @@
 
 import {formatPrice, initials} from '@/lib/format';
 import type {Course} from '@/lib/types';
+import {TrainerBadges} from './TrainerBadges';
 
 interface CourseDetailProps {
   course: Course;
@@ -24,6 +25,7 @@ export function CourseDetail({course, onRequest}: CourseDetailProps) {
         <span className="avatar">{initials(course.trainer)}</span>
         <strong>{course.trainer}</strong>
       </div>
+      <TrainerBadges course={course} />
       {course.role !== '' && <p className="small-text">{course.role}</p>}
       <p>{course.description}</p>
       <h4>What you’ll take away</h4>

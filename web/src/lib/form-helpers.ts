@@ -20,17 +20,3 @@ export function readNumber(data: FormData, field: string, fallback: number): num
   const value = Number(readText(data, field));
   return readText(data, field) !== '' && Number.isFinite(value) ? value : fallback;
 }
-
-/** Reads a file as a data URL (text) so it can be stored in localStorage. */
-export function readFileAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      resolve(String(reader.result));
-    };
-    reader.onerror = () => {
-      reject(new Error('Could not read image'));
-    };
-    reader.readAsDataURL(file);
-  });
-}

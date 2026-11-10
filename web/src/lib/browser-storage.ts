@@ -1,10 +1,8 @@
 /**
- * @fileoverview The two lists the app currently keeps in the browser,
- * matching the POC: the user's own listings and booking requests.
+ * @fileoverview The booking requests the app keeps in the browser, matching
+ * the POC.
  *
- * TEMPORARY. Each store is replaced by a database table:
- * - own listings  -> Step 6
- * - requests      -> Step 7
+ * TEMPORARY. The list is replaced by a database table in Step 7.
  * Components only call the functions below, so swapping the storage later
  * does not require changing the components much.
  */
@@ -12,27 +10,11 @@
 'use client';
 
 import {createLocalStore, isArray} from './local-store';
-import type {BookingRequest, Course} from './types';
+import type {BookingRequest} from './types';
 
 // The Saved feature was removed; clear its old list from returning
 // browsers once. TEMPORARY: delete after a few weeks in production.
 if (typeof window !== 'undefined') window.localStorage.removeItem('skippd-saved');
-
-// ---------- Listings created in this browser ----------
-
-const listingStore = createLocalStore<Course>('skippd-courses', isArray);
-
-/** React hook: listings the user created, newest first. */
-export function useOwnListings(): Course[] {
-  return listingStore.use();
-}
-
-/** Stores a new listing. Returns false if storage is full (large image). */
-export function addListing(course: Course): boolean {
-  return listingStore.set([course, ...listingStore.get()]);
-}
-
-// ---------- Booking requests ----------
 
 const requestStore = createLocalStore<BookingRequest>('skippd-requests', isArray);
 

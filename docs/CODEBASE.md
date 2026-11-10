@@ -3,7 +3,7 @@
 This file describes what every file and folder is and why it exists.
 **Update it in the same PR** whenever files are added, moved or removed.
 
-_Last updated: Step 5 (admin review)._
+_Last updated: Step 6 (listing CRUD and image upload)._
 
 All app code lives in `web/`. Paths below starting with `src/` mean `web/src/`.
 
@@ -21,7 +21,7 @@ Browser request "/"
                               on filter change calls GET /api/courses
   -> src/app/api/courses      server: decodes the query, asks the repository
        -> SiteHeader, Hero, FilterSidebar, CatalogGrid > CourseCard, ...
-       -> Modal > CourseDetail | BookingForm | ListingForm | RequestList
+       -> Modal > CourseDetail | BookingForm | ListingForm | MyListings | RequestList
   -> lib/data/*               repositories: the ONLY code that knows the database (Supabase)
   -> lib/auth/*               sign-in service: the ONLY code that knows the auth vendor
   -> lib/email/*              email service: the ONLY code that knows the email vendor
@@ -35,7 +35,7 @@ Email links and Google return to /auth/callback.
 ```
 
 - **Server vs. browser:** files in `app/` run on the server by default. That is where database reads happen. Files marked `'use client'` also run in the browser, because they react to clicks and typing.
-- **Temporary parts:** browser storage reproduces the POC behaviour. The database replaces it step by step: courses in Step 3 (done), listings in Step 6 and requests in Step 7.
+- **Temporary parts:** browser storage reproduces the POC behaviour. The database replaces it step by step: courses in Step 3 (done), listings in Step 6 (done), requests in Step 7.
 
 ---
 
@@ -63,6 +63,7 @@ Email links and Google return to /auth/callback.
 | `supabase/migrations/0008_lock_names_always.sql` | Trainer name and school name can never be changed by users once the profile exists (admin can in the dashboard). |
 | `supabase/migrations/0009_admin.sql` | `admins` table (set only in the SQL Editor), `is_admin()`, admin read access to profiles and certificate files, rejection reasons, `review_profile()`; admins cannot create a profile. |
 | `supabase/migrations/0010_admin_hardening.sql` | Review only `pending` items (certificates also match the file the admin saw), submission timestamps for the queue order, no profiles for admins / no admins with profiles, `is_admin()` evaluated once per query, rejected school can re-review after an edit. |
+| `supabase/migrations/0011_listings_owner.sql` | `listings.owner_id` + `image_path`, RLS so only the owner (a trainer) can create/edit/delete a listing, admins can read all, the public `trainer_badges` view, and the public `listings` storage bucket with one folder per user. |
 | `supabase/seed.sql` | Starter data: six suggested topics and the six POC courses. Re-runnable (empties the tables first). |
 | `web/` | **The Next.js application.** Run all npm commands inside this folder. |
 
@@ -104,6 +105,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `auth/callback/route.ts` | Where email links (`token_hash`) and Google sign-in (`code`) return: creates the session, then opens `next` or `/onboarding`. An already-used confirmation link asks the user to sign in. |
 | `actions/auth.ts` | Server actions: sign in, sign up, Google, forgot/reset password, sign out. |
 | `actions/profile.ts` | Server action: validate and save the profile form, upload the certification. New profiles go to the home page (welcome message); edits return to the account summary. Also `deleteAccountAction`. |
+| `actions/listings.ts` | Server actions for a trainer's listings: load them for "My listings", save a new or edited listing (image upload), delete one. Re-checks that the caller is a trainer. |
 | `api/courses/route.ts` | `GET /api/courses?q=&format=&grade=&duration=&maxPrice=&sort=`: catalog search for the browser. Returns `{courses}`. |
 | `globals.css` | All styles, ported from the POC and grouped by page area. Colours are CSS variables in `:root`. The header is sticky and 64px tall. The "Responsive" section at the end adapts the layout for tablets and phones. |
 | `[slug]/page.tsx` | **Temporary.** "Coming soon" page for each footer link (`/about`, `/terms`...), generated from `FOOTER_COLUMNS`. Real pages get their own folder later; paths that already have one are listed in `PATHS_WITH_OWN_PAGE`. |
@@ -117,7 +119,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | File | What / why |
 |---|---|
 | `HomePage.tsx` | **The conductor.** Owns page state (filters, which dialog is open, toast message), fetches server results when filters change, merges in browser listings, and wires all the sections together. Start reading here. |
-| `SiteHeader.tsx` | Sticky top bar on every page: logo, My requests, Sign in or Account, and "List your training" (behind a ☰ menu on phones). Home only: compact search; elsewhere My requests / List your training link to `/?open=...`. |
+| `SiteHeader.tsx` | Sticky top bar on every page: logo, My requests, My listings (trainers only), Sign in or Account, and "List your training" (behind a ☰ menu on phones). Home only: compact search; elsewhere the dialog links use `/?open=...`. |
 | `PageHeader.tsx` | `SiteHeader` for all pages except home (no search). Looks up the visitor itself; used by `AuthShell` and placeholder pages. |
 | `AuthShell.tsx` | Page frame for the account pages: site header, centred card, footer (hidden on phones, where text is larger). |
 | `AuthForm.tsx` | Generic form for sign-in/up and password pages: runs a server action, shows its error or success note. |
@@ -142,7 +144,9 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `Modal.tsx` | Reusable pop-up built on the native `<dialog>` element. Closes on Esc, the × button, or a click outside. |
 | `CourseDetail.tsx` | Dialog content: the full course description and the "Request a session" button. |
 | `BookingForm.tsx` | Dialog content: the booking request form. Saves to the browser for now; Step 7 saves to the DB. |
-| `ListingForm.tsx` | Dialog content: the new-listing form, with image validation (max 1 MB) an "Other" topic option that reveals a free-text field. No trainer name, credentials or keywords: those come from the account (Step 4). Saves to the browser for now; Step 6 saves to the DB. |
+| `ListingForm.tsx` | Dialog content: create or edit a listing (Step 6). Writes to the database, uploads the cover image and has the "Other" topic option. No trainer name, credentials or keywords: those come from the profile / database. The publish checkbox hides a listing from the catalog. |
+| `MyListings.tsx` | Dialog content: the trainer's own listings (hidden ones included), with Edit, Delete (asked twice) and a create button. Delete is a server action; the list refreshes through `HomePage`. |
+| `TrainerBadges.tsx` | "Certified" / "Licensed" chips shown next to the trainer name on cards and in the detail dialog; hidden for seed listings that have no owner. |
 | `OutcomeListField.tsx` | Listing-form field: one input per learning outcome, "+ Add outcome" and × remove buttons. |
 | `RequestList.tsx` | Dialog content: "My booking requests", each with a Remove button. |
 | `SocialIcon.tsx` | Inline SVG logos (LinkedIn, Instagram, Facebook, X) for the footer. |
@@ -155,7 +159,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `site.ts` | Brand name, stage label, tab title, SEO text, footer tagline, copyright year, footer links, and `ALLOWED_ORIGIN_PATTERNS` (where email/Google links may return). A rename is one edit here. |
 | `accounts.ts` | Password length, profile field limits, certification file size/types, page after sign-in. Keep in sync with `0002_accounts.sql`. |
 | `support-articles.ts` | Support Center content: categories and articles (title, summary, sections of paragraphs and lists). Edit text here; the `/support` pages render it. |
-| `catalog.ts` | Business settings: price filter brackets, "short course" hours, search debounce, custom-topic and image upload limits. |
+| `catalog.ts` | Business settings: price filter brackets, "short course" hours, search debounce, custom-topic and image upload limits, `LISTING_LIMITS` (title/description/hours/price). |
 
 ## `src/lib/data/`: data access (the database boundary)
 
@@ -165,8 +169,11 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `profile-repository.ts` | The `ProfileRepository` interface (current user's profile, certification upload) and `getProfileRepository()`. |
 | `admin-repository.ts` | The `AdminRepository` interface (is admin, pending reviews, review, certificate link, review contact for email) and `getAdminRepository()`. |
 | `supabase-admin-repository.ts` | Supabase implementation, acting as the signed-in admin (database rules allow it only for admins). |
-| `supabase-profile-repository.ts` | Supabase implementation: joins `profiles` with `trainer_profiles` or `school_profiles` into one `Profile`; `certifications` bucket. Never writes review statuses. |
-| `supabase-course-repository.ts` | Supabase implementation. The only file with table/column names and the Supabase client. Turns a `CourseQuery` into a database query (search, filters, sort) and rows into `Course`. Reads `SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY`. Server only. |
+| `supabase-profile-repository.ts` | Supabase implementation: joins `profiles` with `trainer_profiles` or `school_profiles` into one `Profile`; `certifications` bucket. Never writes review statuses. Account deletion also empties the user's `listings` image folder. |
+| `supabase-course-repository.ts` | Supabase implementation for the public catalog. Turns a `CourseQuery` into a database query (search, filters, sort) and adds the owners' review badges. Server only. |
+| `listing-repository.ts` | The `ListingRepository` **interface** (list/save/delete the signed-in trainer's listings) and `getListingRepository()`. |
+| `supabase-listing-repository.ts` | Supabase implementation acting as the signed-in trainer (RLS enforces ownership). Uploads cover images to the `listings` bucket and removes replaced or deleted files. |
+| `listing-row.ts` | Shared `listings` row shape, column list, public image URL and `toCourse()` conversion, used by both listing repositories. Also loads the `trainer_badges` view for a page of listings. |
 
 ## `src/lib/auth/`: sign-in (the auth boundary)
 
@@ -193,8 +200,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 
 | File | What / why |
 |---|---|
-| `types.ts` | **Single source of truth for data shapes:** `Course`, `BookingRequest`, `CatalogFilters`, `CourseQuery` (filters sent to the server), `AccountRole`, `Profile`, `ProfileInput`, `Viewer`, grade and format lists, and the default filters. Database rows are converted into these in `lib/data/`. |
-| `filter-courses.ts` | **Temporary.** Same search/filter/sort rules as the database query, applied in the browser to listings stored in this browser. Removed when listings move to the DB (Step 6). |
+| `types.ts` | **Single source of truth for data shapes:** `Course`, `ListingInput` (listing form), `BookingRequest`, `CatalogFilters`, `CourseQuery` (filters sent to the server), `AccountRole`, `Profile`, `ProfileInput`, `Viewer`, grade and format lists, and the default filters. Database rows are converted into these in `lib/data/`. |
 | `profile-locks.ts` | Which fields are locked (`isFieldLocked`, `keepLockedFields`) and the notes shown for them, including the sign-up warning `NAME_FINAL_NOTE`. Mirrors migrations 0004, 0005, 0008. |
 | `viewer.ts` | `getViewer()`: the signed-in visitor (id, email, profile) or null, looked up once per request; `safeNextPath()` blocks redirects to other sites. |
 | `profile-form.ts` | Reads and validates the profile form on the server (required fields per account type, lengths, certification file type/size). |
@@ -203,9 +209,10 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `course-query-params.ts` | Encodes a `CourseQuery` into URL params (browser) and decodes + validates them (`/api/courses`). |
 | `catalog-api.ts` | Browser helper: `fetchCourses()` calls `/api/courses`. |
 | `local-store.ts` | Generic helper that keeps a list in `localStorage` and re-renders React when it changes, using `useSyncExternalStore`. |
-| `browser-storage.ts` | **Temporary.** The two browser lists: own listings and requests. Components only call these functions, so switching to the DB later touches one place. |
+| `browser-storage.ts` | **Temporary.** Booking requests kept in the browser (own listings moved to the database in Step 6). Components only call these functions, so switching to the DB later touches one place. |
 | `format.ts` | Display helpers: `initials`, `gradeLabel`, `formatPrice`, `formatDateTime`. |
-| `form-helpers.ts` | Reads text and numbers out of submitted forms, and reads image files. |
+| `form-helpers.ts` | Reads text and numbers out of submitted forms. |
+| `listing-form.ts` | Reads and validates the listing form on the server (required fields, limits, grades, outcomes, image type/size, publish checkbox, edit id). Pure, no database calls. |
 | `use-is-offscreen.ts` | Hook: tells whether an element scrolled out of view (IntersectionObserver). Drives the header search. |
 | `scroll.ts` | `scrollBelowHeader()`: smooth scroll that measures the sticky header live, so no hard-coded heights. |
 | `use-toast.ts` | Hook for the short bottom-of-screen message that disappears after 4 s. |
@@ -213,6 +220,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 ---
 
 ## Changelog of this map
+- **Step 6:** trainer listing CRUD. Migration `0011` (`owner_id`, `image_path`, RLS, `trainer_badges` view, public `listings` bucket); `listing-repository` + Supabase implementation, shared `listing-row` mapping, `lib/listing-form.ts`, `app/actions/listings.ts`; `ListingForm` now creates/edits in the database, new `MyListings` and `TrainerBadges` components, "My listings" header link; browser listings removed (`filter-courses.ts` deleted); catalog reads owners' review badges.
 - **Email notices (between 5 and 6):** `lib/email/` (interface + Resend), `reviewAction` sends approve/reject mail; HOW-TO "Send email (Resend)"; env `RESEND_API_KEY` / `EMAIL_FROM`.
 - **Step 5:** admin queue tabs, table/tiles switch and pagination (`ReviewQueue`, `ReviewTable`, `ReviewItemActions`, `SchoolEmailHint`, shared `Pagination`); admin role (migration 0009), `/admin` review queue, `ReviewCard`, admin repository and actions, rejection reasons on the account page; `getViewer()` adds `isAdmin`, `homeFor()` routes admins to `/admin`.
 - **Saved removed:** heart buttons, Saved header button and view, saved-ids browser store, `ids` search parameter and `toCourseQuery()`. `CourseQuery` is now the same as `CatalogFilters`.

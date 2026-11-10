@@ -93,7 +93,36 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
    - **Confirm signup**: `<a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email">Confirm your email</a>`
    - **Reset password**: `<a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=recovery">Reset your password</a>`
    - `RedirectTo` already contains `/auth/callback?next=...`, hence `&` not `?`.
-6. Emails: Supabase's built-in sender allows only a few emails per hour, for testing. Before launch, set up custom SMTP (Authentication → Emails → SMTP), e.g. Resend or SendGrid.
+6. Emails: Supabase's built-in sender allows only a few emails per hour, for testing. Before launch, set up custom SMTP — see "Send email (Resend)" below (one Resend domain covers both Supabase Auth and app notices).
+
+### Send email (Resend, once per environment)
+App notices (admin approve / reject) and Supabase Auth emails (confirm signup, reset password) both send from `skip-pd.com` through [Resend](https://resend.com) (free tier is enough to start).
+
+**Resend domain (owner)**
+1. Resend → **Domains** → Add domain `skip-pd.com`.
+2. Resend shows DNS records (DKIM, SPF, and a DMARC suggestion). At your DNS provider for `skip-pd.com`, add them exactly as shown (TXT / CNAME as Resend asks). Wait until Resend marks the domain **Verified**.
+3. Resend → **API keys** → Create key (e.g. `skippd-vercel`). Copy it once; it is shown only then.
+4. Vercel → project → **Settings → Environment Variables** → add for Production, Preview and Development:
+   - `RESEND_API_KEY` = the key from step 3
+   - `EMAIL_FROM` = `SkipPD <info@skip-pd.com>`
+   - `SITE_URL` = the production address (e.g. `https://skip-pd.com`) — used in links inside emails
+5. Redeploy (or wait for the next deploy) so the variables apply.
+
+**Supabase Auth SMTP (same Resend domain)**
+1. Supabase → **Project Settings → Authentication → Emails → SMTP Settings** → enable SMTP.
+2. Provider **Custom SMTP server**:
+   - Host `smtp.resend.com`
+   - Port `465` (SSL) or `587` (STARTTLS)
+   - User `resend`
+   - Password = the same API key from Resend step 3
+   - Sender email `info@skip-pd.com`, sender name `SkipPD`
+3. Save. Confirm-signup and reset-password emails now leave through Resend too (templates stay as in step 5 above).
+
+**Check**
+- Admin → approve or reject one queue item → the user gets an email with a link to `/account`.
+- Sign up with a fresh address → confirmation email arrives.
+
+If `RESEND_API_KEY` is missing, reviews still save; the server log shows `RESEND_API_KEY is not set; email was not sent.`
 
 ### Create the admin account (once)
 1. SQL Editor: run `supabase/migrations/0009_admin.sql` and `0010_admin_hardening.sql` if not done.

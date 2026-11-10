@@ -163,6 +163,18 @@ export function createSupabaseAdminRepository(): AdminRepository {
       throw new Error(`Could not save review: ${error.message}`);
     },
 
+    async getReviewContact(userId) {
+      const supabase = await getRequestClient();
+      const {data, error} = await supabase
+        .from('profiles')
+        .select('full_name, email')
+        .eq('id', userId)
+        .maybeSingle();
+      if (error) throw new Error(`Could not load contact: ${error.message}`);
+      if (!data?.email) return null;
+      return {fullName: data.full_name, email: data.email};
+    },
+
     async getCertificationUrl(userId) {
       const supabase = await getRequestClient();
       const {data: row, error: rowError} = await supabase

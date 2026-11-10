@@ -179,21 +179,21 @@ requested -> negotiating <-> negotiating -> accepted -> paid -> delivered -> com
 
 ## 6. Roadmap (each step ends with a working, deployed checkpoint)
 
-| # | Step | Done when |
-|---|---|---|
-| 1 ✅ | Repo + Next.js skeleton, port POC UI as static pages, deploy to Vercel | POC look-alike live on a Vercel URL |
-| 2 ✅ | UI changes: frontend design revisions agreed after the Step 1 review (header, layout, styling); no backend work | Revised design live on a Vercel preview and approved by the owner |
-| 3 ✅ | Supabase project, initial schema, seed the 6 sample courses; catalog/search/filters/sort read from DB | Live site shows DB data; adding a row in Supabase shows on site |
-| 4 ✅ | Auth: email/password (with email confirmation) and Google sign-in; Trainer or School profile; trainer PD certification upload; school email hint; account page | Can create Trainer and School accounts; certification and school approval visible on the account page |
-| 5 | Admin role: `admin` flag on accounts, admin page to review certifications and verify schools (replaces approving in the Supabase dashboard) | Admin approves a certification and a school from the site |
-| 6 | Listing CRUD for teachers + image upload; RLS policies | Teacher creates/edits/deletes own listing; school cannot list |
-| 7 | Booking requests; simple "My requests" list (requester) and "Jobs" page (trainer) | Request appears on trainer's Jobs page |
-| 8 | Negotiation (accept / counter / reject) + email notifications | Full negotiation round-trip works with emails |
-| 9 | Chat per booking (realtime) | Both parties chat live on a booking |
-| 10 | Completion flow: delivered, confirm, auto-confirm, dispute, evidence upload, dispute handling on the admin page. Completed bookings stay linked to the account that booked them (needed by Step 12) | A booking can reach `completed` or `disputed` |
-| 11 | Stripe Connect: trainer onboarding, payment on accept, payout on completion | Test-mode payment end to end |
-| 12 | **My learning**: header "My requests" becomes "My learning", a full page for the signed-in account: upcoming booked courses, completed courses, and learner certificates (generated on completion). Only the account holder's own bookings (no attendee accounts) | A completed booking shows under "Completed" with a downloadable certificate |
-| 13 | Later: trainer ratings next to listings (see 1.4), reviews, self-paced, analytics | - |
+| #   | Step                                                                                                                                                                                                                                                              | Done when                                                                                             |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| 1 ✅ | Repo + Next.js skeleton, port POC UI as static pages, deploy to Vercel                                                                                                                                                                                            | POC look-alike live on a Vercel URL                                                                   |
+| 2 ✅ | UI changes: frontend design revisions agreed after the Step 1 review (header, layout, styling); no backend work                                                                                                                                                   | Revised design live on a Vercel preview and approved by the owner                                     |
+| 3 ✅ | Supabase project, initial schema, seed the 6 sample courses; catalog/search/filters/sort read from DB                                                                                                                                                             | Live site shows DB data; adding a row in Supabase shows on site                                       |
+| 4 ✅ | Auth: email/password (with email confirmation) and Google sign-in; Trainer or School profile; trainer PD certification upload; school email hint; account page                                                                                                    | Can create Trainer and School accounts; certification and school approval visible on the account page |
+| 5 ✅ | Admin role: `admin` flag on accounts, admin page to review certifications and verify schools (replaces approving in the Supabase dashboard)                                                                                                                       | Admin approves a certification and a school from the site                                             |
+| 6   | Listing CRUD for teachers + image upload; RLS policies                                                                                                                                                                                                            | Teacher creates/edits/deletes own listing; school cannot list                                         |
+| 7   | Booking requests; simple "My requests" list (requester) and "Jobs" page (trainer)                                                                                                                                                                                 | Request appears on trainer's Jobs page                                                                |
+| 8   | Negotiation (accept / counter / reject) + email notifications                                                                                                                                                                                                     | Full negotiation round-trip works with emails                                                         |
+| 9   | Chat per booking (realtime)                                                                                                                                                                                                                                       | Both parties chat live on a booking                                                                   |
+| 10  | Completion flow: delivered, confirm, auto-confirm, dispute, evidence upload, dispute handling on the admin page. Completed bookings stay linked to the account that booked them (needed by Step 12)                                                               | A booking can reach `completed` or `disputed`                                                         |
+| 11  | Stripe Connect: trainer onboarding, payment on accept, payout on completion                                                                                                                                                                                       | Test-mode payment end to end                                                                          |
+| 12  | **My learning**: header "My requests" becomes "My learning", a full page for the signed-in account: upcoming booked courses, completed courses, and learner certificates (generated on completion). Only the account holder's own bookings (no attendee accounts) | A completed booking shows under "Completed" with a downloadable certificate                           |
+| 13  | Later: trainer ratings next to listings (see 1.4), reviews, self-paced, analytics                                                                                                                                                                                 | -                                                                                                     |
 
 Future possibilities (after all steps):
 - **Sign in with Clever** for teachers whose district uses Clever. Needs a custom login flow in `lib/auth/` (Supabase has no Clever provider), Clever partner approval, and each district opting in. Revisit when districts ask for it.
@@ -216,9 +216,17 @@ Rule: do not start step N+1 until step N is deployed and manually tested.
 
 ---
 
-## 8. Current step - Step 5: Admin review
+## 8. Current step - Email notices (between Step 5 and Step 6)
 
-**Status:** Step 4, the Saved removal, the shared header and the Support Center are merged into `dev`. Step 5 in progress on branch `feature/step-5-admin`.
+**Status:** Step 5 (admin review queue) is merged into `dev` (PR #8). Owner still runs migrations `0009` + `0010` and creates the admin account if not done, then sets up Resend (HOW-TO "Send email (Resend)").
+
+### Email notices (current)
+1. Admin approve / reject sends the user an email (certification, license, school) with a link to `/account`. Best-effort: the decision always saves even if email fails.
+2. Vendor: Resend (`lib/email/`). The same domain also feeds Supabase Auth SMTP (confirm signup, reset password) — owner configures once (HOW-TO).
+3. Environment: `RESEND_API_KEY`, `EMAIL_FROM`, `SITE_URL`.
+**Checkpoint:** reject a school with a reason → the school contact gets the email; a fresh sign-up confirmation email works through Resend.
+
+Next: Step 6 — listing CRUD for trainers + image upload.
 
 ### Step 1 - Skeleton + deploy (done)
 Next.js app in `web/`, POC UI ported into documented components, sample data in a local file, Vercel connected (Root Directory `web`).
@@ -261,11 +269,11 @@ Before launch:
 
 Not in Step 4: the "Not certified" / "Not licensed" labels next to listings arrives with listing CRUD (Step 6), when listings get an owner. Requests still live in the browser until Step 7. Saved was removed after Step 4.
 
-### Step 5 - Admin review (current)
+### Step 5 - Admin review (done)
 Prerequisite (owner): run `supabase/migrations/0009_admin.sql` and `0010_admin_hardening.sql`, then create the admin account (HOW-TO "Create the admin account").
 1. Admin is a separate account, flagged in the `admins` table from the SQL Editor only. Signing in with it opens `/admin`; it cannot book, list or create a profile.
 2. `/admin` has tabs for schools to verify, certificates to review (with a 10-minute link to the file) and teaching licenses to check. Each tab shows 10 items per page, as a table (default) or tiles.
 3. Approve, or reject with a reason; the user sees the status and reason on `/account`. A new upload or license change sends the item back to the queue. Only pending items can be decided; certificates are matched against the file the admin opened, so a newer upload is never approved unseen. A rejected school that edits its details re-enters review.
 **Checkpoint:** the admin approves a certificate and rejects a school with a reason from the site; both users see the result on `/account`.
 
-Next (not in Step 5): approval/rejection emails, together with custom SMTP on `skip-pd.com` (also fixes the email templates and the hourly email limit).
+Step 5 is done. Approval/rejection emails + custom SMTP on `skip-pd.com` are the current step (see "Current step" above); Step 6 (listings) comes after the email checkpoint.

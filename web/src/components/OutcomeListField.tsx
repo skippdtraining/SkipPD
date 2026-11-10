@@ -15,13 +15,21 @@ import {MAX_OUTCOME_LENGTH, MAX_OUTCOMES} from '@/config/catalog';
 interface OutcomeListFieldProps {
   /** Form field name shared by every input. */
   name: string;
+  /** Existing outcomes to prefill when editing a listing. */
+  initial?: string[];
 }
 
 /** Growing list of outcome inputs. At least one row is always shown. */
-export function OutcomeListField({name}: OutcomeListFieldProps) {
+export function OutcomeListField({name, initial}: OutcomeListFieldProps) {
+  // Prefilled values are read once: the form is otherwise uncontrolled.
+  const [initialValues] = useState(() =>
+    initial && initial.length > 0 ? initial : [''],
+  );
   // Each row needs a stable key that survives removals; a counter gives one.
-  const nextId = useRef(1);
-  const [rowIds, setRowIds] = useState<number[]>([0]);
+  const nextId = useRef(initialValues.length);
+  const [rowIds, setRowIds] = useState<number[]>(() =>
+    initialValues.map((_, index) => index),
+  );
 
   function addRow() {
     setRowIds((ids) => [...ids, nextId.current++]);
@@ -39,6 +47,7 @@ export function OutcomeListField({name}: OutcomeListFieldProps) {
           <input
             name={name}
             maxLength={MAX_OUTCOME_LENGTH}
+            defaultValue={initialValues[index] ?? ''}
             placeholder={index === 0 ? 'e.g., Plan explicit phonics instruction' : ''}
             aria-label={`Outcome ${index + 1}`}
             // Only the first outcome is mandatory; empty extra rows are ignored.

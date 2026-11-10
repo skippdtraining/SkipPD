@@ -1,68 +1,29 @@
 /**
  * @fileoverview {@link CourseRepository} backed by Supabase (Postgres).
  *
- * The only file that knows the Supabase table and column names. It turns a
- * `CourseQuery` (lib/types.ts) into a database query, so search, filters and sorting
- * run in the database, and converts rows into the app's {@link Course} type.
- * Tables are defined in `supabase/migrations/0001_catalog.sql`.
+ * The only file that knows the Supabase catalog table and column names (the
+ * shared row mapping lives in `listing-row.ts`). It turns a `CourseQuery`
+ * (lib/types.ts) into a database query, so search, filters and sorting run in
+ * the database, and converts rows into the app's {@link Course} type.
+ * Tables are defined in `supabase/migrations/0001_catalog.sql` and
+ * `0011_listings_owner.sql`.
  *
  * Server only: it is imported by `app/page.tsx` and `app/api/courses`.
  */
 
 import {SHORT_COURSE_MAX_HOURS} from '@/config/catalog';
 import {getPublicClient} from '@/lib/supabase/clients';
-import type {Course, CoverType, Format, Grade} from '../types';
 import type {CourseRepository} from './course-repository';
-
-/** Columns read from `public.listings`, in database naming. */
-interface ListingRow {
-  id: number;
-  title: string;
-  category: string;
-  trainer_name: string;
-  trainer_role: string;
-  format: string;
-  hours: number | string;
-  price_usd: number | string;
-  grades: string[];
-  tags: string[];
-  description: string;
-  outcomes: string[];
-  cover_color: string;
-  cover_accent: string;
-  cover_type: string;
-}
-
-const LISTING_COLUMNS =
-  'id, title, category, trainer_name, trainer_role, format, hours, price_usd, grades, ' +
-  'tags, description, outcomes, cover_color, cover_accent, cover_type';
+import {
+  LISTING_COLUMNS,
+  loadTrainerBadges,
+  toCourse,
+  type ListingRow,
+} from './listing-row';
 
 /** Escapes LIKE wildcards so a search for "50%" matches the text "50%". */
 function escapeLike(text: string): string {
   return text.replace(/[\\%_]/g, (character) => `\\${character}`);
-}
-
-/** Converts a database row into the app's {@link Course} type. */
-function toCourse(row: ListingRow): Course {
-  return {
-    id: row.id,
-    title: row.title,
-    category: row.category,
-    trainer: row.trainer_name,
-    role: row.trainer_role,
-    // Safe: the table's CHECK constraints only allow these values.
-    format: row.format as Format,
-    grades: row.grades as Grade[],
-    type: row.cover_type as CoverType,
-    // Postgres `numeric` may arrive as a string; normalise to number.
-    hours: Number(row.hours),
-    price: Number(row.price_usd),
-    tags: row.tags,
-    description: row.description,
-    outcomes: row.outcomes,
-    color: row.cover_color,
-    accent: row.cover_accent,
-  };
 }
 
 /** Repository that reads published listings from Supabase. */
@@ -90,7 +51,10 @@ export function createSupabaseCourseRepository(): CourseRepository {
 
       const {data, error} = await request.returns<ListingRow[]>();
       if (error) throw new Error(`Could not load courses: ${error.message}`);
-      return data.map(toCourse);
+      const badges = await loadTrainerBadges(data);
+      return data.map((row) =>
+        toCourse(row, row.owner_id === null ? undefined : badges.get(row.owner_id)),
+      );
     },
 
     async listCategories() {

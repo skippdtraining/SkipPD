@@ -25,6 +25,7 @@ import {SearchBox} from './SearchBox';
 /** Home-page links that open a dialog after navigating there. */
 export const OPEN_REQUESTS_HREF = '/?open=requests';
 export const OPEN_LISTING_HREF = '/?open=listing';
+export const OPEN_LISTINGS_HREF = '/?open=listings';
 
 /** Compact search box settings (home page only). */
 interface HeaderSearch {
@@ -45,6 +46,8 @@ interface SiteHeaderProps {
   search?: HeaderSearch;
   /** Omitted on other pages: "My requests" becomes a link to home. */
   onShowRequests?: () => void;
+  /** Omitted on other pages: "My listings" becomes a link to home. */
+  onShowListings?: () => void;
   /** Omitted on other pages: "List your training" becomes a link to home. */
   onListTraining?: () => void;
 }
@@ -54,6 +57,7 @@ export function SiteHeader({
   viewer,
   search,
   onShowRequests,
+  onShowListings,
   onListTraining,
 }: SiteHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -125,6 +129,14 @@ export function SiteHeader({
             )}
           </>
         )}
+        {viewer?.profile?.role === 'trainer' &&
+          (onShowListings ? (
+            <button onClick={choose(onShowListings)}>My listings</button>
+          ) : (
+            <Link href={OPEN_LISTINGS_HREF} onClick={closeMenu}>
+              My listings
+            </Link>
+          ))}
         {viewer && !viewer.isAdmin && (
           <Link href={viewer.profile ? '/account' : '/onboarding'} onClick={closeMenu}>
             Account

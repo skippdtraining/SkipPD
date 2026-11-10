@@ -6,6 +6,7 @@
 import {formatPrice, gradeLabel, initials} from '@/lib/format';
 import type {Course} from '@/lib/types';
 import {CourseIllustration} from './CourseIllustration';
+import {TrainerBadges} from './TrainerBadges';
 
 interface CourseCardProps {
   course: Course;
@@ -52,6 +53,7 @@ export function CourseCard({course, onOpen}: CourseCardProps) {
           <span className="avatar">{initials(course.trainer)}</span>
           {course.trainer}
         </div>
+        <TrainerBadges course={course} />
         <div className="meta">
           <span>◷ {course.hours} hours</span>
           <span>▤ {gradeLabel(course.grades)}</span>

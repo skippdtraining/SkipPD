@@ -1,7 +1,7 @@
 /**
  * @fileoverview Catalog filter panel shown left of the grid. It only reports
  * changes upward; the actual
- * filtering happens in `lib/filter-courses.ts`.
+ * filtering happens in the database (`lib/data/supabase-course-repository.ts`).
  *
  * On phones the filter panel is collapsed behind a "Filters" button so the
  * results are visible first (the button is hidden on larger screens by CSS).

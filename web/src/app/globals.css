@@ -533,6 +533,24 @@ header.with-search .header-search {
   color: #7d7789;
   margin: 13px 0 10px;
 }
+.trainer-badges {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 7px;
+}
+.trainer-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: #f5f3f7;
+  color: #82768e;
+}
+.trainer-badge.ok {
+  background: #e8f5ec;
+  color: #1f7a45;
+}
 .tags {
   display: flex;
   gap: 5px;
@@ -902,6 +920,46 @@ header.with-search .header-search {
 }
 .btn.danger {
   background: #a2463f;
+}
+
+/* "My listings" dialog */
+.my-listings {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.my-listing {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: flex-start;
+  border: 1px solid #ece8f2;
+  border-radius: 8px;
+  padding: 12px;
+}
+.my-listing-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 730px) {
+  .my-listing {
+    flex-direction: column;
+  }
+  .my-listing-actions {
+    flex-direction: row;
+    align-items: center;
+  }
 }
 
 /* Support Center (/support and /support/<article>) */

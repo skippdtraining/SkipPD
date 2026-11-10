@@ -20,6 +20,10 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Scroll behaviour when changing catalog page | `web/src/config/catalog.ts` → `PAGE_CHANGE_SCROLL` | `'catalog-top'` or `'none'`. Header height is measured live (`lib/scroll.ts`). |
 | Max learning outcomes / outcome length | `web/src/config/catalog.ts` → `MAX_OUTCOMES`, `MAX_OUTCOME_LENGTH` | |
 | Image upload size / allowed types | `web/src/config/catalog.ts` → `MAX_IMAGE_BYTES`, `IMAGE_TYPES` | |
+| Listing form limits (title, description, hours, price) | `web/src/config/catalog.ts` → `LISTING_LIMITS` | Enforced by the form and again on the server in `lib/listing-form.ts`; keep in sync with the `listings` table checks. |
+| Listing cover images | Supabase Storage bucket `listings` (public, 1 MB, JPG/PNG/WebP) | One folder per user id; the path is stored in `listings.image_path` (migration `0011`). |
+| A trainer's own listings ("My listings") | `web/src/components/MyListings.tsx` + `app/actions/listings.ts` | The edit form reuses `ListingForm`; ownership is enforced by RLS (migration `0011`). |
+| Certified / Licensed badges on listings | `web/src/components/TrainerBadges.tsx` + public view `trainer_badges` | Status comes from `trainer_profiles`; the admin sets it at `/admin`. |
 | Suggested topics in the listing form | Supabase table `categories` (`name`, `sort_order`) | Trainers can also choose "Other" and type a topic (max length: `MAX_CUSTOM_TOPIC_LENGTH` in `config/catalog.ts`). |
 | Grade bands | `web/src/lib/types.ts` → `Grade`, `GRADES` | Update both. |
 | Delivery formats | `web/src/lib/types.ts` → `Format`, `FORMATS` | Update both. |
@@ -39,9 +43,9 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Phone menu (☰) | `web/src/components/SiteHeader.tsx`, CSS `.menu-toggle` + 730px block | |
 | Footer copyright year | `web/src/config/site.ts` → `copyrightYear` | |
 | Price / grade display format | `web/src/lib/format.ts` | |
-| Search / filter / sort logic | `web/src/lib/data/supabase-course-repository.ts` → `searchCourses` | Runs in the database. Browser-only listings use the same rules in `lib/filter-courses.ts`; keep both in sync. |
+| Search / filter / sort logic | `web/src/lib/data/supabase-course-repository.ts` → `searchCourses` | Runs in the database. |
 | Search delay while typing | `web/src/config/catalog.ts` → `SEARCH_DEBOUNCE_MS` | |
-| Course content (title, price, outcomes...) | Supabase dashboard → Table Editor → `listings` | Live on next page load. Set `is_published` to false to hide a course; `recommended_rank` orders "Recommended". |
+| Course content (title, price, outcomes...) | Supabase dashboard → Table Editor → `listings` | Live on next page load. Trainers own their rows (`owner_id`) and manage them from **My listings**; set `is_published` to false to hide a course; `recommended_rank` orders "Recommended". |
 | Database tables / seed data | `supabase/migrations/*.sql`, `supabase/seed.sql` | See "Supabase setup" recipe. |
 | Allowed return addresses for email links / Google (localhost, previews) | `web/src/config/site.ts` → `ALLOWED_ORIGIN_PATTERNS` | Production comes from Vercel (`VERCEL_PROJECT_PRODUCTION_URL`) or optional `SITE_URL`. Keep in sync with Supabase Redirect URLs. |
 | Supabase URL / key | `web/.env.local` (local), Vercel → Settings → Environment Variables | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`. Template: `web/.env.example`. |
@@ -150,8 +154,14 @@ Locked on the site (rule: `web/src/lib/profile-locks.ts` + migrations `0004`, `0
 2. License: `trainer_profiles` → `license_state` / `license_number` (editing them resets `license_status` to `pending`; set it back to `approved` if correct).
 3. School name: Table Editor → `school_profiles` → edit `school_name` → Save.
 
+### Manage a trainer's listings
+1. Trainer account: **My listings** in the header opens the list, including listings hidden from the catalog. **Edit** reopens the listing form; **Delete** asks once more, then deletes the listing and its image.
+2. The "Show in the catalog" checkbox in the form unpublishes a listing (`is_published`) without deleting it.
+3. Cover images: Storage → `listings` → `<user id>/`. A replaced or deleted listing removes its old file.
+4. Dashboard fallback: Table Editor → `listings` (filter by `owner_id`) and Storage → `listings`.
+
 ### Account deletion
-Users delete their own account on `/account` (type DELETE). The app removes their certification files, then calls `delete_my_account()` (`supabase/migrations/0006_delete_account.sql`); profile rows cascade. To delete a user yourself: Authentication → Users → ⋯ → Delete user (also remove their folder in Storage → `certifications`).
+Users delete their own account on `/account` (type DELETE). The app removes their certification and listing image files, then calls `delete_my_account()` (`supabase/migrations/0006_delete_account.sql`); profile and listing rows cascade. To delete a user yourself: Authentication → Users → ⋯ → Delete user (also remove their folder in Storage → `certifications` and `listings`).
 
 ### Add a school email domain
 1. Table Editor → `school_email_domains` → Insert row: `domain` in lower case, e.g. `browardschools.com` (subdomains count too).
@@ -160,7 +170,7 @@ Users delete their own account on `/account` (type DELETE). The app removes thei
 ### Change the database schema
 1. Add a new numbered file, e.g. `supabase/migrations/0010_<topic>.sql` (the next free number). Never edit a migration that was already run.
 2. Run it in the SQL Editor.
-3. Update `ListingRow` / `toCourse` in `web/src/lib/data/supabase-course-repository.ts`, and `lib/types.ts` if the app type changes.
+3. Update `ListingRow` / `toCourse` in `web/src/lib/data/listing-row.ts` (shared by both listing repositories), and `lib/types.ts` if the app type changes.
 
 ### Add a footer page
 1. Add `{label, href}` to a column in `FOOTER_COLUMNS` (`web/src/config/site.ts`). The footer link and a "Coming soon" page appear automatically.

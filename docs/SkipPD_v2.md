@@ -216,17 +216,26 @@ Rule: do not start step N+1 until step N is deployed and manually tested.
 
 ---
 
-## 8. Current step - Email notices (between Step 5 and Step 6)
+## 8. Current step - Step 6: listing CRUD for trainers
 
-**Status:** Step 5 (admin review queue) is merged into `dev` (PR #8). Owner still runs migrations `0009` + `0010` and creates the admin account if not done, then sets up Resend (HOW-TO "Send email (Resend)").
+**Status:** Step 6 code is on `feature/step-6-listings`. Email notices (PR #9) are merged into `dev`; their checkpoint still waits for Squarespace access (see below). Owner still runs migrations `0009` + `0010` if not done, and creates the admin account.
 
-### Email notices (current)
+### Step 6 - Listing CRUD (current)
+1. `listings.owner_id` + `image_path`; RLS so only the owner (a trainer) creates, edits and deletes; admins can read all rows. Migration `0011_listings_owner.sql`.
+2. Cover images upload to the public `listings` bucket, one folder per user id (1 MB, JPG/PNG/WebP).
+3. New header item **My listings**: the trainer's listings (hidden ones included), with Edit, Delete and a create button. The form also has a "Show in the catalog" checkbox (`is_published`).
+4. Trainer name and credentials are copied from the profile when a listing is saved.
+5. Catalog cards and the detail dialog show **Certified / Not certified** and **Licensed / Not licensed** from the trainer's profile (public `trainer_badges` view).
+6. Browser-only listings are gone (`localStorage` keeps booking requests until Step 7).
+**Checkpoint:** a trainer creates a listing (with image), edits it, hides and shows it, then deletes it; a school account cannot list; the badges match the admin's decisions.
+
+### Email notices (done, checkpoint deferred)
 1. Admin approve / reject sends the user an email (certification, license, school) with a link to `/account`. Best-effort: the decision always saves even if email fails.
-2. Vendor: Resend (`lib/email/`). The same domain also feeds Supabase Auth SMTP (confirm signup, reset password) — owner configures once (HOW-TO).
+2. Vendor: Resend (`lib/email/`). The same domain also feeds Supabase Auth SMTP (confirm signup, reset password).
 3. Environment: `RESEND_API_KEY`, `EMAIL_FROM`, `SITE_URL`.
-**Checkpoint:** reject a school with a reason → the school contact gets the email; a fresh sign-up confirmation email works through Resend.
+**Checkpoint (blocked):** needs Squarespace access to publish the Resend DNS records for `skip-pd.com`; then set `SITE_URL`, enable Supabase custom SMTP and test. Do not enable custom SMTP before the domain is verified in Resend.
 
-Next: Step 6 — listing CRUD for trainers + image upload.
+Next: Step 7 — booking requests (requester list + trainer Jobs page).
 
 ### Step 1 - Skeleton + deploy (done)
 Next.js app in `web/`, POC UI ported into documented components, sample data in a local file, Vercel connected (Root Directory `web`).

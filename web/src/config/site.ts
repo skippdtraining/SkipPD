@@ -95,4 +95,7 @@ export const ALLOWED_ORIGIN_PATTERNS: RegExp[] = [
   /^http:\/\/localhost:\d+$/,
   // Vercel previews: https://skip-<id>-skip-pd.vercel.app
   /^https:\/\/skip-[a-z0-9-]+-skip-pd\.vercel\.app$/,
+  // Custom domain. Redundant once it is the production address in
+  // lib/request-origin.ts; harmless before the DNS switch.
+  /^https:\/\/skip-pd\.com$/,
 ];

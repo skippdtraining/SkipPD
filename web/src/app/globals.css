@@ -1154,14 +1154,30 @@ header.with-search .header-search {
 .review-table tr:last-child td {
   border-bottom: 0;
 }
+/* Table Actions cell: one tight row — reason, then Approve / Reject. */
 .review-actions-compact {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-width: 220px;
+  gap: 4px;
+  min-width: 250px;
+  font-size: 12px;
 }
 .review-actions-compact .review-form {
   margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.review-actions-compact .form-error {
+  flex: 1 1 100%;
+  margin: 0;
+  padding: 6px 8px;
+}
+.review-actions-compact .btn.light.small {
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
 }
 .review-reason-input {
   width: 100%;
@@ -1170,6 +1186,24 @@ header.with-search .header-search {
   padding: 7px 9px;
   margin-bottom: 6px;
   font-size: 12px;
+}
+.review-actions-compact .review-reason-input {
+  flex: 1 1 110px;
+  width: auto;
+  min-width: 0;
+  margin: 0;
+  padding: 5px 7px;
+  font-size: 11px;
+}
+.review-actions-compact .review-actions {
+  flex: 0 0 auto;
+  gap: 4px;
+}
+.review-actions-compact .review-actions .btn {
+  flex: 0 0 auto;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
 }
 .review-date {
   color: var(--muted);
@@ -1216,6 +1250,11 @@ header.with-search .header-search {
 }
 .review-email,
 .review-detail,
+.review-actions-compact .review-success {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: 11px;
+}
 .review-success {
   color: var(--green, #1a7f37);
   font-weight: 600;

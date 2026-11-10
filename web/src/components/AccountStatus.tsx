@@ -34,11 +34,22 @@ interface AccountStatusProps {
   profile: Profile;
 }
 
-/** One coloured status line. */
-function StatusLine({status, text}: {status: ReviewStatus; text: string}) {
+/** One coloured status line, plus the admin's reason after a rejection. */
+function StatusLine({
+  status,
+  text,
+  reason,
+}: {
+  status: ReviewStatus;
+  text: string;
+  reason: string;
+}) {
   return (
     <p className={`account-status status-${status}`} role="status">
       {text}
+      {status === 'rejected' && reason !== '' && (
+        <span className="status-reason">Reason: {reason}</span>
+      )}
     </p>
   );
 }
@@ -50,6 +61,7 @@ export function AccountStatus({profile}: AccountStatusProps) {
       <StatusLine
         status={profile.schoolStatus}
         text={SCHOOL_TEXT[profile.schoolStatus]}
+        reason={profile.schoolReason}
       />
     );
   }
@@ -58,10 +70,12 @@ export function AccountStatus({profile}: AccountStatusProps) {
       <StatusLine
         status={profile.certificationStatus}
         text={CERTIFICATION_TEXT[profile.certificationStatus]}
+        reason={profile.certificationReason}
       />
       <StatusLine
         status={profile.licenseStatus}
         text={LICENSE_TEXT[profile.licenseStatus]}
+        reason={profile.licenseReason}
       />
     </>
   );

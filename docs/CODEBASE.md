@@ -3,7 +3,7 @@
 This file describes what every file and folder is and why it exists.
 **Update it in the same PR** whenever files are added, moved or removed.
 
-_Last updated: Step 4 (accounts)._
+_Last updated: Step 5 (admin review)._
 
 All app code lives in `web/`. Paths below starting with `src/` mean `web/src/`.
 
@@ -60,6 +60,8 @@ Email links and Google return to /auth/callback.
 | `supabase/migrations/0006_delete_account.sql` | `delete_my_account()` (deletes only the caller's account; profiles cascade) and a storage policy letting users delete their own certification files. |
 | `supabase/migrations/0007_hardening.sql` | Review fixes: `ever_approved` (name lock survives re-review), school-domain check internal only, trainer-only uploads (max 10), email sync from `auth.users`, `save_my_profile()` (profile + details in one transaction). |
 | `supabase/migrations/0008_lock_names_always.sql` | Trainer name and school name can never be changed by users once the profile exists (admin can in the dashboard). |
+| `supabase/migrations/0009_admin.sql` | `admins` table (set only in the SQL Editor), `is_admin()`, admin read access to profiles and certificate files, rejection reasons, `review_profile()`; admins cannot create a profile. |
+| `supabase/migrations/0010_admin_hardening.sql` | Review only `pending` items (certificates also match the file the admin saw), submission timestamps for the queue order, no profiles for admins / no admins with profiles, `is_admin()` evaluated once per query, rejected school can re-review after an edit. |
 | `supabase/seed.sql` | Starter data: six suggested topics and the six POC courses. Re-runnable (empties the tables first). |
 | `web/` | **The Next.js application.** Run all npm commands inside this folder. |
 
@@ -95,6 +97,9 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `account/password/page.tsx` | Change password while signed in; asks for the current password. |
 | `onboarding/page.tsx` | First-time profile form: account type plus trainer or school details. |
 | `account/page.tsx` | Review status, profile summary with Edit button, back to trainings, change password, sign out, delete account. |
+| `admin/page.tsx` | Admin review queue (loaded on the server; display in `ReviewQueue`). 404 for non-admins. |
+| `actions/admin.ts` | Server action: approve/reject (`reviewAction`). Re-checks the admin flag; shows a conflict message when the item changed. |
+| `admin/file/[userId]/route.ts` | Admin-only `GET` link to a trainer's certificate file: re-checks the admin flag, then redirects to a 10-minute signed URL (opens in a new tab). |
 | `auth/callback/route.ts` | Where email links (`token_hash`) and Google sign-in (`code`) return: creates the session, then opens `next` or `/onboarding`. An already-used confirmation link asks the user to sign in. |
 | `actions/auth.ts` | Server actions: sign in, sign up, Google, forgot/reset password, sign out. |
 | `actions/profile.ts` | Server action: validate and save the profile form, upload the certification. New profiles go to the home page (welcome message); edits return to the account summary. Also `deleteAccountAction`. |
@@ -120,7 +125,13 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `AccountProfile.tsx` | Account page: read-only profile summary; "Edit profile" swaps in `ProfileForm`, saving returns to the summary. |
 | `FormError.tsx` | Form error message that scrolls into view and takes focus after each failed submit. Used by all account forms. |
 | `DeleteAccount.tsx` | Account page "Delete account": typed DELETE confirmation, then permanent deletion. |
-| `AccountStatus.tsx` | Account page status: certificate ("Certified") and teaching license ("Licensed") for trainers, verification for schools. |
+| `ReviewQueue.tsx` | Admin page UI: tabs (Schools / Certificates / Licenses), table or tiles switch, pages of `ADMIN_REVIEWS_PER_PAGE`. |
+| `ReviewTable.tsx` | Admin queue as a table (date, name, details, actions). |
+| `ReviewCard.tsx` | Admin queue as tiles: one card per item. |
+| `ReviewItemActions.tsx` | Shared Approve / Reject form (with reason + the certificate path it saw) and "View file" link, used by table and tiles. |
+| `SchoolEmailHint.tsx` | "School email" / "Not a known school email" label for the admin. |
+| `Pagination.tsx` | Shared ← 1 2 3 → page navigation (catalog and admin queue). |
+| `AccountStatus.tsx` | Account page status: certificate ("Certified") and teaching license ("Licensed") for trainers, verification for schools; shows the admin's reason after a rejection. |
 | `SearchBox.tsx` | Search form used twice: large in the hero, compact in the header. Both share one query. |
 | `Hero.tsx` | Headline, search box and artwork. |
 | `FilterSidebar.tsx` | Format, grade, duration and price filters; collapsed behind a "Filters" button on phones. Only reports changes; filtering runs on the server. |
@@ -151,6 +162,8 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 |---|---|
 | `course-repository.ts` | The `CourseRepository` **interface** (what the app can ask about courses) and `getCourseRepository()`, the one line that picks the backend. |
 | `profile-repository.ts` | The `ProfileRepository` interface (current user's profile, certification upload) and `getProfileRepository()`. |
+| `admin-repository.ts` | The `AdminRepository` interface (is admin, pending reviews, review, certificate link) and `getAdminRepository()`. |
+| `supabase-admin-repository.ts` | Supabase implementation, acting as the signed-in admin (database rules allow it only for admins). |
 | `supabase-profile-repository.ts` | Supabase implementation: joins `profiles` with `trainer_profiles` or `school_profiles` into one `Profile`; `certifications` bucket. Never writes review statuses. |
 | `supabase-course-repository.ts` | Supabase implementation. The only file with table/column names and the Supabase client. Turns a `CourseQuery` into a database query (search, filters, sort) and rows into `Course`. Reads `SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY`. Server only. |
 
@@ -182,7 +195,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `catalog-api.ts` | Browser helper: `fetchCourses()` calls `/api/courses`. |
 | `local-store.ts` | Generic helper that keeps a list in `localStorage` and re-renders React when it changes, using `useSyncExternalStore`. |
 | `browser-storage.ts` | **Temporary.** The two browser lists: own listings and requests. Components only call these functions, so switching to the DB later touches one place. |
-| `format.ts` | Display helpers: `initials`, `gradeLabel`, `formatPrice`. |
+| `format.ts` | Display helpers: `initials`, `gradeLabel`, `formatPrice`, `formatDateTime`. |
 | `form-helpers.ts` | Reads text and numbers out of submitted forms, and reads image files. |
 | `use-is-offscreen.ts` | Hook: tells whether an element scrolled out of view (IntersectionObserver). Drives the header search. |
 | `scroll.ts` | `scrollBelowHeader()`: smooth scroll that measures the sticky header live, so no hard-coded heights. |
@@ -191,6 +204,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 ---
 
 ## Changelog of this map
+- **Step 5:** admin queue tabs, table/tiles switch and pagination (`ReviewQueue`, `ReviewTable`, `ReviewItemActions`, `SchoolEmailHint`, shared `Pagination`); admin role (migration 0009), `/admin` review queue, `ReviewCard`, admin repository and actions, rejection reasons on the account page; `getViewer()` adds `isAdmin`, `homeFor()` routes admins to `/admin`.
 - **Saved removed:** heart buttons, Saved header button and view, saved-ids browser store, `ids` search parameter and `toCourseQuery()`. `CourseQuery` is now the same as `CatalogFilters`.
 - **Shared header:** `PageHeader.tsx` puts the site header (without search) on every page; `HomePage` opens dialogs from `/?open=requests|listing`.
 - **Step 4 name lock:** trainer and school names fixed from sign-up (migration 0008); sign-up form warns that they cannot change later. Pre-launch plan: combined `supabase/schema.sql` for a fresh production project.

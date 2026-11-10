@@ -15,7 +15,7 @@ import {NextResponse, type NextRequest} from 'next/server';
 import {AFTER_SIGN_IN_PATH} from '@/config/accounts';
 import {getAuthService, type EmailLinkType} from '@/lib/auth/auth-service';
 import {grantResetPass} from '@/lib/password-reset-pass';
-import {getViewer, safeNextPath} from '@/lib/viewer';
+import {getViewer, homeFor, safeNextPath} from '@/lib/viewer';
 
 export async function GET(request: NextRequest) {
   const {searchParams, origin} = request.nextUrl;
@@ -44,5 +44,5 @@ export async function GET(request: NextRequest) {
     return response;
   }
   const viewer = await getViewer();
-  return NextResponse.redirect(`${origin}${viewer?.profile ? next : '/onboarding'}`);
+  return NextResponse.redirect(`${origin}${viewer ? homeFor(viewer, next) : '/sign-in'}`);
 }

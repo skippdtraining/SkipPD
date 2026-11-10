@@ -51,10 +51,12 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Account type labels / hints | `web/src/lib/types.ts` → `ACCOUNT_ROLES` | |
 | Profile form fields | `web/src/components/ProfileForm.tsx` + `lib/profile-form.ts` (validation) + `lib/data/supabase-profile-repository.ts` (columns) | New column needs a migration: common fields in `profiles`, others in `trainer_profiles` or `school_profiles`. |
 | Form error behaviour (scroll + focus) | `web/src/components/FormError.tsx` | |
+| Admin review card wording / hints | `web/src/components/ReviewCard.tsx` | |
+| Admin items per page, default tab / view | `web/src/config/accounts.ts` → `ADMIN_REVIEWS_PER_PAGE`; `components/ReviewQueue.tsx` | |
 | Review status wording ("Not certified"...) | `web/src/components/AccountStatus.tsx` | |
 | Who can book / list | `web/src/components/HomePage.tsx` → `withAccount`, `openListingForm` | Guest header items: `components/SiteHeader.tsx`. |
 | Sign-in vendor | `web/src/lib/auth/auth-service.ts` → `getAuthService()` | Same pattern as the database. |
-| Approve a certification or school | Supabase dashboard → `trainer_profiles` / `school_profiles` | See recipe below. |
+| Approve a certification, license or school | Site: `/admin` (admin account) | See recipes "Create the admin account" and "Approve…". |
 | Extra school email domains | Supabase dashboard → `school_email_domains` | See recipe below. |
 | Required PR reviewer | `.github/CODEOWNERS` | |
 | Files git ignores | `.gitignore` | |
@@ -75,7 +77,7 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 5. Never use the secret (service role) key in this app. It bypasses Row Level Security.
 
 ### Accounts setup (Supabase Auth, once per project)
-1. SQL Editor: run every file in `supabase/migrations/` in number order, one at a time: `0001_catalog.sql` through `0008_lock_names_always.sql` (and any newer ones). Each file runs once per project.
+1. SQL Editor: run every file in `supabase/migrations/` in number order, one at a time: `0001_catalog.sql` through `0010_admin_hardening.sql` (and any newer ones). Each file runs once per project.
 2. Authentication → Sign In / Providers → Email: keep **Confirm email** on. Set minimum password length to 8 (`MIN_PASSWORD_LENGTH`).
 3. Authentication → URL Configuration (where Supabase may send users back to):
    - **Site URL**: the production address, e.g. `https://<your-site>.vercel.app`.
@@ -93,16 +95,23 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
    - `RedirectTo` already contains `/auth/callback?next=...`, hence `&` not `?`.
 6. Emails: Supabase's built-in sender allows only a few emails per hour, for testing. Before launch, set up custom SMTP (Authentication → Emails → SMTP), e.g. Resend or SendGrid.
 
-### Approve a certification or school
-1. Find the user's id: Table Editor → `profiles` → `id` column of their row (the `email` column helps).
-2. Storage → `certifications` → open the folder with that id → click the file → **Download** (or **Get URL** for a link valid for a limited time).
-3. Trainers: Table Editor → `trainer_profiles` → same `id` → set `certification_status` to `approved` or `rejected`. Schools: `school_profiles` → check `is_likely_school_email`, then set `school_status`. Click **Save** in the dashboard.
-4. The user sees the new status on `/account` at once. Step 5 moves this into an admin page.
+### Create the admin account (once)
+1. SQL Editor: run `supabase/migrations/0009_admin.sql` and `0010_admin_hardening.sql` if not done.
+2. Authentication → Users → **Add user** → **Create new user**: email (e.g. `info@skip-pd.com`), a strong password, tick **Auto Confirm User**. Use an email that has no trainer/school account.
+3. SQL Editor: `insert into public.admins (id) select id from auth.users where email = 'info@skip-pd.com';`
+4. Sign in on the site with that account: it opens `/admin`. Remove an admin with `delete from public.admins where id = '<user id>';`.
+
+### Approve a certification, license or school
+1. Sign in with the admin account and open **Admin** in the header (`/admin`).
+2. Pick a tab (Schools, Certificates, Licenses) and table or tiles view (buttons on the right). Each item shows what to check. Certificates: **View file** (link works 10 minutes, opens in a new tab). Licenses: check the state's public lookup. Schools: the card says whether the email looks like a school email.
+3. Click **Approve**, or write a reason and click **Reject**. The user sees the status (and the reason) on `/account` at once.
+4. A new certificate or license change sends the item back to the queue and clears the old reason. If the item changed while the page was open (or was already decided), the form says so; reload. A rejected school that edits its details goes back to review automatically.
+5. The Supabase dashboard still works as a fallback (`trainer_profiles` / `school_profiles` status columns).
 
 ### Verify a trainer's teaching license
-1. Table Editor → `trainer_profiles` → rows with `license_status` = `pending`; note `license_state` and `license_number`.
-2. Open that state's public educator license lookup (search "<state> teacher certification lookup") and check that the number exists, is active and matches the trainer's name in `profiles`.
-3. Set `license_status` to `approved` or `rejected` → Save. Once approved, the license fields are locked for the trainer.
+1. On `/admin`, the license card shows the state and number.
+2. Open that state's public educator license lookup (search "<state> teacher certification lookup") and check that the number exists, is active and matches the trainer's name.
+3. Approve, or reject with a reason. Once approved, the license fields are locked for the trainer.
 
 ### Change a locked field for a user
 Locked on the site (rule: `web/src/lib/profile-locks.ts` + migrations `0004`, `0005`, `0008`; change both sides together):
@@ -120,7 +129,7 @@ Users delete their own account on `/account` (type DELETE). The app removes thei
 2. Existing profiles update their hint the next time they are saved.
 
 ### Change the database schema
-1. Add a new numbered file, e.g. `supabase/migrations/0009_<topic>.sql` (the next free number). Never edit a migration that was already run.
+1. Add a new numbered file, e.g. `supabase/migrations/0010_<topic>.sql` (the next free number). Never edit a migration that was already run.
 2. Run it in the SQL Editor.
 3. Update `ListingRow` / `toCourse` in `web/src/lib/data/supabase-course-repository.ts`, and `lib/types.ts` if the app type changes.
 

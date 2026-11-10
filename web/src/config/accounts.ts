@@ -82,5 +82,11 @@ export const US_STATES = [
   'WY',
 ];
 
+/** Review items per page on the admin page (tiles and table). */
+export const ADMIN_REVIEWS_PER_PAGE = 10;
+
+/** Longest rejection reason an admin can write. Matches 0009_admin.sql. */
+export const MAX_REVIEW_REASON_LENGTH = 500;
+
 /** Where users land after signing in when no other page was requested. */
 export const AFTER_SIGN_IN_PATH = '/';

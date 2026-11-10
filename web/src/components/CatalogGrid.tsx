@@ -12,6 +12,7 @@
 import {COURSES_PER_PAGE} from '@/config/catalog';
 import type {CatalogFilters, Course} from '@/lib/types';
 import {CourseCard} from './CourseCard';
+import {Pagination} from './Pagination';
 
 interface CatalogGridProps {
   /** Courses already filtered and sorted. */
@@ -90,43 +91,12 @@ export function CatalogGrid({
         )}
       </div>
 
-      {pageCount > 1 && (
-        <nav className="pagination" aria-label="Catalog pages">
-          <button
-            className="page-arrow"
-            aria-label="Previous page"
-            disabled={currentPage === 1}
-            onClick={() => {
-              onPageChange(currentPage - 1);
-            }}
-          >
-            ←
-          </button>
-          {Array.from({length: pageCount}, (_, index) => index + 1).map((number) => (
-            <button
-              key={number}
-              className={`page-number ${number === currentPage ? 'active' : ''}`}
-              aria-label={`Page ${number}`}
-              aria-current={number === currentPage ? 'page' : undefined}
-              onClick={() => {
-                onPageChange(number);
-              }}
-            >
-              {number}
-            </button>
-          ))}
-          <button
-            className="page-arrow"
-            aria-label="Next page"
-            disabled={currentPage === pageCount}
-            onClick={() => {
-              onPageChange(currentPage + 1);
-            }}
-          >
-            →
-          </button>
-        </nav>
-      )}
+      <Pagination
+        page={currentPage}
+        pageCount={pageCount}
+        onPageChange={onPageChange}
+        label="Catalog pages"
+      />
     </section>
   );
 }

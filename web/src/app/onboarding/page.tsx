@@ -18,6 +18,7 @@ export const metadata: Metadata = {title: `Set up your profile | ${SITE_NAME}`};
 async function OnboardingContent() {
   const viewer = await getViewer();
   if (!viewer) redirect('/sign-in?next=/onboarding');
+  if (viewer.isAdmin) redirect('/admin');
   if (viewer.profile) redirect('/account');
   return <ProfileForm profile={null} submitLabel="Save profile" />;
 }

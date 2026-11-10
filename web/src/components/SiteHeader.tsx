@@ -108,8 +108,13 @@ export function SiteHeader({
         {menuOpen ? '✕' : '☰'}
       </button>
       <nav id="main-nav">
-        {/* Guests only see Sign in and List your training. */}
-        {viewer && (
+        {/* Guests only see Sign in and List your training; admins only Admin. */}
+        {viewer?.isAdmin && (
+          <Link href="/admin" onClick={closeMenu}>
+            Admin
+          </Link>
+        )}
+        {viewer && !viewer.isAdmin && (
           <>
             {onShowRequests ? (
               <button onClick={choose(onShowRequests)}>My requests</button>
@@ -120,7 +125,7 @@ export function SiteHeader({
             )}
           </>
         )}
-        {viewer && (
+        {viewer && !viewer.isAdmin && (
           <Link href={viewer.profile ? '/account' : '/onboarding'} onClick={closeMenu}>
             Account
           </Link>
@@ -130,7 +135,7 @@ export function SiteHeader({
             Sign in
           </Link>
         )}
-        {onListTraining ? (
+        {viewer?.isAdmin ? null : onListTraining ? (
           <button className="btn small" onClick={choose(onListTraining)}>
             + List your training
           </button>

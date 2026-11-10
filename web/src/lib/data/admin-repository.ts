@@ -33,6 +33,12 @@ export interface AdminRepository {
   ): Promise<void>;
   /** Short-lived link to view a trainer's current certification file, or null. */
   getCertificationUrl(userId: string): Promise<string | null>;
+  /**
+   * Name + email for the review-result notification, or null when the
+   * profile has no email. Fetched server-side so the form cannot aim the
+   * email at someone else.
+   */
+  getReviewContact(userId: string): Promise<{fullName: string; email: string} | null>;
 }
 
 /** The item changed or was already reviewed since the page loaded. */

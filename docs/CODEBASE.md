@@ -24,6 +24,7 @@ Browser request "/"
        -> Modal > CourseDetail | BookingForm | ListingForm | RequestList
   -> lib/data/*               repositories: the ONLY code that knows the database (Supabase)
   -> lib/auth/*               sign-in service: the ONLY code that knows the auth vendor
+  -> lib/email/*              email service: the ONLY code that knows the email vendor
   -> lib/supabase/clients.ts  creates Supabase clients; used only by the two folders above
 
 Account pages: /sign-in, /sign-up, /forgot-password, /reset-password, /account/password,
@@ -98,7 +99,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `onboarding/page.tsx` | First-time profile form: account type plus trainer or school details. |
 | `account/page.tsx` | Review status, profile summary with Edit button, back to trainings, change password, sign out, delete account. |
 | `admin/page.tsx` | Admin review queue (loaded on the server; display in `ReviewQueue`). 404 for non-admins. |
-| `actions/admin.ts` | Server action: approve/reject (`reviewAction`). Re-checks the admin flag; shows a conflict message when the item changed. |
+| `actions/admin.ts` | Server action: approve/reject (`reviewAction`). Re-checks the admin flag; conflict message when the item changed; best-effort approve/reject email after saving. |
 | `admin/file/[userId]/route.ts` | Admin-only `GET` link to a trainer's certificate file: re-checks the admin flag, then redirects to a 10-minute signed URL (opens in a new tab). |
 | `auth/callback/route.ts` | Where email links (`token_hash`) and Google sign-in (`code`) return: creates the session, then opens `next` or `/onboarding`. An already-used confirmation link asks the user to sign in. |
 | `actions/auth.ts` | Server actions: sign in, sign up, Google, forgot/reset password, sign out. |
@@ -162,7 +163,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 |---|---|
 | `course-repository.ts` | The `CourseRepository` **interface** (what the app can ask about courses) and `getCourseRepository()`, the one line that picks the backend. |
 | `profile-repository.ts` | The `ProfileRepository` interface (current user's profile, certification upload) and `getProfileRepository()`. |
-| `admin-repository.ts` | The `AdminRepository` interface (is admin, pending reviews, review, certificate link) and `getAdminRepository()`. |
+| `admin-repository.ts` | The `AdminRepository` interface (is admin, pending reviews, review, certificate link, review contact for email) and `getAdminRepository()`. |
 | `supabase-admin-repository.ts` | Supabase implementation, acting as the signed-in admin (database rules allow it only for admins). |
 | `supabase-profile-repository.ts` | Supabase implementation: joins `profiles` with `trainer_profiles` or `school_profiles` into one `Profile`; `certifications` bucket. Never writes review statuses. |
 | `supabase-course-repository.ts` | Supabase implementation. The only file with table/column names and the Supabase client. Turns a `CourseQuery` into a database query (search, filters, sort) and rows into `Course`. Reads `SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY`. Server only. |
@@ -173,6 +174,14 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 |---|---|
 | `auth-service.ts` | The `AuthService` interface (current user, sign in/up, Google, password reset, sign out), `getAuthService()`, and `refreshSession()` for the proxy. |
 | `supabase-auth-service.ts` | Supabase Auth implementation. The only file calling `supabase.auth` for sign-in. |
+
+## `src/lib/email/`: email sending (the email boundary)
+
+| File | What / why |
+|---|---|
+| `email-service.ts` | `EmailService` interface (`send({to, subject, text, html?})`) and `getEmailService()`. |
+| `resend-email-service.ts` | Resend HTTP implementation. The only file reading `RESEND_API_KEY` / `EMAIL_FROM`. |
+| `review-notification.ts` | Builds the approve/reject email (subject + body + `/account` link) for `reviewAction`. |
 
 ## `src/lib/supabase/`: shared vendor client
 
@@ -204,6 +213,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 ---
 
 ## Changelog of this map
+- **Email notices (between 5 and 6):** `lib/email/` (interface + Resend), `reviewAction` sends approve/reject mail; HOW-TO "Send email (Resend)"; env `RESEND_API_KEY` / `EMAIL_FROM`.
 - **Step 5:** admin queue tabs, table/tiles switch and pagination (`ReviewQueue`, `ReviewTable`, `ReviewItemActions`, `SchoolEmailHint`, shared `Pagination`); admin role (migration 0009), `/admin` review queue, `ReviewCard`, admin repository and actions, rejection reasons on the account page; `getViewer()` adds `isAdmin`, `homeFor()` routes admins to `/admin`.
 - **Saved removed:** heart buttons, Saved header button and view, saved-ids browser store, `ids` search parameter and `toCourseQuery()`. `CourseQuery` is now the same as `CatalogFilters`.
 - **Shared header:** `PageHeader.tsx` puts the site header (without search) on every page; `HomePage` opens dialogs from `/?open=requests|listing`.

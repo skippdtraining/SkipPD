@@ -51,7 +51,7 @@ Email links and Google return to /auth/callback.
 | `docs/CODEBASE.md` | This file. |
 | `docs/HOW-TO.md` | Task-based lookup: which file to edit for common changes, plus recipes. |
 | `docs/CONVENTIONS.md` | Code style, documentation and modularity rules. |
-| `docs/assets/` | Images used by the docs (e.g. `jobs-page-reference.jpeg`, `admin-table-reference.jpeg`). |
+| `docs/assets/` | Images used by the docs (e.g. `jobs-page-reference.jpeg`). |
 | `supabase/migrations/` | SQL that creates the database tables, run in order in the Supabase SQL Editor. `0001_catalog.sql`: `categories`, `listings`, Row Level Security (public read of published listings). |
 | `supabase/migrations/0002_accounts.sql` | `profiles` (trainer/school details, review statuses), `school_email_domains`, `is_likely_school_email()`, the private `certifications` storage bucket, and the rules that stop users changing review statuses. |
 | `supabase/migrations/0003_split_profiles.sql` | Moves trainer-only fields to `trainer_profiles` and school-only fields to `school_profiles`; `profiles` keeps role, name, email. Copies existing data. |

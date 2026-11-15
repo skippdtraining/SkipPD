@@ -25,7 +25,11 @@ import {
 const IMAGE_BUCKET = 'listings';
 
 /** Default built-in illustration for listings without an uploaded image. */
-const DEFAULT_COVER = {cover_color: '#e7dff6', cover_accent: '#8264ad', type: 'books'};
+const DEFAULT_COVER = {
+  cover_color: '#e7dff6',
+  cover_accent: '#8264ad',
+  cover_type: 'books',
+};
 
 /** Database columns written from the listing form. */
 function toColumns(input: ListingInput, trainer: TrainerIdentity) {

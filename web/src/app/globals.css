@@ -922,7 +922,34 @@ header.with-search .header-search {
   background: #a2463f;
 }
 
-/* "My listings" dialog */
+/* Trainer listings (/my-listings) */
+.my-listings-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 5% 72px;
+}
+.my-listings-page h1 {
+  font: 800 30px var(--head-font);
+  margin: 0;
+}
+.my-listings-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.my-listings-form {
+  border: 1px solid #ece8f2;
+  border-radius: 8px;
+  padding: 24px;
+  background: #fff;
+}
+.my-listings-notice p {
+  color: #756e83;
+  margin-bottom: 18px;
+}
 .my-listings {
   list-style: none;
   margin: 0 0 16px;

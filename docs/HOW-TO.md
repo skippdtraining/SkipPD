@@ -22,7 +22,7 @@ All paths are relative to the repository root. Run npm commands inside `web/`.
 | Image upload size / allowed types | `web/src/config/catalog.ts` → `MAX_IMAGE_BYTES`, `IMAGE_TYPES` | |
 | Listing form limits (title, description, hours, price) | `web/src/config/catalog.ts` → `LISTING_LIMITS` | Enforced by the form and again on the server in `lib/listing-form.ts`; keep in sync with the `listings` table checks. |
 | Listing cover images | Supabase Storage bucket `listings` (public, 1 MB, JPG/PNG/WebP) | One folder per user id; the path is stored in `listings.image_path` (migration `0011`). |
-| A trainer's own listings ("My listings") | `web/src/components/MyListings.tsx` + `app/actions/listings.ts` | The edit form reuses `ListingForm`; ownership is enforced by RLS (migration `0011`). |
+| A trainer's own listings ("My listings") | Route `web/src/app/my-listings/page.tsx`, component `web/src/components/MyListings.tsx` + `app/actions/listings.ts` | The create/edit form on the page reuses `ListingForm` (typed values survive a failed save); ownership is enforced by RLS (migration `0011`). |
 | Certified / Licensed badges on listings | `web/src/components/TrainerBadges.tsx` + public view `trainer_badges` | Status comes from `trainer_profiles`; the admin sets it at `/admin`. |
 | Suggested topics in the listing form | Supabase table `categories` (`name`, `sort_order`) | Trainers can also choose "Other" and type a topic (max length: `MAX_CUSTOM_TOPIC_LENGTH` in `config/catalog.ts`). |
 | Grade bands | `web/src/lib/types.ts` → `Grade`, `GRADES` | Update both. |
@@ -155,7 +155,7 @@ Locked on the site (rule: `web/src/lib/profile-locks.ts` + migrations `0004`, `0
 3. School name: Table Editor → `school_profiles` → edit `school_name` → Save.
 
 ### Manage a trainer's listings
-1. Trainer account: **My listings** in the header opens the list, including listings hidden from the catalog. **Edit** reopens the listing form; **Delete** asks once more, then deletes the listing and its image.
+1. Trainer account: **My listings** in the header opens `/my-listings`, listing hidden ones included. **Create a new listing** / **Edit** show the listing form on the page; a failed save keeps the typed values and shows the real error. **Delete** asks once more, then deletes the listing and its image.
 2. The "Show in the catalog" checkbox in the form unpublishes a listing (`is_published`) without deleting it.
 3. Cover images: Storage → `listings` → `<user id>/`. A replaced or deleted listing removes its old file.
 4. Dashboard fallback: Table Editor → `listings` (filter by `owner_id`) and Storage → `listings`.

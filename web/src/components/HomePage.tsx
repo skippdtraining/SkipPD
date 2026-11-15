@@ -15,7 +15,6 @@
 
 import {useRouter} from 'next/navigation';
 import {useEffect, useRef, useState} from 'react';
-import {listMyListingsAction} from '@/app/actions/listings';
 import {fetchCourses} from '@/lib/catalog-api';
 import {courseQueryToParams} from '@/lib/course-query-params';
 import {
@@ -34,9 +33,7 @@ import {CatalogGrid} from './CatalogGrid';
 import {CourseDetail} from './CourseDetail';
 import {FilterSidebar} from './FilterSidebar';
 import {Hero} from './Hero';
-import {ListingForm} from './ListingForm';
 import {Modal} from './Modal';
-import {MyListings} from './MyListings';
 import {RequestList} from './RequestList';
 import {SiteFooter, TrainerBanner} from './SiteFooter';
 import {SiteHeader} from './SiteHeader';
@@ -45,8 +42,6 @@ import {SiteHeader} from './SiteHeader';
 type OpenDialog =
   | {kind: 'detail'; course: Course}
   | {kind: 'booking'; course: Course}
-  | {kind: 'listing'; course?: Course}
-  | {kind: 'my-listings'}
   | {kind: 'requests'}
   | null;
 
@@ -56,16 +51,12 @@ const HEADER_HEIGHT_PX = 64;
 const DIALOG_TITLES = {
   detail: 'Explore this training',
   booking: 'Request training',
-  listing: 'Share your expertise',
-  'my-listings': 'My listings',
   requests: 'My booking requests',
 } as const;
 
 interface HomePageProps {
   /** Courses matching {@link DEFAULT_FILTERS}, loaded by the server. */
   initialCourses: Course[];
-  /** Suggested topics for the listing form, loaded by the server. */
-  categories: string[];
   /** The signed-in visitor, or null for guests. */
   viewer: Viewer | null;
 }
@@ -76,7 +67,7 @@ function queryKey(filters: CatalogFilters): string {
 }
 
 /** Home page: header, hero, catalog, banner, footer and dialogs. */
-export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
+export function HomePage({initialCourses, viewer}: HomePageProps) {
   const router = useRouter();
   const [filters, setFilters] = useState<CatalogFilters>(DEFAULT_FILTERS);
   const [dialog, setDialog] = useState<OpenDialog>(null);
@@ -106,9 +97,6 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
   const heroSearchHidden = useIsOffscreen(heroSearchRef, HEADER_HEIGHT_PX);
 
   const [serverCourses, setServerCourses] = useState(initialCourses);
-  // The trainer's own listings (including hidden ones), loaded on demand for
-  // the "My listings" dialog. Null means "not loaded yet".
-  const [myListings, setMyListings] = useState<Course[] | null>(null);
   // The server already answered the default query; start from that.
   const lastQueryKey = useRef(queryKey(DEFAULT_FILTERS));
 
@@ -162,80 +150,34 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
     else action();
   }
 
-  /** Opens the listing form for trainers; explains the rule to schools. */
+  /** Sends trainers to /my-listings to create; explains the rule to schools. */
   function openListingForm() {
     withAccount(() => {
-      if (viewer?.profile?.role === 'trainer') setDialog({kind: 'listing'});
+      if (viewer?.profile?.role === 'trainer') router.push('/my-listings?new=1');
       else showToast('Only trainer accounts can list training.');
     });
-  }
-
-  /** Loads the trainer's listings for the "My listings" dialog. */
-  async function loadMyListings() {
-    setMyListings(null);
-    try {
-      setMyListings(await listMyListingsAction());
-    } catch (error) {
-      console.error(error);
-      setMyListings([]);
-      showToast('Could not load your listings. Please try again.');
-    }
-  }
-
-  /** Opens "My listings" for trainers; explains the rule to schools. */
-  function openMyListings() {
-    withAccount(() => {
-      if (viewer?.profile?.role !== 'trainer') {
-        showToast('Only trainer accounts can list training.');
-        return;
-      }
-      setDialog({kind: 'my-listings'});
-      void loadMyListings();
-    });
-  }
-
-  /**
-   * Re-runs the catalog query and reloads the trainer's listings after a
-   * create, edit or delete, so the change shows without a reload.
-   *
-   * @param next Filters to query with. Defaults to the current filters; call
-   *     with {@link DEFAULT_FILTERS} right after resetting them, because the
-   *     state update has not been applied yet.
-   */
-  function refreshCatalog(next: CatalogFilters = filters) {
-    fetchCourses(next)
-      .then((courses) => {
-        setServerCourses(courses);
-        lastQueryKey.current = queryKey(next);
-      })
-      .catch((error: unknown) => {
-        console.error(error);
-        showToast('Could not refresh the catalog. Please reload the page.');
-      });
-    void loadMyListings();
   }
 
   function scrollToCatalog() {
     catalogTitleRef.current?.scrollIntoView({behavior: 'smooth', block: 'center'});
   }
 
-  // Header links on other pages come here as /?open=requests|listing|listings
-  // (SiteHeader.tsx): open that dialog once, then drop the flag.
+  // Header links on other pages come here as /?open=requests (SiteHeader.tsx):
+  // open that dialog once, then drop the flag. The old listing flags now go
+  // to the "My listings" page, which replaced the dialogs (Step 6).
   useEffect(() => {
     const url = new URL(window.location.href);
     const open = url.searchParams.get('open');
-    if (open !== 'requests' && open !== 'listing' && open !== 'listings') return;
+    if (open === 'listing' || open === 'listings') {
+      router.replace(open === 'listing' ? '/my-listings?new=1' : '/my-listings');
+      return;
+    }
+    if (open !== 'requests') return;
     url.searchParams.delete('open');
     window.history.replaceState(null, '', url);
-    if (open === 'listing') {
-      openListingForm();
-    } else if (open === 'listings') {
-      openMyListings();
-    } else {
-      withAccount(() => {
-        setDialog({kind: 'requests'});
-      });
-    }
+    withAccount(() => {
+      setDialog({kind: 'requests'});
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -248,8 +190,6 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
             setDialog({kind: 'requests'});
           });
         }}
-        onListTraining={openListingForm}
-        onShowListings={openMyListings}
         search={{
           show: heroSearchHidden,
           query: filters.query,
@@ -324,11 +264,7 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
         // from "detail" to "booking" closes one and opens the other cleanly.
         <Modal
           key={dialog.kind}
-          title={
-            dialog.kind === 'listing' && dialog.course
-              ? 'Edit your training'
-              : DIALOG_TITLES[dialog.kind]
-          }
+          title={DIALOG_TITLES[dialog.kind]}
           onClose={() => {
             setDialog(null);
           }}
@@ -351,40 +287,6 @@ export function HomePage({initialCourses, categories, viewer}: HomePageProps) {
                 showToast('Request saved. View it in My requests.');
               }}
               onError={showToast}
-            />
-          )}
-          {dialog.kind === 'listing' && (
-            <ListingForm
-              categories={categories}
-              listing={dialog.course}
-              onSaved={() => {
-                if (dialog.course === undefined) {
-                  // Clear filters so the new listing is visible at the top.
-                  resetFilters(DEFAULT_FILTERS);
-                  showToast('Your training was added to the catalog.');
-                  setDialog(null);
-                  refreshCatalog(DEFAULT_FILTERS);
-                } else {
-                  showToast('Your listing was updated.');
-                  setDialog(null);
-                  refreshCatalog();
-                }
-              }}
-            />
-          )}
-          {dialog.kind === 'my-listings' && (
-            <MyListings
-              listings={myListings}
-              onCreate={() => {
-                setDialog({kind: 'listing'});
-              }}
-              onEdit={(listing) => {
-                setDialog({kind: 'listing', course: listing});
-              }}
-              onDeleted={() => {
-                showToast('Listing deleted.');
-                refreshCatalog();
-              }}
             />
           )}
           {dialog.kind === 'requests' && <RequestList />}

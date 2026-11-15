@@ -218,12 +218,12 @@ Rule: do not start step N+1 until step N is deployed and manually tested.
 
 ## 8. Current step - Step 6: listing CRUD for trainers
 
-**Status:** Step 6 code is on `feature/step-6-listings`. Email notices (PR #9) are merged into `dev`; their checkpoint still waits for Squarespace access (see below). Owner still runs migrations `0009` + `0010` if not done, and creates the admin account.
+**Status:** Step 6 code is on `feature/step-6-listings`. Email notices (PR #9) are merged into `dev`; their checkpoint still waits for Squarespace access (see below). Owner still runs migrations `0009` + `0010` if not done, `0011` for Step 6, and creates the admin account.
 
 ### Step 6 - Listing CRUD (current)
 1. `listings.owner_id` + `image_path`; RLS so only the owner (a trainer) creates, edits and deletes; admins can read all rows. Migration `0011_listings_owner.sql`.
 2. Cover images upload to the public `listings` bucket, one folder per user id (1 MB, JPG/PNG/WebP).
-3. New header item **My listings**: the trainer's listings (hidden ones included), with Edit, Delete and a create button. The form also has a "Show in the catalog" checkbox (`is_published`).
+3. **My listings** is a page (`/my-listings`, header link): the trainer's listings (hidden ones included), with Edit, Delete and a create button; `?new=1` opens the form straight away. The form also has a "Show in the catalog" checkbox (`is_published`). A failed save keeps every typed value and shows the real database/storage error.
 4. Trainer name and credentials are copied from the profile when a listing is saved.
 5. Catalog cards and the detail dialog show **Certified / Not certified** and **Licensed / Not licensed** from the trainer's profile (public `trainer_badges` view).
 6. Browser-only listings are gone (`localStorage` keeps booking requests until Step 7).

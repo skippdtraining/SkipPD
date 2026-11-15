@@ -4,10 +4,11 @@
  * "Sign in" for guests and "Account" for signed-in users.
  *
  * On the home page it also has a compact search box (fades in when the hero
- * search scrolls away) and opens dialogs directly. On other pages there is
- * no search, and "My requests" / "List your training" link to the home
- * page, which opens the matching dialog (`/?open=...`, see HomePage.tsx).
- * Other pages use it through `PageHeader.tsx`.
+ * search scrolls away) and "My requests" opens a dialog directly. On other
+ * pages there is no search and "My requests" links to the home page
+ * (`/?open=requests`, see HomePage.tsx). "My listings" always goes to
+ * /my-listings, "+ List your training" to /my-listings?new=1. Other pages
+ * use it through `PageHeader.tsx`.
  *
  * On phones the nav buttons hide behind a ☰ menu button (CSS shows the
  * button only below 730px; the open state is ignored on larger screens).
@@ -22,10 +23,12 @@ import {SITE, SITE_NAME} from '@/config/site';
 import type {Viewer} from '@/lib/types';
 import {SearchBox} from './SearchBox';
 
-/** Home-page links that open a dialog after navigating there. */
+/** "My requests" opens a dialog after navigating to the home page. */
 export const OPEN_REQUESTS_HREF = '/?open=requests';
-export const OPEN_LISTING_HREF = '/?open=listing';
-export const OPEN_LISTINGS_HREF = '/?open=listings';
+/** Create a listing; `/my-listings` opens its form when it has `new=1`. */
+export const OPEN_LISTING_HREF = '/my-listings?new=1';
+/** The trainer's own listings page. */
+export const OPEN_LISTINGS_HREF = '/my-listings';
 
 /** Compact search box settings (home page only). */
 interface HeaderSearch {
@@ -46,20 +49,10 @@ interface SiteHeaderProps {
   search?: HeaderSearch;
   /** Omitted on other pages: "My requests" becomes a link to home. */
   onShowRequests?: () => void;
-  /** Omitted on other pages: "My listings" becomes a link to home. */
-  onShowListings?: () => void;
-  /** Omitted on other pages: "List your training" becomes a link to home. */
-  onListTraining?: () => void;
 }
 
 /** Brand logo plus the main navigation. */
-export function SiteHeader({
-  viewer,
-  search,
-  onShowRequests,
-  onShowListings,
-  onListTraining,
-}: SiteHeaderProps) {
+export function SiteHeader({viewer, search, onShowRequests}: SiteHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   /** Runs a nav action and closes the phone menu. */
@@ -129,14 +122,11 @@ export function SiteHeader({
             )}
           </>
         )}
-        {viewer?.profile?.role === 'trainer' &&
-          (onShowListings ? (
-            <button onClick={choose(onShowListings)}>My listings</button>
-          ) : (
-            <Link href={OPEN_LISTINGS_HREF} onClick={closeMenu}>
-              My listings
-            </Link>
-          ))}
+        {viewer?.profile?.role === 'trainer' && (
+          <Link href={OPEN_LISTINGS_HREF} onClick={closeMenu}>
+            My listings
+          </Link>
+        )}
         {viewer && !viewer.isAdmin && (
           <Link href={viewer.profile ? '/account' : '/onboarding'} onClick={closeMenu}>
             Account
@@ -147,11 +137,7 @@ export function SiteHeader({
             Sign in
           </Link>
         )}
-        {viewer?.isAdmin ? null : onListTraining ? (
-          <button className="btn small" onClick={choose(onListTraining)}>
-            + List your training
-          </button>
-        ) : (
+        {viewer?.isAdmin ? null : (
           <Link className="btn small" href={OPEN_LISTING_HREF} onClick={closeMenu}>
             + List your training
           </Link>

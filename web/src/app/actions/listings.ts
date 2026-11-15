@@ -1,7 +1,7 @@
 /**
  * @fileoverview Server actions for a trainer's own listings (Step 6):
- * load them into the "My listings" dialog, save a new or edited listing, and
- * delete one.
+ * the "/my-listings" page loads its rows itself; these actions save a new or
+ * edited listing and delete one.
  *
  * Every action re-checks the signed-in account here (server actions can be
  * called directly) and the database re-checks ownership through Row Level
@@ -14,7 +14,7 @@ import {revalidatePath} from 'next/cache';
 import {redirect} from 'next/navigation';
 import {getListingRepository} from '@/lib/data/listing-repository';
 import {parseListingForm} from '@/lib/listing-form';
-import type {Course, Viewer} from '@/lib/types';
+import type {Viewer} from '@/lib/types';
 import {getViewer} from '@/lib/viewer';
 
 /** What the listing form shows after submitting. */
@@ -22,6 +22,17 @@ export interface ListingFormState {
   error?: string;
   /** Increases after each successful save, so the form can react once per save. */
   savedCount?: number;
+  /** Increases on every submit (failed or not); the form restores its values. */
+  attempt?: number;
+}
+
+/**
+ * Shows what really failed. Repository errors already read as sentences
+ * ("Could not save listing: <database detail>"); without them every failure
+ * looks like "Could not save your listing" and hides a missing migration.
+ */
+function errorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error && error.message ? error.message : fallback;
 }
 
 /** What the delete button shows after submitting. */
@@ -36,29 +47,20 @@ function canManageListings(viewer: Viewer | null): boolean {
   return !viewer?.isAdmin && viewer?.profile?.role === 'trainer';
 }
 
-/**
- * Loads the signed-in trainer's listings (including hidden ones) for the
- * "My listings" dialog. Returns an empty list for anyone else.
- */
-export async function listMyListingsAction(): Promise<Course[]> {
-  const viewer = await getViewer();
-  if (!viewer || !canManageListings(viewer)) return [];
-  return getListingRepository().listMyListings(viewer.id);
-}
-
 /** Creates a new listing or saves edits to an existing one. */
 export async function saveListingAction(
   previous: ListingFormState,
   data: FormData,
 ): Promise<ListingFormState> {
+  const attempt = (previous.attempt ?? 0) + 1;
   const viewer = await getViewer();
   if (!viewer) redirect('/sign-in');
   if (!viewer.profile || !canManageListings(viewer)) {
-    return {error: 'Only trainer accounts can list training.'};
+    return {error: 'Only trainer accounts can list training.', attempt};
   }
 
   const parsed = parseListingForm(data);
-  if (!parsed.ok) return {error: parsed.message};
+  if (!parsed.ok) return {error: parsed.message, attempt};
 
   const repository = getListingRepository();
   const trainer = {
@@ -80,11 +82,15 @@ export async function saveListingAction(
     }
   } catch (error) {
     console.error(error);
-    return {error: 'Could not save your listing. Please try again.'};
+    return {
+      error: errorMessage(error, 'Could not save your listing. Please try again.'),
+      attempt,
+    };
   }
 
   revalidatePath('/');
-  return {savedCount: (previous.savedCount ?? 0) + 1};
+  revalidatePath('/my-listings');
+  return {savedCount: (previous.savedCount ?? 0) + 1, attempt};
 }
 
 /** Deletes one of the trainer's listings and its cover image. */
@@ -107,9 +113,12 @@ export async function deleteListingAction(
     await getListingRepository().deleteListing(viewer.id, listingId);
   } catch (error) {
     console.error(error);
-    return {error: 'Could not delete the listing. Please try again.'};
+    return {
+      error: errorMessage(error, 'Could not delete your listing. Please try again.'),
+    };
   }
 
   revalidatePath('/');
+  revalidatePath('/my-listings');
   return {deletedCount: (previous.deletedCount ?? 0) + 1};
 }

@@ -15,20 +15,22 @@ All app code lives in `web/`. Paths below starting with `src/` mean `web/src/`.
 Browser request "/"
   -> src/app/layout.tsx       wraps every page (<html>, fonts, CSS)
   -> src/proxy.ts             runs first on every page: refreshes the sign-in cookie
-  -> src/app/page.tsx         server: asks the course repository for courses + topics,
+  -> src/app/page.tsx         server: asks the course repository for courses,
                               and lib/viewer for the signed-in visitor
   -> components/HomePage.tsx  browser: holds state, renders all sections;
                               on filter change calls GET /api/courses
   -> src/app/api/courses      server: decodes the query, asks the repository
-       -> SiteHeader, Hero, FilterSidebar, CatalogGrid > CourseCard, ...
-       -> Modal > CourseDetail | BookingForm | ListingForm | MyListings | RequestList
+        -> SiteHeader, Hero, FilterSidebar, CatalogGrid > CourseCard, ...
+        -> Modal > CourseDetail | BookingForm | RequestList
+  -> src/app/my-listings      server: the trainer's own listings (+ ?new=1 form)
+        -> components/MyListings.tsx > ListingForm (create / edit)
   -> lib/data/*               repositories: the ONLY code that knows the database (Supabase)
   -> lib/auth/*               sign-in service: the ONLY code that knows the auth vendor
   -> lib/email/*              email service: the ONLY code that knows the email vendor
   -> lib/supabase/clients.ts  creates Supabase clients; used only by the two folders above
 
 Account pages: /sign-in, /sign-up, /forgot-password, /reset-password, /account/password,
-/onboarding, /account -> server actions in app/actions/ -> lib/auth + lib/data.
+/onboarding, /account, /my-listings -> server actions in app/actions/ -> lib/auth + lib/data.
 Email links and Google return to /auth/callback.
   -> config/*                 branding + business settings
   -> lib/*                    types, filtering, formatting, browser storage
@@ -92,7 +94,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | File | What / why |
 |---|---|
 | `layout.tsx` | Root layout shared by all pages. Loads the DM Sans and Manrope fonts via `next/font`, imports global CSS, and sets the browser tab title and description. |
-| `page.tsx` | The `/` route. Server component: on every request gets the default catalog results, the topic list and the visitor (`getViewer()`) and passes them to `HomePage`. Never imports a database client directly. |
+| `page.tsx` | The `/` route. Server component: on every request gets the default catalog results and the visitor (`getViewer()`) and passes them to `HomePage`. Never imports a database client directly. |
 | `sign-in/page.tsx` | Email + password sign-in and "Continue with Google". `?next=` returns to a page afterwards. |
 | `sign-up/page.tsx` | Create an account (email confirmation) or Google. |
 | `forgot-password/page.tsx` / `reset-password/page.tsx` | Request a reset email / set a new password. `/reset-password` only works right after a reset link (short-lived pass cookie). |
@@ -105,7 +107,8 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `auth/callback/route.ts` | Where email links (`token_hash`) and Google sign-in (`code`) return: creates the session, then opens `next` or `/onboarding`. An already-used confirmation link asks the user to sign in. |
 | `actions/auth.ts` | Server actions: sign in, sign up, Google, forgot/reset password, sign out. |
 | `actions/profile.ts` | Server action: validate and save the profile form, upload the certification. New profiles go to the home page (welcome message); edits return to the account summary. Also `deleteAccountAction`. |
-| `actions/listings.ts` | Server actions for a trainer's listings: load them for "My listings", save a new or edited listing (image upload), delete one. Re-checks that the caller is a trainer. |
+| `actions/listings.ts` | Server actions for a trainer's listings: save a new or edited listing (image upload), delete one. Re-checks that the caller is a trainer; on failure returns the real repository error and an `attempt` counter the form uses to restore its values. |
+| `my-listings/page.tsx` | `/my-listings`: a trainer's own listings (hidden ones included) plus the create / edit form (`?new=1` opens the form). Redirects guests to sign-in, admins to `/admin`, schools to a notice. Loads rows + topics on the server. |
 | `api/courses/route.ts` | `GET /api/courses?q=&format=&grade=&duration=&maxPrice=&sort=`: catalog search for the browser. Returns `{courses}`. |
 | `globals.css` | All styles, ported from the POC and grouped by page area. Colours are CSS variables in `:root`. The header is sticky and 64px tall. The "Responsive" section at the end adapts the layout for tablets and phones. |
 | `[slug]/page.tsx` | **Temporary.** "Coming soon" page for each footer link (`/about`, `/terms`...), generated from `FOOTER_COLUMNS`. Real pages get their own folder later; paths that already have one are listed in `PATHS_WITH_OWN_PAGE`. |
@@ -118,8 +121,8 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 
 | File | What / why |
 |---|---|
-| `HomePage.tsx` | **The conductor.** Owns page state (filters, which dialog is open, toast message), fetches server results when filters change, merges in browser listings, and wires all the sections together. Start reading here. |
-| `SiteHeader.tsx` | Sticky top bar on every page: logo, My requests, My listings (trainers only), Sign in or Account, and "List your training" (behind a ☰ menu on phones). Home only: compact search; elsewhere the dialog links use `/?open=...`. |
+| `HomePage.tsx` | **The conductor.** Owns page state (filters, which dialog is open, toast message), fetches server results when filters change, and wires all the sections together. Listing create/edit lives on `/my-listings`. Start reading here. |
+| `SiteHeader.tsx` | Sticky top bar on every page: logo, My requests, My listings (trainers only, → `/my-listings`), Sign in or Account, and "List your training" (→ `/my-listings?new=1`, behind a ☰ menu on phones). Home only: compact search; "My requests" elsewhere links to `/?open=requests`. |
 | `PageHeader.tsx` | `SiteHeader` for all pages except home (no search). Looks up the visitor itself; used by `AuthShell` and placeholder pages. |
 | `AuthShell.tsx` | Page frame for the account pages: site header, centred card, footer (hidden on phones, where text is larger). |
 | `AuthForm.tsx` | Generic form for sign-in/up and password pages: runs a server action, shows its error or success note. |
@@ -144,8 +147,8 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 | `Modal.tsx` | Reusable pop-up built on the native `<dialog>` element. Closes on Esc, the × button, or a click outside. |
 | `CourseDetail.tsx` | Dialog content: the full course description and the "Request a session" button. |
 | `BookingForm.tsx` | Dialog content: the booking request form. Saves to the browser for now; Step 7 saves to the DB. |
-| `ListingForm.tsx` | Dialog content: create or edit a listing (Step 6). Writes to the database, uploads the cover image and has the "Other" topic option. No trainer name, credentials or keywords: those come from the profile / database. The publish checkbox hides a listing from the catalog. |
-| `MyListings.tsx` | Dialog content: the trainer's own listings (hidden ones included), with Edit, Delete (asked twice) and a create button. Delete is a server action; the list refreshes through `HomePage`. |
+| `ListingForm.tsx` | Create or edit a listing form (Step 6), shown on `/my-listings`. Writes to the database, uploads the cover image and has the "Other" topic option. No trainer name, credentials or keywords: those come from the profile / database. The publish checkbox hides a listing from the catalog. Snapshots every field on submit and restores it when the save failed (React resets action forms immediately). |
+| `MyListings.tsx` | The `/my-listings` page body: list vs. create/edit form view, the trainer's own listings (hidden ones included), with Edit, Delete (asked twice) and a create button. Save/delete are server actions; the page refreshes so the rows update. |
 | `TrainerBadges.tsx` | "Certified" / "Licensed" chips shown next to the trainer name on cards and in the detail dialog; hidden for seed listings that have no owner. |
 | `OutcomeListField.tsx` | Listing-form field: one input per learning outcome, "+ Add outcome" and × remove buttons. |
 | `RequestList.tsx` | Dialog content: "My booking requests", each with a Remove button. |
@@ -220,7 +223,7 @@ In Next.js's App Router, each folder under `app/` is a URL path, and its `page.t
 ---
 
 ## Changelog of this map
-- **Step 6:** trainer listing CRUD. Migration `0011` (`owner_id`, `image_path`, RLS, `trainer_badges` view, public `listings` bucket); `listing-repository` + Supabase implementation, shared `listing-row` mapping, `lib/listing-form.ts`, `app/actions/listings.ts`; `ListingForm` now creates/edits in the database, new `MyListings` and `TrainerBadges` components, "My listings" header link; browser listings removed (`filter-courses.ts` deleted); catalog reads owners' review badges.
+- **Step 6:** trainer listing CRUD. Migration `0011` (`owner_id`, `image_path`, RLS, `trainer_badges` view, public `listings` bucket); `listing-repository` + Supabase implementation, shared `listing-row` mapping, `lib/listing-form.ts`, `app/actions/listings.ts`; `ListingForm` now creates/edits in the database, the new `/my-listings` route (`MyListings` component; header link, `?new=1` opens the form) and `TrainerBadges` component; the home-page listing dialogs are gone; browser listings removed (`filter-courses.ts` deleted); catalog reads owners' review badges; a failed save keeps the form values and shows the real error.
 - **Email notices (between 5 and 6):** `lib/email/` (interface + Resend), `reviewAction` sends approve/reject mail; HOW-TO "Send email (Resend)"; env `RESEND_API_KEY` / `EMAIL_FROM`.
 - **Step 5:** admin queue tabs, table/tiles switch and pagination (`ReviewQueue`, `ReviewTable`, `ReviewItemActions`, `SchoolEmailHint`, shared `Pagination`); admin role (migration 0009), `/admin` review queue, `ReviewCard`, admin repository and actions, rejection reasons on the account page; `getViewer()` adds `isAdmin`, `homeFor()` routes admins to `/admin`.
 - **Saved removed:** heart buttons, Saved header button and view, saved-ids browser store, `ids` search parameter and `toCourseQuery()`. `CourseQuery` is now the same as `CatalogFilters`.

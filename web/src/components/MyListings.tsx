@@ -1,36 +1,106 @@
 /**
- * @fileoverview "My listings" dialog: the signed-in trainer's own listings,
- * including ones hidden from the catalog, with Edit and Delete (Step 6).
+ * @fileoverview "/my-listings": the signed-in trainer's own listings (hidden
+ * ones included) plus the create / edit form (Step 6).
  *
- * State (the list itself, loading and refresh) lives in `HomePage.tsx`; this
- * component only displays it and reports changes.
+ * State (list vs. form, toast) lives here; the rows arrive from the server
+ * component `app/my-listings/page.tsx`, and save/delete refresh the page so
+ * the new state flows back in. Delete is a two-step server action.
  */
 
 'use client';
 
 import {useActionState, useEffect, useEffectEvent, useState} from 'react';
+import {useRouter} from 'next/navigation';
 import {deleteListingAction} from '@/app/actions/listings';
 import {formatPrice} from '@/lib/format';
+import {useToast} from '@/lib/use-toast';
 import type {Course} from '@/lib/types';
 import {FormError} from './FormError';
+import {ListingForm} from './ListingForm';
 
 interface MyListingsProps {
-  /** The trainer's listings, or null while they load. */
-  listings: Course[] | null;
-  /** Opens the edit form for one listing. */
-  onEdit: (listing: Course) => void;
-  /** Called after a listing was deleted, so the parent can refresh. */
-  onDeleted: () => void;
-  /** Opens the create form. */
-  onCreate: () => void;
+  /** The trainer's own listings, newest first, hidden ones included. */
+  listings: Course[];
+  /** Suggested topics for the listing form, in display order. */
+  categories: string[];
+  /** True when the page was opened as /my-listings?new=1. */
+  startNew: boolean;
 }
 
-/** List of the trainer's listings plus a create button. */
-export function MyListings({listings, onEdit, onDeleted, onCreate}: MyListingsProps) {
-  if (listings === null) return <p className="small-text">Loading your listings…</p>;
+/** What the page shows: the list, the create form, or one listing's edits. */
+type View = {kind: 'list'} | {kind: 'create'} | {kind: 'edit'; listing: Course};
+
+/** Trainer's listings page: rows, or the listing form in create/edit mode. */
+export function MyListings({listings, categories, startNew}: MyListingsProps) {
+  const router = useRouter();
+  const [toast, showToast] = useToast();
+  const [view, setView] = useState<View>(startNew ? {kind: 'create'} : {kind: 'list'});
+
+  // Opening /my-listings?new=1 while this page is already mounted switches
+  // to the form: adjust state when the prop changes (no effect needed).
+  const [seenStartNew, setSeenStartNew] = useState(startNew);
+  if (startNew !== seenStartNew) {
+    setSeenStartNew(startNew);
+    if (startNew) setView({kind: 'create'});
+  }
+
+  function handleSaved() {
+    setView({kind: 'list'});
+    showToast('Your listing was saved.');
+    // Drops ?new=1 and re-reads the rows from the server in one step.
+    router.replace('/my-listings', {scroll: false});
+  }
+
+  function handleDeleted() {
+    showToast('Listing deleted.');
+    router.refresh();
+  }
+
+  if (view.kind !== 'list') {
+    return (
+      <>
+        <div className="my-listings-head">
+          <h1>{view.kind === 'edit' ? 'Edit your training' : 'Create your training'}</h1>
+          <button
+            className="btn light small"
+            type="button"
+            onClick={() => {
+              setView({kind: 'list'});
+            }}
+          >
+            ← Back to my listings
+          </button>
+        </div>
+        <div className="my-listings-form">
+          <ListingForm
+            categories={categories}
+            listing={view.kind === 'edit' ? view.listing : undefined}
+            onSaved={handleSaved}
+          />
+        </div>
+        {toast && (
+          <div className="toast" role="status">
+            {toast}
+          </div>
+        )}
+      </>
+    );
+  }
 
   return (
     <>
+      <div className="my-listings-head">
+        <h1>My listings</h1>
+        <button
+          className="btn small"
+          type="button"
+          onClick={() => {
+            setView({kind: 'create'});
+          }}
+        >
+          + Create a new listing
+        </button>
+      </div>
       {listings.length === 0 ? (
         <p className="small-text">
           You have no listings yet. Create one so schools can find your training.
@@ -41,22 +111,26 @@ export function MyListings({listings, onEdit, onDeleted, onCreate}: MyListingsPr
             <MyListingRow
               key={listing.id}
               listing={listing}
-              onEdit={onEdit}
-              onDeleted={onDeleted}
+              onEdit={() => {
+                setView({kind: 'edit', listing});
+              }}
+              onDeleted={handleDeleted}
             />
           ))}
         </ul>
       )}
-      <button className="btn wide" onClick={onCreate}>
-        + Create a new listing
-      </button>
+      {toast && (
+        <div className="toast" role="status">
+          {toast}
+        </div>
+      )}
     </>
   );
 }
 
 interface MyListingRowProps {
   listing: Course;
-  onEdit: (listing: Course) => void;
+  onEdit: () => void;
   onDeleted: () => void;
 }
 
@@ -84,12 +158,7 @@ function MyListingRow({listing, onEdit, onDeleted}: MyListingRowProps) {
         <FormError message={state.error} trigger={state} />
       </div>
       <div className="my-listing-actions">
-        <button
-          className="btn light small"
-          onClick={() => {
-            onEdit(listing);
-          }}
-        >
+        <button className="btn light small" onClick={onEdit}>
           Edit
         </button>
         {confirming ? (

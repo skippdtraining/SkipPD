@@ -3,11 +3,12 @@
  *
  * This is a server component: it runs on the server and passes data down.
  * It asks the course repository for data, so it does not know or care
- * which database is behind it (see lib/data/course-repository.ts). The
- * interactive UI lives in `components/HomePage.tsx`.
+ * which database is behind it (see lib/data/course-repository.ts).
+ * The interactive UI lives in `components/HomePage.tsx`.
  *
  * Courses are read on every request (not cached), so an edit in the
- * Supabase dashboard shows up on the next page load.
+ * Supabase dashboard shows up on the next page load. The topic list is only
+ * needed by the listing form on /my-listings, which loads it itself.
  *
  * Note: Next.js requires a *default* export for pages, an exception to our
  * named-exports rule (see docs/CONVENTIONS.md).
@@ -20,19 +21,16 @@ import {getCourseRepository} from '@/lib/data/course-repository';
 import {DEFAULT_FILTERS} from '@/lib/types';
 import {getViewer} from '@/lib/viewer';
 
-/** Loads the first catalog results, the topic list and the visitor, then renders the page. */
+/** Loads the first catalog results and the visitor, then renders the page. */
 async function HomeWithData() {
   // Opt out of build-time prerendering: data must be fresh per request.
   await connection();
   const repository = getCourseRepository();
-  const [initialCourses, categories, viewer] = await Promise.all([
+  const [initialCourses, viewer] = await Promise.all([
     repository.searchCourses(DEFAULT_FILTERS),
-    repository.listCategories(),
     getViewer(),
   ]);
-  return (
-    <HomePage initialCourses={initialCourses} categories={categories} viewer={viewer} />
-  );
+  return <HomePage initialCourses={initialCourses} viewer={viewer} />;
 }
 
 export default function Home() {
